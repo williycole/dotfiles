@@ -1,6 +1,8 @@
 # Dotfiles for Neovim with WSL, Go, and DAP
 
-This repository contains my personal configuration for Neovim, set up to work with Windows Subsystem for Linux (WSL), the Go programming language, and Debug Adapter Protocol (DAP) support using Kickstart.nvim.
+This repository contains my personal configuration to use Neovim, Go, and Debug Adpater Protocol (DAP) support.
+Kickstart.nvim was used to initalzie this configuration. 
+This config should work across powershell, WSL, and gitbash, pending all required dependencies are installed in your environment. 
 
 ## Table of Contents
 
