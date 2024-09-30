@@ -1,0 +1,22 @@
+{
+ "Week": "2024-09-20",
+ "LastWeek": "",
+ "X": 0.21266623195822554,
+ "Programs": [
+  {
+   "Program": "golang.org/x/tools/gopls",
+   "Version": "v0.16.2",
+   "GoVersion": "go1.22.7",
+   "GOOS": "linux",
+   "GOARCH": "amd64",
+   "Counters": {
+    "gopls/client:neovim": 13,
+    "gopls/gotoolchain:auto": 14,
+    "gopls/goversion:1.22": 13,
+    "gopls/telemetryprompt/attempts:0": 13
+   },
+   "Stacks": {}
+  }
+ ],
+ "Config": "v0.0.0-0"
+}
