@@ -25,10 +25,10 @@ general:
 
 gaps:
   # Gap between adjacent windows.
-  inner_gap: "20px"
+  inner_gap: "3px"
 
   # Gap between windows and the screen edge.
-  outer_gap: "20px"
+  outer_gap: "3px"
 
 # Highlight active/inactive windows with a colored border.
 # ** Exclusive to Windows 11 due to API limitations.
@@ -192,13 +192,12 @@ keybindings:
   - command: "reload config"
     binding: "Alt+Shift+R"
 
-  # Launch CMD terminal (alternatively `exec wt` or `exec %ProgramFiles%/Git/git-bash.exe`
-  # to start Windows Terminal and Git Bash respectively.
-  - command: "exec wezterm"
+  # lauch wsl
+  - command: "exec wsl"
     binding: "Alt+Enter"
 
   # Focus the workspace that last had focus.
-  - command: "focus workspace recent"
+  - command: "exec wsl -d Ubuntu -e bash"
     binding: "Alt+Y"
 
   # Focus the next/previous workspace defined in `workspaces` config.
