@@ -1,26 +1,36 @@
-# Consolidated PATH export
-export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:/usr/local/sbin:/home/linuxbrew/.linuxbrew/bin:$PATH"
+# If you come from bash you might have to change your $PATH.
+# handles brew path also
+export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+export PATH="/usr/local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
-# Go configuration
-export GOROOT=/usr/local/go
-export GOPATH=$HOME/go
-export PATH="$GOPATH/bin:$GOROOT/bin:$PATH"
+# NVM setup
+export NVM_DIR="$HOME/.nvm"
+# This loads nvm
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  
+# This loads nvm bash_completion
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  
 
-# Lazygit path
-export PATH="/home/linuxbrew/.linuxbrew/Cellar/lazygit/0.44.0/bin:$PATH"
-
-# Language environment
-export LANG=en_US.UTF-8
-
+# Better History
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt appendhistory
 
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
+
+# Lazygit Setup
+export PATH=$PATH:/path/to/lazygit/directory
+alias lg="/path/to/lazygit"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="minimal"
+# 
+# ZSH_THEME="darkblood"
+ZSH_THEME="bira"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -103,6 +113,8 @@ source $ZSH/oh-my-zsh.sh
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
 
+# Aliases & Functions
+#
 # Set personal aliases, overriding those provided by Oh My Zsh libs,
 # plugins, and themes. Aliases can be placed here, though Oh My Zsh
 # users are encouraged to define aliases within a top-level file in
@@ -110,7 +122,48 @@ source $ZSH/oh-my-zsh.sh
 # - $ZSH_CUSTOM/aliases.zsh
 # - $ZSH_CUSTOM/macos.zsh
 # For a full list of active aliases, run `alias`.
-#
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+alias ggs="cd ~/repos/ggs" 
+alias r="cd ~/repos" 
+alias h='cd ~'
+alias lg='lazygit'
+# attach to terminal docker dev container
+d-attach() {
+    local container_name="ggs-dev-1"
+    local user="dev"
+    local command="${1:-bash}"
+    docker exec -it -u "$user" "$container_name" "$command"
+}
+
+# Combined function to start Docker services and attach Delve
+d-debug() {
+  if [ "$#" -eq 0 ]; then
+    echo "Usage: d-debug <service1> <service2> ..."
+    return 1
+  fi
+
+  # Start Docker services in the background
+  docker-compose up --build "$@" &
+
+  # Wait for a few seconds to allow the services to start
+  sleep 5
+
+  # Get the container name dynamically for the first service passed
+  container_name=$(docker ps --filter "name=$1" --format "{{.Names}}")
+
+  if [ -z "$container_name" ]; then
+    echo "No running container found for service: $1"
+    return 1
+  fi
+
+  echo "Attaching Delve to the container: $container_name"
+
+  # Start Delve in the running container
+  docker exec -it "$container_name" dlv debug --headless --listen=:2345 --api-version=2 --accept-multiclient /src
+}
+
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"

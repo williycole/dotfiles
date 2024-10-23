@@ -115,9 +115,6 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
-export PATH="/usr/local/bin:$PATH"
-export PATH=$PATH:/usr/local/go/bin
-export GOROOT=/usr/local/go
-export PATH=$GOROOT/bin:$PATH
 
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
