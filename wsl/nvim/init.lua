@@ -158,6 +158,10 @@ require('lazy').setup({
 
   -- Custom plugins
   { import = 'custom.plugins' },
+  {
+    'nvim-tree/nvim-web-devicons',
+    lazy = false,
+  },
 }, {
   ui = {
     icons = vim.g.have_nerd_font and {} or {

@@ -3,7 +3,7 @@ return {
   cmd = 'ZenMode',
   opts = {
     window = {
-      width = 0.75, -- width will be 75% of the editor width
+      width = 0.60, -- width will be 75% of the editor width
     },
     plugins = {
       options = {

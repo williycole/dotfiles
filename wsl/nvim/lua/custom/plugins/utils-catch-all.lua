@@ -22,6 +22,7 @@ return { -- Collection of various small independent plugins/modules
     local statusline = require 'mini.statusline'
     -- set use_icons to true if you have a Nerd Font
     statusline.setup { use_icons = vim.g.have_nerd_font }
+    -- statusline.setup { use_icons = true }
 
     -- You can configure sections in the statusline by overriding their
     -- default behavior. For example, here we set the section for

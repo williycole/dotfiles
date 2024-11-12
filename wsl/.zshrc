@@ -1,5 +1,5 @@
 # If you come from bash you might have to change your $PATH.
-# handles brew path also
+# export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
 export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 export PATH="/usr/local/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
@@ -129,41 +129,11 @@ alias ggs="cd ~/repos/ggs"
 alias r="cd ~/repos" 
 alias h='cd ~'
 alias lg='lazygit'
-# attach to terminal docker dev container
-d-attach() {
-    local container_name="ggs-dev-1"
-    local user="dev"
-    local command="${1:-bash}"
-    docker exec -it -u "$user" "$container_name" "$command"
-}
-
-# Combined function to start Docker services and attach Delve
-d-debug() {
-  if [ "$#" -eq 0 ]; then
-    echo "Usage: d-debug <service1> <service2> ..."
-    return 1
-  fi
-
-  # Start Docker services in the background
-  docker-compose up --build "$@" &
-
-  # Wait for a few seconds to allow the services to start
-  sleep 5
-
-  # Get the container name dynamically for the first service passed
-  container_name=$(docker ps --filter "name=$1" --format "{{.Names}}")
-
-  if [ -z "$container_name" ]; then
-    echo "No running container found for service: $1"
-    return 1
-  fi
-
-  echo "Attaching Delve to the container: $container_name"
-
-  # Start Delve in the running container
-  docker exec -it "$container_name" dlv debug --headless --listen=:2345 --api-version=2 --accept-multiclient /src
-}
-
-
+alias bat='batcat'
+alias bdf='~/.config/scripts/backup_dotfiles.sh'
+alias adc='~/.config/scripts/attach_to_dev_container.sh'
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

@@ -1,2 +1,3 @@
 windows/.config/spotify-tui/.spotify_token_cache.json
 windows/.config/spotify-tui/client.yml
+wsl/go/telemetry/local
