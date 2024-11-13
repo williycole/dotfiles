@@ -132,6 +132,7 @@ alias lg='lazygit'
 alias bat='batcat'
 alias bdf='~/.config/scripts/backup_dotfiles.sh'
 alias adc='~/.config/scripts/attach_to_dev_container.sh'
+# docker compose run --rm -it dev - also just drops us in the container
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"

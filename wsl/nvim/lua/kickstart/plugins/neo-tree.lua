@@ -15,6 +15,10 @@ return {
   },
   opts = {
     filesystem = {
+      -- show hidden items
+      filtered_items = {
+        visible = true,
+      },
       window = {
         width = '25%',
         mappings = {
