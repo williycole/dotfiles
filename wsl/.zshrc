@@ -126,6 +126,7 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ggs="cd ~/repos/ggs" 
+alias dotfiles="cd ~/repos/dotfiles"
 alias r="cd ~/repos" 
 alias h='cd ~'
 alias lg='lazygit'
