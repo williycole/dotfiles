@@ -1,7 +1,5 @@
 -- ============ Initial Configuration ============
--- Set leader keys
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+require 'custom/basic-keymaps-and-remaps'
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
@@ -61,42 +59,6 @@ vim.opt.timeoutlen = 300
 -- Split behavior
 vim.opt.splitright = true
 vim.opt.splitbelow = true
-
--- ============ Basic Keymaps ============
--- Clear search highlights
-vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
-
--- Diagnostic navigation
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic quickfix list' })
-
--- Terminal mode exit
-vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
-
--- Split navigation
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
-
--- ============ Remaps ============
--- Open netrw (file explorer)
-vim.keymap.set('n', '<leader>te', ':Ex<CR>', { noremap = true, silent = true, desc = 'Open file explorer' })
--- Open neotree (file explorer)
-vim.keymap.set('n', '<leader>ts', ':Neotree toggle<CR>', { noremap = true, silent = true, desc = 'Toggle NeoTree' })
--- Save the current file
-vim.keymap.set('n', '<leader>ww', ':w<CR>', { noremap = true, silent = true, desc = 'Save file' })
--- Save and quit
-vim.keymap.set('n', '<leader>wq', ':wq<CR>', { noremap = true, silent = true, desc = 'Save and quit' })
--- Quit
-vim.keymap.set('n', '<leader>qq', ':q<CR>', { noremap = true, silent = true, desc = 'Quit' })
--- Force Quit
-vim.keymap.set('n', '<leader>q!', ':q!<CR>', { noremap = true, silent = true, desc = 'Force Quit' })
--- Map Ctrl+/ to toggle comments in normal and visual modes
-vim.keymap.set('n', '<C-_>', 'gcc', { noremap = false, silent = true, desc = 'Toggle comment' })
-vim.keymap.set('v', '<C-_>', 'gc', { noremap = false, silent = true, desc = 'Toggle comment' })
 
 -- ============ Autocommands ============
 -- Highlight on yank
