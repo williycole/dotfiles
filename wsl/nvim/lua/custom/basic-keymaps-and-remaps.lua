@@ -28,3 +28,4 @@ vim.keymap.set('n', '<leader>qq', ':q<CR>', { noremap = true, silent = true, des
 vim.keymap.set('n', '<leader>fe', ':q!<CR>', { noremap = true, silent = true, desc = 'Force Quit' })
 vim.keymap.set('n', '<C-_>', 'gcc', { noremap = false, silent = true, desc = 'Toggle comment' })
 vim.keymap.set('v', '<C-_>', 'gc', { noremap = false, silent = true, desc = 'Toggle comment' })
+vim.keymap.set('n', '<leader>db', 'V$%d<ESC>', { noremap = true, silent = true, desc = 'Delete block from normal mode' })
