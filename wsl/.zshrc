@@ -132,7 +132,9 @@ alias h='cd ~'
 alias lg='lazygit'
 alias bat='batcat'
 alias bdf='~/.config/scripts/backup_dotfiles.sh'
+# dev conainter funcs
 alias adc='~/.config/scripts/attach_to_dev_container.sh'
+alias sdc='~/.config/scripts/setup_dev_container_with_neovim.sh'
 # docker compose run --rm -it dev - also just drops us in the container
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
