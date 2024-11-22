@@ -127,10 +127,12 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ggs="cd ~/repos/ggs" 
 alias dotfiles="cd ~/repos/dotfiles"
+alias cnvim="cd ~/.config/nvim"
 alias r="cd ~/repos" 
 alias h='cd ~'
 alias lg='lazygit'
 alias bat='batcat'
+alias bdf='~/.config/scripts/backup_dotfiles.sh'
 alias bdf='~/.config/scripts/backup_dotfiles.sh'
 # dev conainter funcs
 alias adc='~/.config/scripts/attach_to_dev_container.sh'
