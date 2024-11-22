@@ -1,8 +1,15 @@
 -- Docs: https://github.com/esensar/nvim-dev-container
 return {
+  -- Toggle term
+  {
+    'akinsho/toggleterm.nvim',
+    version = '*',
+    config = true,
+  },
+  -- Nvim dev conainer
   {
     'https://codeberg.org/esensar/nvim-dev-container',
-    dependencies = 'nvim-treesitter/nvim-treesitter',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'akinsho/toggleterm.nvim' },
     config = function()
       require('devcontainer').setup {
         container_name = 'ggs-dev-1',
