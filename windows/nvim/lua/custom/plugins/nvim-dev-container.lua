@@ -21,7 +21,7 @@ return {
             -- enables mounting local config to /root/.config/nvim in container
             enabled = false,
             -- makes mount readonly in container
-            options = { 'readonly' },
+            options = {},
           },
           neovim_data = {
             -- enables mounting local data to /root/.local/share/nvim in container
@@ -37,16 +37,28 @@ return {
             options = {},
           },
         },
+        --
+        --
+        terminal_handler = function(command)
+          if type(command) == 'table' then
+            command = table.concat(command, ' ')
+          end
+          vim.cmd('tabnew | terminal ' .. command)
+        end,
+        --
+        --
+        -- NOTE: new stuf below here
+        --
+        --
         -- terminal_handler = function(command)
+        --   local toggleterm = require 'toggleterm'
         --   if type(command) == 'table' then
         --     command = table.concat(command, ' ')
         --   end
-        --   vim.cmd('tabnew | terminal ' .. command)
+        --   toggleterm.exec(command)
         -- end,
-        -- NOTE: new stuf below here
-        terminal_handler = function(command)
-          require('toggleterm').exec(command)
-        end,
+        --
+        --
         -- Add container-specific LSP settings
         on_attach = function(bufnr)
           local lspconfig = require 'lspconfig'

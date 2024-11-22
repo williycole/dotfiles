@@ -44,22 +44,83 @@ return {
       require('dap').set_log_level 'TRACE'
 
       -- Configure Go adapters
+      -- dap.adapters.go = {
+      --   type = 'executable',
+      --   command = 'node',
+      --   args = { os.getenv 'HOME' .. '/.local/share/nvim/mason/packages/go-debug-adapter/extension/dist/debugAdapter.js' },
+      -- }
       dap.adapters.go = {
         type = 'executable',
-        command = 'node',
-        args = { os.getenv 'HOME' .. '/.local/share/nvim/mason/packages/go-debug-adapter/extension/dist/debugAdapter.js' },
+        command = 'dlv',
+        args = { 'dap', '-l', '127.0.0.1:${port}' },
       }
-
       -- Configure Go debugger
+      -- dap.configurations.go = {
+      --   {
+      --     type = 'go',
+      --     name = 'Debug : filerDirname',
+      --     request = 'launch',
+      --     program = '${fileDirname}',
+      --   },
+      --   {
+      --     type = 'go',
+      --     name = 'Debug',
+      --     request = 'attach',
+      --     mode = 'remote',
+      --     remotePath = '/src',
+      --     port = 2345,
+      --     host = '127.0.0.1',
+      --     cwd = '${workspaceFolder}',
+      --   },
+      -- }
+      -- dap.configurations.go = {
+      --   {
+      --     type = 'go',
+      --     name = 'Debug (Attach Remote)',
+      --     request = 'attach',
+      --     mode = 'remote',
+      --     remotePath = '/src',
+      --     port = 2345,
+      --     host = '127.0.0.1',
+      --     cwd = '${workspaceFolder}',
+      --   },
+      --   {
+      --     type = 'go',
+      --     name = 'Debug',
+      --     request = 'launch',
+      --     program = '${file}',
+      --   },
+      --   {
+      --     type = 'go',
+      --     name = 'Debug test',
+      --     request = 'launch',
+      --     mode = 'test',
+      --     program = '${file}',
+      --   },
+      --   {
+      --     type = 'go',
+      --     name = 'Debug test (go.mod)',
+      --     request = 'launch',
+      --     mode = 'test',
+      --     program = './${relativeFileDirname}',
+      --   },
+      -- }
+      -- Configure debugger for unknown files
+      -- dap.configurations._ = {
+      --   {
+      --     type = 'go',
+      --     name = 'Debug',
+      --     request = 'attach',
+      --     mode = 'remote',
+      --     remotePath = '/src',
+      --     port = 2345,
+      --     host = '127.0.0.1',
+      --     cwd = '${workspaceFolder}',
+      --   },
+      -- }
       dap.configurations.go = {
         {
           type = 'go',
-          name = 'Debug : filerDirname',
-          request = 'launch',
-          program = '${fileDirname}',
-        },
-        {
-          type = 'go',
           name = 'Debug',
           request = 'attach',
           mode = 'remote',
@@ -69,19 +130,19 @@ return {
           cwd = '${workspaceFolder}',
         },
       }
-      -- Configure debugger for unknown files
-      dap.configurations._ = {
-        {
-          type = 'go',
-          name = 'Debug',
-          request = 'attach',
-          mode = 'remote',
-          remotePath = '/src',
-          port = 2345,
-          host = '127.0.0.1',
-          cwd = '${workspaceFolder}',
+      table.insert(dap.configurations.go, {
+        type = 'go',
+        name = 'Debug in Docker',
+        request = 'attach',
+        mode = 'remote',
+        remotePath = '/src',
+        port = 2345,
+        host = '127.0.0.1',
+        cwd = '${workspaceFolder}',
+        substitutePath = {
+          { from = '${workspaceFolder}', to = '/src' },
         },
-      }
+      })
 
       -- Dap Select Config like vscode
       local dap_config_selector = function()
