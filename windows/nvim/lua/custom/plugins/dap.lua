@@ -52,7 +52,7 @@ return {
       dap.adapters.go = {
         type = 'executable',
         command = 'dlv',
-        args = { 'dap', '-l', '127.0.0.1:${port}' },
+        args = { 'dap', '-l', '127.0.0.1:${port}', '--log', '--log-output=dap,debugger,gdbwire,lldbout,rpc' },
       }
       -- Configure Go debugger
       -- dap.configurations.go = {
@@ -118,31 +118,60 @@ return {
       --     cwd = '${workspaceFolder}',
       --   },
       -- }
+      -- dap.configurations.go = {
+      --   {
+      --     type = 'go',
+      --     name = 'Debug',
+      --     request = 'attach',
+      --     mode = 'remote',
+      --     remotePath = '/src',
+      --     port = 2345,
+      --     host = '127.0.0.1',
+      --     cwd = '${workspaceFolder}',
+      --     trace = true,
+      --     logOutput = 'console,file',
+      --   },
+      -- }
+      -- table.insert(dap.configurations.go, {
+      --   type = 'go',
+      --   name = 'Debug in Docker',
+      --   request = 'attach',
+      --   mode = 'remote',
+      --   remotePath = '/src',
+      --   port = 2345,
+      --   host = '127.0.0.1',
+      --   cwd = '${workspaceFolder}',
+      --   substitutePath = {
+      --     { from = '${workspaceFolder}', to = '/src' },
+      --     trace = true,
+      --     logOutput = 'console,file',
+      --   },
+      -- })
+
       dap.configurations.go = {
         {
           type = 'go',
-          name = 'Debug',
+          name = 'Debug in Docker',
           request = 'attach',
           mode = 'remote',
-          remotePath = '/src',
-          port = 2345,
           host = '127.0.0.1',
-          cwd = '${workspaceFolder}',
+          port = 38697,
+          substitutePath = {
+            {
+              from = '${workspaceFolder}',
+              to = '/src',
+            },
+          },
+        },
+        {
+          -- Second configuration (example)
+          type = 'go',
+          name = 'Launch File',
+          request = 'launch',
+          mode = 'debug',
+          program = '${workspaceFolder}/launch.json',
         },
       }
-      table.insert(dap.configurations.go, {
-        type = 'go',
-        name = 'Debug in Docker',
-        request = 'attach',
-        mode = 'remote',
-        remotePath = '/src',
-        port = 2345,
-        host = '127.0.0.1',
-        cwd = '${workspaceFolder}',
-        substitutePath = {
-          { from = '${workspaceFolder}', to = '/src' },
-        },
-      })
 
       -- Dap Select Config like vscode
       local dap_config_selector = function()
@@ -162,8 +191,15 @@ return {
           end
         end)
       end
-
       vim.keymap.set('n', '<leader>dc', dap_config_selector, { desc = 'Debug: Select Configuration' })
+      --
+      --
+      -- Open Dap Logs
+      local function open_dap_log()
+        local log_file = vim.fn.stdpath 'cache' .. '/dap.log'
+        vim.cmd('edit ' .. log_file)
+      end
+      vim.keymap.set('n', '<leader>dl', open_dap_log, { desc = 'Open DAP Log' })
     end,
   },
   -- Tasks
