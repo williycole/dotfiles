@@ -25,7 +25,7 @@ vim.keymap.set('n', '<leader>ts', ':Neotree toggle<CR>', { noremap = true, silen
 vim.keymap.set('n', '<leader>ww', ':w<CR>', { noremap = true, silent = true, desc = 'Save file' })
 vim.keymap.set('n', '<leader>wq', ':wq<CR>', { noremap = true, silent = true, desc = 'Save and quit' })
 vim.keymap.set('n', '<leader>qq', ':q<CR>', { noremap = true, silent = true, desc = 'Quit' })
-vim.keymap.set('n', '<leader>fe', ':q!<CR>', { noremap = true, silent = true, desc = 'Force Quit' })
+vim.keymap.set('n', '<leader>fq', ':q!<CR>', { noremap = true, silent = true, desc = 'Force Quit' })
 vim.keymap.set('n', '<C-_>', 'gcc', { noremap = false, silent = true, desc = 'Toggle comment' })
 vim.keymap.set('v', '<C-_>', 'gc', { noremap = false, silent = true, desc = 'Toggle comment' })
 vim.keymap.set('n', '<leader>db', 'V$%d<ESC>', { noremap = true, silent = true, desc = 'Delete block from normal mode' })

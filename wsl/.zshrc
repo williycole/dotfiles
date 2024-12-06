@@ -134,6 +134,8 @@ alias lg='lazygit'
 alias bat='batcat'
 alias bdf='~/.config/scripts/backup_dotfiles.sh'
 alias bdf='~/.config/scripts/backup_dotfiles.sh'
+alias dfw='sudo ufw disable'
+alias efw='sudo ufw enable'
 # dev conainter funcs
 alias adc='~/.config/scripts/attach_to_dev_container.sh'
 alias sdc='~/.config/scripts/setup_dev_container_with_neovim.sh'
