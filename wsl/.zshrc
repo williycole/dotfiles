@@ -126,9 +126,8 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ggs="cd ~/repos/ggs" 
-alias dotfiles="cd ~/repos/dotfiles"
 alias cnvim="cd ~/.config/nvim"
-alias termset="cd ~/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbweLocalState/settings.json"
+alias termset="cd ~/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbweLocalState"
 alias r="cd ~/repos" 
 alias h='cd ~'
 alias lg='lazygit'
