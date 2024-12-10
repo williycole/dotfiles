@@ -63,7 +63,7 @@ zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 # DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
-ENABLE_CORRECTION="true"
+# ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
 # You can also set it to another string to have that shown instead of the default red dots.
@@ -128,6 +128,7 @@ source $ZSH/oh-my-zsh.sh
 alias ggs="cd ~/repos/ggs" 
 alias dotfiles="cd ~/repos/dotfiles"
 alias cnvim="cd ~/.config/nvim"
+alias termset="cd ~/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbweLocalState/settings.json"
 alias r="cd ~/repos" 
 alias h='cd ~'
 alias lg='lazygit'
