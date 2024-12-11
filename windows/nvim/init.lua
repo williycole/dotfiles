@@ -1,5 +1,5 @@
 -- ============ Initial Configuration ============
-require 'custom/basic-keymaps-and-remaps'
+require 'custom/settings/basic-keymaps-and-remaps'
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
