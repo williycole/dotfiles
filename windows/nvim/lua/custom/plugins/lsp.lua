@@ -10,11 +10,20 @@ return {
     { 'j-hui/fidget.nvim', opts = {} },
     -- Allows extra capabilities provided by nvim-cmp
     'hrsh7th/cmp-nvim-lsp',
+    'ray-x/lsp_signature.nvim',
   },
   config = function()
     vim.api.nvim_create_autocmd('LspAttach', {
       group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
       callback = function(event)
+        -- for lsp hints/docs inlines
+        require('lsp_signature').on_attach({
+          bind = true,
+          handler_opts = {
+            border = 'rounded',
+          },
+        }, event.buf)
+
         local map = function(keys, func, desc, mode)
           mode = mode or 'n'
           vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
@@ -60,7 +69,7 @@ return {
           end, '[T]oggle Inlay [H]ints')
         end
 
-        -- Add this block to enable auto-import on save for gopls
+        -- enable auto-import on save for gopls
         if client.name == 'gopls' then
           vim.api.nvim_create_autocmd('BufWritePre', {
             buffer = event.buf,
@@ -80,6 +89,14 @@ return {
       gopls = {
         settings = {
           gopls = {
+            hints = {
+              assignVariableTypes = true,
+              compositeLiteralFields = true,
+              constantValues = true,
+              functionTypeParameters = true,
+              parameterNames = true,
+              rangeVariableTypes = true,
+            },
             analyses = {
               unusedparams = true,
             },
