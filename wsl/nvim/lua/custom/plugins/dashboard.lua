@@ -1,22 +1,22 @@
 -- docs: https://github.com/nvimdev/dashboard-nvim, alternative https://github.com/goolord/alpha-nvim for even more customization
--- TODO: customize futher, time icons etc..
+-- TODO: customize futher, image, or gif, icons etc..
 return {
   'nvimdev/dashboard-nvim',
   event = 'VimEnter',
   opts = {
     theme = 'hyper',
     config = {
+
       header = {
         '',
-        '██╗      ██████╗  ██████╗     ██████╗ ███████╗███████╗',
-        '██║     ██╔═══██╗██╔════╝    ██╔═══██╗██╔════╝██╔════╝',
-        '██║     ██║   ██║██║  ███╗   ██║   ██║█████╗  █████╗',
-        '██║     ██║   ██║██║   ██║   ██║   ██║██╔══╝  ██╔══╝',
-        '███████╗╚██████╔╝╚██████╔╝   ╚██████╔╝██║     ██║',
-        '╚══════╝ ╚═════╝  ╚═════╝     ╚═════╝ ╚═╝     ╚═╝',
+        '██╗      ██████╗  ██████╗      ██████╗ ███████╗███████╗',
+        '██║     ██╔═══██╗██╔════╝     ██╔═══██╗██╔════╝██╔════╝',
+        '██║     ██║   ██║██║  ███╗    ██║   ██║█████╗  █████╗  ',
+        '██║     ██║   ██║██║   ██║    ██║   ██║██╔══╝  ██╔══╝  ',
+        '███████╗╚██████╔╝╚██████╔╝    ╚██████╔╝██║     ██║     ',
+        '╚══════╝ ╚═════╝  ╚═════╝      ╚═════╝ ╚═╝     ╚═╝     ',
         '',
-        '',
-        os.date '%Y-%m-%d %H:%M',
+        os.date '%Y-%m-%d %H:%M:%S',
         '',
       },
       -- week_header = {
