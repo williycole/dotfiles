@@ -1,6 +1,7 @@
+-- docs https://github.com/ray-x/navigator.lua
+-- Code analysis & navigation plugin for Neovim. Navigate codes like a breeze🎐 Exploring LSP and 🌲Treesitter symbols a piece of 🍰 Take control like a boss 🦍
 return {
   'ray-x/navigator.lua',
-  -- Code analysis & navigation plugin for Neovim. Navigate codes like a breeze🎐 Exploring LSP and 🌲Treesitter symbols a piece of 🍰 Take control like a boss 🦍
   dependencies = {
     { 'hrsh7th/nvim-cmp' },
     { 'nvim-treesitter/nvim-treesitter' },

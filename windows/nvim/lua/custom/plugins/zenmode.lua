@@ -1,3 +1,4 @@
+-- docs: https://github.com/folke/zen-mode.nvim
 return {
   'folke/zen-mode.nvim',
   cmd = 'ZenMode',
@@ -14,12 +15,4 @@ return {
     },
   },
   keys = { { '<leader>tz', '<cmd>ZenMode<cr>', desc = 'Toggle Zen Mode' } },
-  -- init = function()
-  --   vim.api.nvim_create_autocmd('User', {
-  --     pattern = 'VeryLazy',
-  --     callback = function()
-  --       vim.cmd 'ZenMode'
-  --     end,
-  --   })
-  -- end,
 }

@@ -1,23 +1,21 @@
+-- docs:  https://github.com/neovim/nvim-lspconfig
+-- Automatically install LSPs and related tools to stdpath for Neovim
+-- add LSP Deps here for anything custom - cboren
 return {
   'neovim/nvim-lspconfig',
   dependencies = {
-    -- Automatically install LSPs and related tools to stdpath for Neovim
-    -- NOTE: add LSP Deps here for anything custom - cboren
     { 'williamboman/mason.nvim', config = true }, -- NOTE: Must be loaded before dependants
     'williamboman/mason-lspconfig.nvim',
     'WhoIsSethDaniel/mason-tool-installer.nvim',
-    -- Useful status updates for LSP.
-    { 'j-hui/fidget.nvim', opts = {} },
-    -- Allows extra capabilities provided by nvim-cmp
-    'hrsh7th/cmp-nvim-lsp',
+    { 'j-hui/fidget.nvim', opts = {} }, -- Useful status updates for LSP.
+    'hrsh7th/cmp-nvim-lsp', -- Allows extra capabilities provided by nvim-cmp
     'ray-x/lsp_signature.nvim',
   },
   config = function()
     vim.api.nvim_create_autocmd('LspAttach', {
       group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
       callback = function(event)
-        -- for lsp hints/docs inlines
-        require('lsp_signature').on_attach({
+        require('lsp_signature').on_attach({ -- for lsp hints/docs inlines
           bind = true,
           handler_opts = {
             border = 'rounded',

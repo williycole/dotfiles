@@ -1,3 +1,4 @@
+-- docs: https://github.com/andrewferrier/debugprint.nvim, A debugger alertnative
 return {
   'andrewferrier/debugprint.nvim',
 

@@ -1,3 +1,4 @@
+-- docs: https://github.com/rose-pine/neovim
 return {
   {
     'rose-pine/neovim',
