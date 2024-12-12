@@ -6,7 +6,6 @@ return {
   opts = {
     theme = 'hyper',
     config = {
-
       header = {
         '',
         '██╗      ██████╗  ██████╗      ██████╗ ███████╗███████╗',
@@ -24,6 +23,11 @@ return {
       --   concat = '',
       --   append = { '' },
       -- },
+      hide = {
+        statusline = true,
+        tabline = false,
+        winbar = true,
+      },
       shortcut = {
         { desc = 'Update', group = '@property', action = 'Lazy update', key = 'u' },
         { desc = 'Files', group = '@property', action = 'Telescope find_files', key = 'f' },
@@ -45,11 +49,27 @@ return {
       },
       footer = {
         '',
-        'neovim loaded XX packages',
+        -- 'neovim loaded XX packages',
         '🚀 Sharp tools make good work.',
       },
     },
   },
+  -- Setup Dashboard and then add further customization
+  config = function(_, opts)
+    -- Setup dashboard first
+    require('dashboard').setup(opts)
+    -- Set dashboard colors immediately
+    vim.api.nvim_set_hl(0, 'DashboardHeader', { fg = '#F6C177' })
+    -- Disable indent lines & ~'s on dashboard
+    vim.api.nvim_create_autocmd('FileType', {
+      pattern = 'dashboard',
+      callback = function()
+        require('ibl').setup_buffer(0, { enabled = false })
+      end,
+    })
+    vim.opt.fillchars = { eob = ' ' }
+  end,
+
   dependencies = {
     { 'nvim-tree/nvim-web-devicons' },
   },
