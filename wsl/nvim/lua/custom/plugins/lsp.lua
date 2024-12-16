@@ -15,7 +15,8 @@ return {
     vim.api.nvim_create_autocmd('LspAttach', {
       group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
       callback = function(event)
-        require('lsp_signature').on_attach({ -- for lsp hints/docs inlines
+        -- for lsp hints/docs inlines
+        require('lsp_signature').on_attach({
           bind = true,
           handler_opts = {
             border = 'rounded',
@@ -26,10 +27,9 @@ return {
           mode = mode or 'n'
           vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
         end
-
         map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
         map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-        map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+        map('gi', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
         map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
         map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
         map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
@@ -45,13 +45,11 @@ return {
             group = highlight_augroup,
             callback = vim.lsp.buf.document_highlight,
           })
-
           vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
             buffer = event.buf,
             group = highlight_augroup,
             callback = vim.lsp.buf.clear_references,
           })
-
           vim.api.nvim_create_autocmd('LspDetach', {
             group = vim.api.nvim_create_augroup('kickstart-lsp-detach', { clear = true }),
             callback = function(event2)
@@ -60,13 +58,12 @@ return {
             end,
           })
         end
-
         if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
           map('<leader>th', function()
             vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
           end, '[T]oggle Inlay [H]ints')
         end
-
+        -- TODO: might can remove this as it's likely handled by go.nvim
         -- enable auto-import on save for gopls
         if client.name == 'gopls' then
           vim.api.nvim_create_autocmd('BufWritePre', {
@@ -80,10 +77,12 @@ return {
       end,
     })
 
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
-
+    -- NOTE: Setup LSP's
+    require('mason').setup()
+    -- NOTE: add new lsps in one of three places
+    -- 1. servers var
     local servers = {
+      -- Golang
       gopls = {
         settings = {
           gopls = {
@@ -105,7 +104,7 @@ return {
           },
         },
       },
-      -- pyright = {},
+      --Lua
       lua_ls = {
         settings = {
           Lua = {
@@ -116,15 +115,23 @@ return {
         },
       },
     }
-
-    require('mason').setup()
-
-    local ensure_installed = vim.tbl_keys(servers or {})
+    -- NOTE: 2. here directly
+    local ensure_installed = vim.tbl_keys(servers or {
+      'typescript',
+      'pyright',
+      'stylua',
+    })
+    -- NOTE: 3. here via extending install list
     vim.list_extend(ensure_installed, {
-      'stylua', -- Used to format Lua code
+      -- 'pyright',
+      -- 'typescript-language-server', --TypeScript
+      -- 'stylua', -- Used to format Lua code
     })
     require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+    -- Extend lsp capabilities as needed
+    local capabilities = vim.lsp.protocol.make_client_capabilities()
+    capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
     require('mason-lspconfig').setup {
       handlers = {
         function(server_name)
