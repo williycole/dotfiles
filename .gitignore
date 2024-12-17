@@ -2,3 +2,14 @@ windows/.config/spotify-tui/.spotify_token_cache.json
 windows/.config/spotify-tui/client.yml
 wsl/go/telemetry/local
 windows/.config/dlv
+windows/spotify-tui
+windows/scoop
+windows/.glaze-wm/errors.log
+windows/.glaze-wm/errors.log
+windows/.config/scoop
+windows/.config/dlv
+windows/.config/github-copilot
+windows/.config/jgit
+windows/.config/lazygit
+windows/.config/scoop
+windows/.glaze-wm
