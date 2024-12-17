@@ -1,16 +1,11 @@
+# NOTE: Check Profile setup
 # Check if XDG_CONFIG_HOME is set correctly
 $expectedPath = "$env:USERPROFILE\.config"
 $currentPath = [System.Environment]::GetEnvironmentVariable("XDG_CONFIG_HOME", "User")
 
 if ($currentPath -ne $expectedPath) {
     Write-Host "XDG_CONFIG_HOME is not set correctly."
-    if ($currentPath) {
-        Write-Host "Current value: $currentPath"
-    } else {
-        Write-Host "XDG_CONFIG_HOME is not set."
-    }
-    Write-Host "Expected value: $expectedPath"
-    Write-Host "Please run the following command to fix it:"
+    Write-Host "Please run the following command before continuing:"
     Write-Host "[System.Environment]::SetEnvironmentVariable('XDG_CONFIG_HOME', '$expectedPath', 'User')"
     Write-Host "Then restart your PowerShell session."
     exit 1
@@ -18,7 +13,8 @@ if ($currentPath -ne $expectedPath) {
     Write-Host "XDG_CONFIG_HOME is correctly set to: $currentPath"
 }
 
-# Rest of your existing script...
+
+# NOTE: Install Scripts
 # Define source and destination paths
 $sourceNvimConfig = "$env:USERPROFILE\repos\dotfiles\windows\nvim"
 $destNvimConfig = "$env:XDG_CONFIG_HOME\nvim"
@@ -38,12 +34,5 @@ if (Test-Path $destNvimConfig) {
 
 # Copy Neovim configuration
 Write-Host "Copying Neovim configuration to $destNvimConfig..."
-Copy-Item -Path $sourceNvimConfig -Destination $destNvimConfig -Recurse
-
-# Verify the copy operation
-if (Test-Path $destNvimConfig) {
-    Write-Host "Neovim configuration successfully copied to Windows location."
-} else {
-    Write-Host "Error: Failed to copy Neovim configuration."
-}
+Copy-Item -Path $so
 
