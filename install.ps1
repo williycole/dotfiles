@@ -1,6 +1,6 @@
 # # PowerShell script to copy Neovim configuration to Windows location
 # Define source and destination paths
-$sourceNvimConfig = "$env:USERPROFILE\repos\dotfiles\nvim"
+$sourceNvimConfig = "$env:USERPROFILE\repos\dotfiles\windows\nvim"
 $destNvimConfig = "$env:LOCALAPPDATA\nvim"
 
 # Check if source directory exists
