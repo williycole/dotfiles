@@ -131,6 +131,7 @@ alias termset="cd ~/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bb
 alias r="cd ~/repos" 
 alias h='cd ~'
 alias lg='lazygit'
+alias n='nvim'
 alias bat='batcat'
 alias bdf='~/.config/scripts/backup_dotfiles.sh'
 alias bdf='~/.config/scripts/backup_dotfiles.sh'
