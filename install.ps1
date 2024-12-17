@@ -1,30 +1,37 @@
-# PowerShell script to copy Neovim configuration to Windows location
+# Check if XDG_CONFIG_HOME is set correctly
+$expectedPath = "$env:USERPROFILE\.config"
+$currentPath = [System.Environment]::GetEnvironmentVariable("XDG_CONFIG_HOME", "User")
 
-# Define source and destination paths
-$sourceNvimConfig = "$env:USERPROFILE\repos\dotfiles\nvim"
-$destNvimConfig = "$env:LOCALAPPDATA\nvim"
-
-# Check if source directory exists
-if (-not (Test-Path $sourceNvimConfig)) {
-    Write-Host "Error: Source Neovim configuration not found at $sourceNvimConfig"
-    Write-Host "Please ensure your dotfiles are cloned to $env:USERPROFILE\repos\dotfiles"
+if ($currentPath -ne $expectedPath) {
+    Write-Host "XDG_CONFIG_HOME is not set correctly."
+    if ($currentPath) {
+        Write-Host "Current value: $currentPath"
+    } else {
+        Write-Host "XDG_CONFIG_HOME is not set."
+    }
+    Write-Host "Expected value: $expectedPath"
+    Write-Host "Please run the following command to fix it:"
+    Write-Host "[System.Environment]::SetEnvironmentVariable('XDG_CONFIG_HOME', '$expectedPath', 'User')"
+    Write-Host "Then restart your PowerShell session and run this script again."
     exit 1
-}
-
-# Remove existing Neovim config if it exists
-if (Test-Path $destNvimConfig) {
-    Write-Host "Removing existing Neovim configuration..."
-    Remove-Item -Recurse -Force $destNvimConfig
-}
-
-# Copy Neovim configuration
-Write-Host "Copying Neovim configuration to $destNvimConfig..."
-Copy-Item -Path $sourceNvimConfig -Destination $destNvimConfig -Recurse
-
-# Verify the copy operation
-if (Test-Path $destNvimConfig) {
-    Write-Host "Neovim configuration successfully copied to Windows location."
 } else {
-    Write-Host "Error: Failed to copy Neovim configuration."
+    Write-Host "XDG_CONFIG_HOME is correctly set to: $currentPath"
+    
+    # Define source and destination directories
+    $sourceDir = "$env:USERPROFILE\repos\dotfiles\windows"
+    $destDir = $expectedPath
+
+    # Create symbolic links
+    Get-ChildItem $sourceDir | ForEach-Object {
+        $sourcePath = $_.FullName
+        $destPath = Join-Path $destDir $_.Name
+        
+        if (!(Test-Path $destPath)) {
+            New-Item -ItemType SymbolicLink -Path $destPath -Target $sourcePath
+            Write-Host "Created symbolic link for $($_.Name)"
+        } else {
+            Write-Host "Symbolic link for $($_.Name) already exists"
+        }
+    }
 }
 
