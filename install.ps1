@@ -1,28 +1,28 @@
-# Define paths
-$sourceNvimConfig = "$env:USERPROFILE\repos\dotfiles\windows\nvim"
+# # PowerShell script to copy Neovim configuration to Windows location
+# Define source and destination paths
+$sourceNvimConfig = "$env:USERPROFILE\repos\dotfiles\nvim"
 $destNvimConfig = "$env:LOCALAPPDATA\nvim"
-$configNvimLink = "$env:USERPROFILE\.config\nvim"
 
 # Check if source directory exists
 if (-not (Test-Path $sourceNvimConfig)) {
     Write-Host "Error: Source Neovim configuration not found at $sourceNvimConfig"
+    Write-Host "Please ensure your dotfiles are cloned to $env:USERPROFILE\repos\dotfiles"
     exit 1
 }
 
 # Remove existing Neovim config if it exists
 if (Test-Path $destNvimConfig) {
+    Write-Host "Removing existing Neovim configuration..."
     Remove-Item -Recurse -Force $destNvimConfig
-    Write-Host "Removed existing Neovim configuration."
 }
 
 # Copy Neovim configuration
+Write-Host "Copying Neovim configuration to $destNvimConfig..."
 Copy-Item -Path $sourceNvimConfig -Destination $destNvimConfig -Recurse
-Write-Host "Copied Neovim configuration to $destNvimConfig"
 
-# Create symbolic link in .config folder
-if (Test-Path $configNvimLink) {
-    Remove-Item -Force $configNvimLink
+# Verify the copy operation
+if (Test-Path $destNvimConfig) {
+    Write-Host "Neovim configuration successfully copied to Windows location."
+} else {
+    Write-Host "Error: Failed to copy Neovim configuration."
 }
-New-Item -ItemType SymbolicLink -Path $configNvimLink -Target $destNvimConfig
-Write-Host "Created symbolic link from $configNvimLink to $destNvimConfig"
-
