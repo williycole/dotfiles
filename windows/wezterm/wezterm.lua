@@ -76,7 +76,7 @@ config.launch_menu = {
 }
 
 -- Set default program to run in new tabs/windows
-config.default_prog = {'wsl.exe', '--distribution', 'Ubuntu-24.04'}
+config.default_prog = {'wsl.exe', '--distribution', 'Ubuntu-24.04', '--', 'bash', '-c', 'cd ~ && exec bash'}
 
 return config
 
