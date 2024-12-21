@@ -21,7 +21,7 @@ config.background = {
       File = 'C:\\Users\\William\\Pictures\\wallpapers\\wallhaven-j8rj15.jpg',
     },
     height = "Cover",  -- This preserves aspect ratio while filling the viewport
-    width = "100%",
+    width = "Cover",
     horizontal_align = "Center",
     vertical_align = "Middle",
   },
