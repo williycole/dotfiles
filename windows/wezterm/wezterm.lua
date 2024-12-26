@@ -64,6 +64,13 @@ config.keys = {
 }
 
 -- Launch menu
+-- Keep only this configuration
+config.default_prog = {
+    'wsl.exe',
+    '--distribution', 'Ubuntu-24.04',
+    '--exec', '/bin/zsh', '-l'
+}
+
 config.launch_menu = {
   {
     label = 'PowerShell',
@@ -71,12 +78,9 @@ config.launch_menu = {
   },
   {
     label = 'Ubuntu 24.04',
-    args = {'wsl.exe', '--distribution', 'Ubuntu-24.04'},
+    args = {'wsl.exe', '--distribution', 'Ubuntu-24.04', '--exec', '/bin/zsh', '-l'},
   },
 }
-
--- Set default program to run in new tabs/windows
-config.default_prog = {'wsl.exe', '--distribution', 'Ubuntu-24.04', '--', 'bash', '-c', 'cd ~ && exec bash'}
 
 return config
 
