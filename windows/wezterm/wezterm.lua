@@ -66,6 +66,7 @@ config.keys = {
 		key = "p",
 		mods = "ALT",
 		action = wezterm.action.SpawnCommandInNewTab({
+			args = { "powershell.exe" },
 			cwd = wezterm.home_dir,
 		}),
 	},
@@ -77,20 +78,19 @@ config.keys = {
 	},
 	-- Copy to clipboard
 	{ key = "c", mods = "CTRL", action = act.CopyTo("ClipboardAndPrimarySelection") },
-
 	-- Paste from clipboard
 	{ key = "v", mods = "CTRL", action = act.PasteFrom("Clipboard") },
 }
 
--- Launch menu
--- Keep only this configuration
+-- Default program configuration
 config.default_prog = {
 	"wsl.exe",
 	"--distribution",
 	"Ubuntu-24.04",
 	"--exec",
 	"/bin/zsh",
-	"-l",
+	"-c",
+	"cd ~ && exec zsh -l",
 }
 
 config.launch_menu = {
