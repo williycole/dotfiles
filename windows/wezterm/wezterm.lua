@@ -40,7 +40,11 @@ config.window_background_opacity = 0.95
 
 
 -- Font configuration
-config.font = wezterm.font('DroidSansM Nerd Font Propo')
+config.font = wezterm.font_with_fallback({
+  "DroidSansM Nerd Font Propo",
+  "Cambria Math",
+  "STIX Two Math"
+})
 config.font_size = 12.0
 
 -- Tab bar
@@ -51,14 +55,14 @@ config.hide_tab_bar_if_only_one_tab = true
 config.keys = {
   {
     key = 't',
-    mods = 'CTRL',
+    mods = 'ALT',
     action = wezterm.action.SpawnCommandInNewTab {
       args = {'wsl.exe', '--distribution', 'Ubuntu-24.04'},
     },
   },
   {
     key = 'w',
-    mods = 'CTRL',
+    mods = 'ALT',
     action = wezterm.action.CloseCurrentTab{confirm=true},
   },
 }
