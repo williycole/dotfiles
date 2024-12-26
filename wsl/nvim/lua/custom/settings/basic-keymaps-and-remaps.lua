@@ -29,3 +29,5 @@ vim.keymap.set('n', '<leader>fe', ':q!<CR>', { noremap = true, silent = true, de
 vim.keymap.set('n', '<C-_>', 'gcc', { noremap = false, silent = true, desc = 'Toggle comment' })
 vim.keymap.set('v', '<C-_>', 'gc', { noremap = false, silent = true, desc = 'Toggle comment' })
 vim.keymap.set('n', '<leader>db', 'V$%d<ESC>', { noremap = true, silent = true, desc = 'Delete block from normal mode' })
+vim.keymap.set('n', '<leader>te', ':Ex<CR>', { noremap = true, silent = true, desc = 'Open netrw' })
+vim.keymap.set('n', '<leader>r', '<C-^>', { noremap = true, silent = true, desc = 'Switch to alternative file' })
