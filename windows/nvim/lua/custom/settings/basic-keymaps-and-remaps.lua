@@ -22,7 +22,7 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- Remaps
 vim.keymap.set('n', '<leader>te', ':Ex<CR>', { noremap = true, silent = true, desc = 'Open netrw' })
 vim.keymap.set('n', '<leader>ts', ':Neotree toggle<CR>', { noremap = true, silent = true, desc = 'Toggle NeoTree' })
-vim.keymap.set('n', '<leader>sf', ':w<CR>', { noremap = true, silent = true, desc = 'Save file' })
+vim.keymap.set('n', '<leader>fs', ':w<CR>', { noremap = true, silent = true, desc = 'Save file' })
 vim.keymap.set('n', '<leader>se', ':wq<CR>', { noremap = true, silent = true, desc = 'Save and quit' })
 vim.keymap.set('n', '<leader>ee', ':q<CR>', { noremap = true, silent = true, desc = 'Quit' })
 vim.keymap.set('n', '<leader>fe', ':q!<CR>', { noremap = true, silent = true, desc = 'Force Quit' })
