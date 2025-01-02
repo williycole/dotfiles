@@ -98,7 +98,7 @@ return {
               unusedparams = true,
             },
             staticcheck = true,
-            gofumpt = true,
+            gofumpt = false,
             usePlaceholders = false,
             completeUnimported = true,
           },
@@ -114,12 +114,24 @@ return {
           },
         },
       },
+      markdownlint = {
+        settings = {
+          config = {
+            MD013 = {
+              line_length = 120,
+              code_block_line_length = 120,
+              heading_line_length = 120,
+            },
+          },
+        },
+      },
     }
     -- NOTE: 2. here directly
     local ensure_installed = vim.tbl_keys(servers or {
       'typescript',
       'pyright',
       'stylua',
+      'markdownlint-cli2',
     })
     -- NOTE: 3. here via extending install list
     vim.list_extend(ensure_installed, {

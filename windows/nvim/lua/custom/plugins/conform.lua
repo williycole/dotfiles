@@ -39,6 +39,8 @@ return {
       -- You can use 'stop_after_first' to run the first available formatter from the list
       -- javascript = { "prettierd", "prettier", stop_after_first = true },
       go = { 'go/fmt' },
+      markdown = { 'prettier', 'markdownlint-cli2', 'markdown-toc' },
+      ['markdown.mdx'] = { 'prettier', 'markdownlint-cli2', 'markdown-toc' },
     },
   },
 }
