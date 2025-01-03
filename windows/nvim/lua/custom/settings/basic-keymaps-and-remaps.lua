@@ -30,7 +30,7 @@ vim.keymap.set('n', '<leader>r', '<C-^>', { noremap = true, silent = true, desc 
 -- TODO: come up with a way to make these match vscode 1-1, maybe ctrl plus whatever
 -- vim.keymap.set('n', '<C-s>', ':w<CR>', { noremap = true, silent = true, desc = 'Save file' })
 
-vim.keymap.set('n', '<leader>sf', ':w<CR>', { noremap = true, silent = true, desc = 'Save file' })
+vim.keymap.set('n', '<leader>ss', ':w<CR>', { noremap = true, silent = true, desc = 'Save file' })
 vim.keymap.set('n', '<leader>se', ':wq<CR>', { noremap = true, silent = true, desc = 'Save and quit' })
 vim.keymap.set('n', '<leader>ee', ':q<CR>', { noremap = true, silent = true, desc = 'Quit' })
 vim.keymap.set('n', '<leader>fe', ':q!<CR>', { noremap = true, silent = true, desc = 'Force Quit' })
