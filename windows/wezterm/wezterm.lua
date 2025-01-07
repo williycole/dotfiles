@@ -80,6 +80,11 @@ config.keys = {
 	{ key = "c", mods = "CTRL", action = act.CopyTo("ClipboardAndPrimarySelection") },
 	-- Paste from clipboard
 	{ key = "v", mods = "CTRL", action = act.PasteFrom("Clipboard") },
+	-- Pane Navigation
+	{ key = 'h', mods = 'CTRL', action = act.ActivatePaneDirection 'Left' },
+	{ key = 'j', mods = 'CTRL', action = act.ActivatePaneDirection 'Down' },
+	{ key = 'k', mods = 'CTRL', action = act.ActivatePaneDirection 'Up' },
+	{ key = 'l', mods = 'CTRL', action = act.ActivatePaneDirection 'Right' },
 }
 
 -- Default program configuration
