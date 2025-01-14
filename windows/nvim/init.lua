@@ -3,8 +3,10 @@ require 'custom/settings/basic-keymaps-and-remaps'
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
+vim.opt.swapfile = false
 
 -- ============ General UI Settings ============
+vim.opt.clipboard = 'unnamedplus'
 -- Line numbers and UI
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -13,34 +15,6 @@ vim.opt.showmode = false
 vim.opt.signcolumn = 'yes'
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
-
--- ============ General Clipboard Settings ============
--- TODO: this might not be needed if its not the default of kickstart, check it out and update accordingly
--- Clipboard and undo
--- vim.schedule(function()
---   vim.opt.clipboard = 'unnamedplus'
--- end)
--- vim.opt.undofile = true
--- NOTE: for Usage with WSL
-vim.schedule(function()
-  if vim.fn.has 'wsl' == 1 then
-    vim.g.clipboard = {
-      name = 'wsl-clipboard',
-      copy = {
-        ['+'] = 'clip.exe',
-        ['*'] = 'clip.exe',
-      },
-      paste = {
-        ['+'] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-        ['*'] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-      },
-      cache_enabled = 0,
-    }
-  else
-    vim.opt.clipboard = 'unnamedplus'
-  end
-  vim.opt.undofile = true
-end)
 
 -- Search and replace
 vim.opt.ignorecase = true
