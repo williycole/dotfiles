@@ -1,7 +1,15 @@
 local wezterm = require("wezterm")
 
-local act = wezterm.action
+-- Wezterm-Config for nvim Access of this file
+local wezterm_config_nvim = wezterm.plugin.require('https://github.com/winter-again/wezterm-config.nvim')
+wezterm.on('user-var-changed', function(window, pane, name, value)
+  local overrides = window:get_config_overrides() or {}
+  overrides = wezterm_config_nvim.override_user_var(overrides, name, value)
+  window:set_config_overrides(overrides)
+end)
 
+-- Everything Else
+local act = wezterm.action
 local config = {}
 
 if wezterm.config_builder then
@@ -77,7 +85,7 @@ config.keys = {
 		action = wezterm.action.CloseCurrentTab({ confirm = true }),
 	},
 	-- Copy to clipboard
-	{ key = "c", mods = "CTRL", action = act.CopyTo("ClipboardAndPrimarySelection") },
+	{ key = "y", mods = "CTRL", action = act.CopyTo("ClipboardAndPrimarySelection") },
 	-- Paste from clipboard
 	{ key = "v", mods = "CTRL", action = act.PasteFrom("Clipboard") },
 	-- Pane Navigation
@@ -85,6 +93,8 @@ config.keys = {
 	{ key = 'j', mods = 'CTRL', action = act.ActivatePaneDirection 'Down' },
 	{ key = 'k', mods = 'CTRL', action = act.ActivatePaneDirection 'Up' },
 	{ key = 'l', mods = 'CTRL', action = act.ActivatePaneDirection 'Right' },
+	-- Close current pane with confirmation
+	{ key = 'e', mods = 'CTRL', action = act.CloseCurrentPane { confirm = true } },  
 }
 
 -- Default program configuration
