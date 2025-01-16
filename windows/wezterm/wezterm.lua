@@ -19,10 +19,18 @@ end
 -- Window configuration
 config.window_decorations = "TITLE | RESIZE"
 
--- Color scheme
-config.color_scheme = "rose-pine"
+-- Color Scheme & Background Color Configuration
+local bg_color
+-- Rose Pine
+-- local rose_pine_term_background = "rgba(25, 23, 36, 0.85)"
+-- config.color_scheme = "rose-pine"
 
--- Background configuration
+-- Kanagawa
+bg_color = "rgba(31, 31, 40, 0.85)"
+config.color_scheme = 'Kanagawa (Gogh)'
+
+
+-- Background Image Configuration
 config.window_background_opacity = 0.9
 config.win32_system_backdrop = "Acrylic"
 config.background = {
@@ -36,8 +44,7 @@ config.background = {
 		vertical_align = "Middle",
 	},
 	{
-		-- TODO: rose pine colors, figure out a better way
-		source = { Color = "rgba(25, 23, 36, 0.85)" },
+		source = { Color =  bg_color }, -- TODO: figure out a better way
 		height = "100%",
 		width = "100%",
 	},
