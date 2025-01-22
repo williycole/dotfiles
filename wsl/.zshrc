@@ -127,14 +127,14 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ggs="cd ~/repos/ggs" 
 alias cnvim="cd ~/.config/nvim"
-alias termset="cd ~/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbweLocalState"
+alias cbv="cd ~/repos/cb-vault/" 
 alias r="cd ~/repos" 
 alias h='cd ~'
+alias termset="cd ~/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbweLocalState"
 alias lg='lazygit'
 alias l='lsd'
 alias n='nvim'
 alias bat='batcat'
-alias bdf='~/.config/scripts/backup_dotfiles.sh'
 alias bdf='~/.config/scripts/backup_dotfiles.sh'
 alias dfw='sudo ufw disable'
 alias efw='sudo ufw enable'
