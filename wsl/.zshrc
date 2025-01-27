@@ -132,6 +132,7 @@ alias r="cd ~/repos"
 alias h='cd ~'
 alias termset="cd ~/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbweLocalState"
 alias lg='lazygit'
+alias ld='lazydocker'
 alias l='lsd'
 alias n='nvim'
 alias bat='batcat'
