@@ -89,7 +89,7 @@ config.keys = {
 	{
 		key = "e",
 		mods = "ALT",
-		action = wezterm.action.CloseCurrentTab({ confirm = true }),
+		action = wezterm.action.CloseCurrentTab({ confirm = false }),
 	},
 	-- Copy to clipboard
 	{ key = "y", mods = "CTRL", action = act.CopyTo("ClipboardAndPrimarySelection") },
@@ -100,8 +100,8 @@ config.keys = {
 	{ key = 'j', mods = 'CTRL', action = act.ActivatePaneDirection 'Down' },
 	{ key = 'k', mods = 'CTRL', action = act.ActivatePaneDirection 'Up' },
 	{ key = 'l', mods = 'CTRL', action = act.ActivatePaneDirection 'Right' },
-	-- Close current pane with confirmation
-	{ key = 'e', mods = 'CTRL', action = act.CloseCurrentPane { confirm = true } },  
+	-- Close current pane 
+	{ key = 'e', mods = 'CTRL', action = act.CloseCurrentPane { confirm = false } },  
 }
 
 -- Default program configuration
