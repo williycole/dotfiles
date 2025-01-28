@@ -23,7 +23,8 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.keymap.set('n', '<leader>te', ':Ex<CR>', { noremap = true, silent = true, desc = 'Open netrw' })
 vim.keymap.set('n', '<leader>ts', ':Neotree toggle<CR>', { noremap = true, silent = true, desc = 'Toggle NeoTree' })
 vim.keymap.set('n', '<leader>db', 'V$%d<ESC>', { noremap = true, silent = true, desc = 'Delete block from normal mode' })
-vim.keymap.set('n', '<leader>te', ':Ex<CR>', { noremap = true, silent = true, desc = 'Open netrw' })
+-- note using oil instead of netrw
+-- vim.keymap.set('n', '<leader>te', ':Ex<CR>', { noremap = true, silent = true, desc = 'Open netrw' })
 vim.keymap.set('n', '<leader>r', '<C-^>', { noremap = true, silent = true, desc = 'Switch to alternative file' })
 
 -- no  which hints
