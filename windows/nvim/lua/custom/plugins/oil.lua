@@ -1,14 +1,11 @@
 -- docs: https://github.com/stevearc/oil.nvim
--- Open Root
-vim.keymap.set('n', '<leader>te', function()
-  require('oil').open_float '.'
-end, { desc = 'Open Oil Root in float' })
 
-vim.keymap.set('n', '<leader>tt', function()
+vim.keymap.set('n', '<leader>te', function()
   require('oil').toggle_float(vim.fn.expand '%:p:h')
 end, { desc = 'Toggle Oil float for current directory' })
 
 vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+
 return {
   'stevearc/oil.nvim',
   --@module 'oil'
