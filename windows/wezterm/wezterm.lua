@@ -17,20 +17,19 @@ if wezterm.config_builder then
 end
 
 -- Window configuration
-config.window_decorations = "TITLE | RESIZE"
+config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
 
 -- Color Scheme & Background Color Configuration
-local bg_color
--- Rose Pine
--- local rose_pine_term_background = "rgba(25, 23, 36, 0.85)"
--- config.color_scheme = "rose-pine"
-
 -- Kanagawa
-bg_color = "rgba(31, 31, 40, 0.85)"
+local kana_bg
+kana_bg ="rgba(31, 31, 40, 0.85)"
 config.color_scheme = 'Kanagawa (Gogh)'
-
+bg_color = kana_bg
 
 -- Background Image Configuration
+-- Enable Acrylic effect for better blending
+config.win32_system_backdrop = "Acrylic"
+config.window_background_opacity = 0.95
 config.window_background_opacity = 0.9
 config.win32_system_backdrop = "Acrylic"
 config.background = {
@@ -50,9 +49,91 @@ config.background = {
 	},
 }
 
--- Enable Acrylic effect for better blending
-config.win32_system_backdrop = "Acrylic"
-config.window_background_opacity = 0.95
+
+-- Tab bar
+config.use_fancy_tab_bar = true 
+config.hide_tab_bar_if_only_one_tab = false
+config.window_frame = {
+  font_size = 11.0,
+  -- The overall background color of the tab bar when the window is focused
+  active_titlebar_bg = 'rgba(0, 0, 0, 0)',
+  -- The overall background color of the tab bar whenthe window is not focused
+  inactive_titlebar_bg = 'rgba(0, 0, 0, 0)',
+}
+config.colors = {
+  tab_bar = {
+	-- The color of the inactive tab bar edge/divider
+    inactive_tab_edge = '#575757',
+    -- The color of the strip that goes along the top of the window
+    -- (does not apply when fancy tab bar is in use)
+    -- background = '#0b0022',
+
+    -- The active tab is the one that has focus in the window
+    active_tab = {
+      -- The color of the background area for the tab
+      bg_color = '#363646',
+      -- The color of the text for the tab
+      fg_color = '#c0c0c0',
+
+      -- Specify whether you want "Half", "Normal" or "Bold" intensity for the
+      -- label shown for this tab.
+      -- The default is "Normal"
+      intensity = 'Normal',
+
+      -- Specify whether you want "None", "Single" or "Double" underline for
+      -- label shown for this tab.
+      -- The default is "None"
+      underline = 'None',
+
+      -- Specify whether you want the text to be italic (true) or not (false)
+      -- for this tab.  The default is false.
+      italic = false,
+
+      -- Specify whether you want the text to be rendered with strikethrough (true)
+      -- or not for this tab.  The default is false.
+      strikethrough = false,
+    },
+
+    -- Inactive tabs are the tabs that do not have focus
+    inactive_tab = {
+      bg_color = kana_bg,
+      fg_color = '#808080',
+
+      -- The same options that were listed under the `active_tab` section above
+      -- can also be used for `inactive_tab`.
+    },
+
+    -- You can configure some alternate styling when the mouse pointer
+    -- moves over inactive tabs
+    inactive_tab_hover = {
+      bg_color = '#363646',
+      fg_color = '#909090',
+      italic = true,
+
+      -- The same options that were listed under the `active_tab` section above
+      -- can also be used for `inactive_tab_hover`.
+    },
+
+    -- The new tab button that let you create new tabs
+    new_tab = {
+      bg_color = '#363646',
+      fg_color = '#808080',
+
+      -- The same options that were listed under the `active_tab` section above
+      -- can also be used for `new_tab`.
+    },
+
+    -- You can configure some alternate styling when the mouse pointer
+    -- moves over the new tab button
+    new_tab_hover = {
+      bg_color = '#363646',
+      fg_color = '#909090',
+      italic = true,
+      -- The same options that were listed under the `active_tab` section above
+      -- can also be used for `new_tab_hover`.
+    },
+  },
+}
 
 -- Font configuration
 config.font = wezterm.font_with_fallback({
@@ -61,10 +142,6 @@ config.font = wezterm.font_with_fallback({
 	"STIX Two Math",
 })
 config.font_size = 12.0
-
--- Tab bar
-config.use_fancy_tab_bar = false
-config.hide_tab_bar_if_only_one_tab = true
 
 -- Key bindings
 config.keys = {
