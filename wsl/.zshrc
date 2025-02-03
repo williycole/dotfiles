@@ -140,6 +140,8 @@ alias bdf='~/.config/scripts/backup_dotfiles.sh'
 alias dfw='sudo ufw disable'
 alias efw='sudo ufw enable'
 alias rsf='rm -rf ~/.local/share/nvim/swap/*'
+alias ol='ollama'
+alias olr='ollama run deepseek-r1:1.5b'
 # docker 
 alias dockerr='docker rm $(docker ps -a -q)'
 alias dockers='docker stop $(docker ps -a -q)'
