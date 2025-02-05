@@ -132,6 +132,8 @@ return {
       'pyright',
       'stylua',
       'markdownlint-cli2',
+      'ts_ls',
+      'angularls',
     })
     -- NOTE: 3. here via extending install list
     vim.list_extend(ensure_installed, {
