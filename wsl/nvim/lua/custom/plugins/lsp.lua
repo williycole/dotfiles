@@ -1,6 +1,8 @@
 -- docs:  https://github.com/neovim/nvim-lspconfig
 -- Automatically install LSPs and related tools to stdpath for Neovim
--- add LSP Deps here for anything custom - cboren
+-- add LSP Deps here for anything custom
+capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.diagnostic = { dynamicRegistration = true }
 return {
   'neovim/nvim-lspconfig',
   dependencies = {
@@ -39,7 +41,9 @@ return {
 
         local client = vim.lsp.get_client_by_id(event.data.client_id)
         if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
-          local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
+          local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', {
+            clear = false,
+          })
           vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
             buffer = event.buf,
             group = highlight_augroup,
@@ -125,15 +129,43 @@ return {
           },
         },
       },
+      angularls = {
+        cmd = {
+          'ngserver',
+          '--stdio',
+          '--tsProbeLocations',
+          '${workspaceFolder}/node_modules', -- Absolute path template
+          '--ngProbeLocations',
+          '${workspaceFolder}/node_modules',
+        },
+        on_new_config = function(new_config, root_dir)
+          new_config.cmd = {
+            'ngserver',
+            '--stdio',
+            '--tsProbeLocations',
+            root_dir .. '/node_modules', -- Dynamic path resolution
+            '--ngProbeLocations',
+            root_dir .. '/node_modules',
+          }
+        end,
+        root_dir = require('lspconfig.util').root_pattern(
+          'angular.json',
+          'project.json',
+          'package.json' -- Additional fallback
+        ),
+        capabilities = capabilities,
+      },
     }
     -- NOTE: 2. here directly
     local ensure_installed = vim.tbl_keys(servers or {
-      'typescript',
+      '@angular/language-server@18.2.0',
+      'typescript-language-server',
+      -- 'typescript',
       'pyright',
       'stylua',
       'markdownlint-cli2',
-      'ts_ls',
-      'angularls',
+      -- 'ts_ls',
+      -- 'angularls',
     })
     -- NOTE: 3. here via extending install list
     vim.list_extend(ensure_installed, {

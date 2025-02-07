@@ -149,7 +149,7 @@ alias dka='docker kill $(docker ps -q)'
 alias dpa='docker system prune -a'
 # dev conainter funcs
 alias adc='~/.config/scripts/attach_to_dev_container.sh'
-alias sdc='~/.config/scripts/setup_dev_container_with_neovim.sh'
+alias dcu='devcontainer up --workspace-folder .'
 # docker compose run --rm -it dev - also just drops us in the container
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"

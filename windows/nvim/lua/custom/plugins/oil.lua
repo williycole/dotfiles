@@ -17,7 +17,7 @@ return {
     float = {
       padding = 2,
       max_width = 0.6,
-      max_height = 0.15,
+      max_height = 0.35,
       border = 'rounded',
       win_options = {
         winblend = 0,
