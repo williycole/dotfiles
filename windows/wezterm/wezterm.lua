@@ -29,9 +29,7 @@ bg_color = kana_bg
 -- Background Image Configuration
 -- Enable Acrylic effect for better blending
 config.win32_system_backdrop = "Acrylic"
-config.window_background_opacity = 0.95
-config.window_background_opacity = 0.9
-config.win32_system_backdrop = "Acrylic"
+config.window_background_opacity = 0.90
 config.background = {
 	{
 		source = {
@@ -43,11 +41,39 @@ config.background = {
 		vertical_align = "Middle",
 	},
 	{
-		source = { Color =  bg_color }, -- TODO: figure out a better way
+		source = { Color =  bg_color }, 
 		height = "100%",
 		width = "100%",
 	},
 }
+
+local background_enabled = true
+
+local function toggle_background(window)
+    local overrides = window:get_config_overrides() or {}
+    
+    if background_enabled then
+        -- Switch to opaque background with no image
+        overrides.background = {
+            {
+                source = { Color = bg_color },
+                height = "100%",
+                width = "100%",
+            }
+        }
+	config.window_background_opacity = 0.5
+        overrides.win32_system_backdrop = "Disable"
+    else
+        -- Restore original background settings
+        overrides.background = config.background
+        overrides.window_background_opacity = config.window_background_opacity
+        overrides.win32_system_backdrop = config.win32_system_backdrop
+    end
+    
+    background_enabled = not background_enabled
+    window:set_config_overrides(overrides)
+end
+
 
 
 -- Tab bar
@@ -177,8 +203,16 @@ config.keys = {
 	{ key = 'j', mods = 'CTRL', action = act.ActivatePaneDirection 'Down' },
 	{ key = 'k', mods = 'CTRL', action = act.ActivatePaneDirection 'Up' },
 	{ key = 'l', mods = 'CTRL', action = act.ActivatePaneDirection 'Right' },
-	-- Close current pane 
+	-- Close current pane
 	{ key = 'e', mods = 'CTRL', action = act.CloseCurrentPane { confirm = false } },  
+	-- Toggle background
+	{
+		key = "b",
+		mods = "ALT",
+		action = wezterm.action_callback(function(window, pane)
+			toggle_background(window)
+		end),
+	},
 }
 
 -- Default program configuration
