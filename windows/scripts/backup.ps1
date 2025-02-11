@@ -4,6 +4,7 @@
 $sourceDirs = @{
     ".config" = "C:\Users\William\.config"
     ".glzr" = "C:\Users\William\.glzr"
+    "profile" = "C:\Users\William\Documents\WindowsPowerShell" 
 }
 $destDir = "C:\Users\William\repos\dotfiles\windows"
 
@@ -11,6 +12,7 @@ $destDir = "C:\Users\William\repos\dotfiles\windows"
 $foldersToBackup = @{
     ".config" = @("scoop", "spotify-tui", "wezterm")
     ".glzr" = @("*")
+    "profile" = @("Microsoft.PowerShell_profile.ps1")
 }
 
 # Function to copy folder

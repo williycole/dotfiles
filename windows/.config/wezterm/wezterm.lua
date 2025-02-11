@@ -188,6 +188,15 @@ config.keys = {
 			cwd = wezterm.home_dir,
 		}),
 	},
+	-- Open Gitbash Home
+	{
+		key = 'g',
+		mods = 'ALT',
+		action = wezterm.action.SpawnCommandInNewTab({
+			args = { "C:/Program Files/Git/bin/bash.exe", "-l" },
+			cwd = wezterm.home_dir,
+		}),
+	},
 	-- Close Tab
 	{
 		key = "e",
@@ -228,12 +237,16 @@ config.default_prog = {
 
 config.launch_menu = {
 	{
+		label = "Ubuntu 24.04",
+		args = { "wsl.exe", "--distribution", "Ubuntu-24.04", "--exec", "/bin/zsh", "-l" },
+	},
+	{
 		label = "PowerShell",
 		args = { "powershell.exe" },
 	},
 	{
-		label = "Ubuntu 24.04",
-		args = { "wsl.exe", "--distribution", "Ubuntu-24.04", "--exec", "/bin/zsh", "-l" },
+		label = "Git Bash",
+		args = { "C:/Program Files/Git/bin/bash.exe", "-l" },
 	},
 }
 

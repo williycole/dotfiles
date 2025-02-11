@@ -47,3 +47,4 @@ Before you begin, ensure you have the following installed:
 4. Polish all dotfiles
 5. Explore more efficient ways of managing my dotfiles and implement or create one.
 6. Optomize glazewm / zebar setup
+7. explore tools/shells like [fish](https://fishshell.com/docs/current/index.html)
