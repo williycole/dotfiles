@@ -4,7 +4,7 @@ return {
   cmd = 'ZenMode',
   opts = {
     window = {
-      width = 0.50,
+      width = 0.55,
     },
     plugins = {
       options = {

@@ -147,10 +147,16 @@ alias dsa='docker stop $(docker ps -a -q)'
 alias dra='docker rm $(docker ps -a -q)'
 alias dka='docker kill $(docker ps -q)'
 alias dpa='docker system prune -a'
-# dev conainter funcs
-alias adc='~/.config/scripts/attach_to_dev_container.sh'
+# dev conainter funcs some docker
+# Readme init
+alias dci='USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose run --rm -it --build dev-init'
+# spin up devcontainer
 alias dcu='devcontainer up --workspace-folder .'
-# docker compose run --rm -it dev - also just drops us in the container
+# attach to dev container
+alias adc='~/.config/scripts/attach_to_dev_container.sh'
+# clear cache for new dev container build 
+alias dcc='docker builder prune --all --force USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose build --no-cache'
+
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
