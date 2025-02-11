@@ -46,3 +46,4 @@ Before you begin, ensure you have the following installed:
 3. - setup lingering nvim plugins such as [refactor](https://github.com/ThePrimeagen/refactoring.nvim) & [minuet-ai](https://github.com/milanglacier/minuet-ai.nvim)
 4. Polish all dotfiles
 5. Explore more efficient ways of managing my dotfiles and implement or create one.
+6. Optomize glazewm / zebar setup
