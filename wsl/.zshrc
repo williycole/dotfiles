@@ -30,7 +30,10 @@ alias lg="/path/to/lazygit"
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 # 
 # ZSH_THEME="darkblood"
-ZSH_THEME="bira"
+# ZSH_THEME="bira"
+# For OhMyPosh point to windows theme if using on windows and wsl
+eval "$(oh-my-posh init zsh --config /mnt/c/Users/William/pure.omp.json)"
+
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -162,3 +165,4 @@ alias dcc='docker builder prune --all --force USER_ID=$(id -u) GROUP_ID=$(id -g)
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+eval "$(oh-my-posh init zsh)"
