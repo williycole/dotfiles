@@ -20,28 +20,24 @@ end
 config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
 
 -- Color Scheme & Background Color Configuration
--- Kanagawa
-local kana_bg
-kana_bg = "rgba(31, 31, 40, 0.85)"
+local kanagawa_background_base_color
+kanagawa_background_base_color = "rgba(31, 31, 40, 0.85)"
 config.color_scheme = 'Kanagawa (Gogh)'
-bg_color = kana_bg
 
 -- Background Image Configuration
--- Enable Acrylic effect for better blending
 config.win32_system_backdrop = "Acrylic"
-config.window_background_opacity = 0.90
 config.background = {
 	{
 		source = {
 			File = "C:\\Users\\William\\Pictures\\wallpapers\\wallhaven-j8rj15.jpg",
 		},
-		height = "Cover", -- This preserves aspect ratio while filling the viewport
+		height = "Cover",
 		width = "Cover",
 		horizontal_align = "Center",
 		vertical_align = "Middle",
 	},
 	{
-		source = { Color = bg_color },
+		source = { Color = kanagawa_background_base_color },
 		height = "100%",
 		width = "100%",
 	},
@@ -56,12 +52,12 @@ local function toggle_background(window)
 		-- Switch to opaque background with no image
 		overrides.background = {
 			{
-				source = { Color = bg_color },
+				source = { Color = kanagawa_background_base_color },
 				height = "100%",
 				width = "100%",
 			}
 		}
-		config.window_background_opacity = 0.5
+		config.window_background_opacity = 0.25
 		overrides.win32_system_backdrop = "Disable"
 	else
 		-- Restore original background settings
@@ -122,7 +118,7 @@ config.colors = {
 
 		-- Inactive tabs are the tabs that do not have focus
 		inactive_tab = {
-			bg_color = kana_bg,
+			bg_color = kanagawa_background_base_color,
 			fg_color = '#808080',
 
 			-- The same options that were listed under the `active_tab` section above
