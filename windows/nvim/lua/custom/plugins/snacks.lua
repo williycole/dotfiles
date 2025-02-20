@@ -1,4 +1,5 @@
 -- docs: https://github.com/folke/snacks.nvim
+-- global Snacks added to lua_ls diagnostic
 return {
   'folke/snacks.nvim',
   priority = 1000,

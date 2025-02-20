@@ -1,7 +1,7 @@
 -- docs: https://github.com/nvimdev/dashboard-nvim, alternative https://github.com/goolord/alpha-nvim for even more customization
--- TODO: customize futher, image, or gif, icons etc..
+-- TODO: migrate this to snacks.nvim dashboard settings customize futher, image, or gif, icons etc..
 --
-return {
+local dashboard = {
   'nvimdev/dashboard-nvim',
   event = 'VimEnter',
   opts = {
@@ -13,11 +13,11 @@ return {
         append = {
           '',
           '',
-          '▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄',
-          '██ ████▀▄▄▀█ ▄▄▄████ ▄▄▄ █ ▄▄█ ▄▄',
-          '██ ████ ██ █ █▄▀████ ███ █ ▄██ ▄█',
-          '██ ▀▀ ██▄▄██▄▄▄▄████ ▀▀▀ █▄███▄██',
-          '▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀',
+          '▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄',
+          '██ ████▀▄▄▀█ ▄▄▄████ ▄▄▄ █ ▄▄█ ▄▄█',
+          '██ ████ ██ █ █▄▀████ ███ █ ▄██ ▄██',
+          '██ ▀▀ ██▄▄██▄▄▄▄████ ▀▀▀ █▄███▄███',
+          '▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀',
           '',
           '',
         },
@@ -93,3 +93,4 @@ return {
     { 'nvim-tree/nvim-web-devicons' },
   },
 }
+return { dashboard }
