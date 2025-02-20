@@ -115,6 +115,7 @@ return {
             completion = {
               callSnippet = 'Replace',
             },
+            --TODO: double check
             diagnostics = {
               globals = { 'vim', 'Snacks' },
             },

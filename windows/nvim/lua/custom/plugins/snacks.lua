@@ -65,7 +65,7 @@ return {
       desc = 'Notification History',
     },
     {
-      '<leader>e',
+      '<leader>ts',
       function()
         Snacks.explorer()
       end,

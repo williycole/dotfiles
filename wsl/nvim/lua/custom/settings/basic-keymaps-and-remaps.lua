@@ -23,13 +23,7 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.keymap.set('n', '<leader>te', ':Ex<CR>', { noremap = true, silent = true, desc = 'Open netrw' })
 vim.keymap.set('n', '<leader>ts', ':Neotree toggle<CR>', { noremap = true, silent = true, desc = 'Toggle NeoTree' })
 vim.keymap.set('n', '<leader>db', 'V$%d<ESC>', { noremap = true, silent = true, desc = 'Delete block from normal mode' })
--- note using oil instead of netrw
--- vim.keymap.set('n', '<leader>te', ':Ex<CR>', { noremap = true, silent = true, desc = 'Open netrw' })
 vim.keymap.set('n', '<leader>r', '<C-^>', { noremap = true, silent = true, desc = 'Switch to alternative file' })
-
--- no  which hints
--- TODO: come up with a way to make these match vscode 1-1, maybe ctrl plus whatever
--- vim.keymap.set('n', '<C-s>', ':w<CR>', { noremap = true, silent = true, desc = 'Save file' })
 
 vim.keymap.set('n', '<leader>ww', ':w<CR>', { noremap = true, silent = true, desc = 'Save file' })
 vim.keymap.set('n', '<leader>we', ':wq<CR>', { noremap = true, silent = true, desc = 'Save and quit' })
@@ -37,3 +31,7 @@ vim.keymap.set('n', '<leader>ee', ':q<CR>', { noremap = true, silent = true, des
 vim.keymap.set('n', '<leader>fe', ':q!<CR>', { noremap = true, silent = true, desc = 'Force Quit' })
 vim.keymap.set('n', '<C-_>', 'gcc', { noremap = false, silent = true, desc = 'Toggle comment' })
 vim.keymap.set('v', '<C-_>', 'gc', { noremap = false, silent = true, desc = 'Toggle comment' })
+
+-- NOTE: Archived
+-- using oil instead of netrw
+-- vim.keymap.set('n', '<leader>te', ':Ex<CR>', { noremap = true, silent = true, desc = 'Open netrw' })
