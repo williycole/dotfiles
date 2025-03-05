@@ -20,7 +20,11 @@ return {
     vim.keymap.set('n', '<leader>hl', function()
       harpoon.ui:toggle_quick_menu(harpoon:list())
     end, { desc = 'Harpoon quick menu' })
-
+    --TODO: navigate to a setup like oil and simplify this, we don't need leader
+    -- vim.keymap.set('n', '<C-h>', function()
+    --   harpoon.ui:toggle_quick_menu(harpoon:list())
+    -- end, { desc = 'Harpoon quick menu' })
+    --
     vim.keymap.set('n', '<leader>h1', function()
       harpoon:list():select(1)
     end, { desc = 'Harpoon file 1' })

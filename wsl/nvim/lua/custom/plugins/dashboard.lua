@@ -93,4 +93,6 @@ local dashboard = {
     { 'nvim-tree/nvim-web-devicons' },
   },
 }
-return { dashboard }
+return {
+  -- dashboard
+}

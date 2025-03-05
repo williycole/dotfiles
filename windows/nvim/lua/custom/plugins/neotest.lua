@@ -1,3 +1,5 @@
+-- TODO: consider retiring
+-- docs: https://github.com/nvim-neotest/neotest
 return {
   'nvim-neotest/neotest',
   dependencies = {
@@ -5,7 +7,7 @@ return {
     'nvim-lua/plenary.nvim',
     'antoinemadec/FixCursorHold.nvim',
     'nvim-treesitter/nvim-treesitter',
-    'nvim-neotest/neotest-go', -- Add this line
+    'nvim-neotest/neotest-go',
   },
   config = function()
     require('neotest').setup {
@@ -67,6 +69,7 @@ return {
       projects = {},
       adapters = {
         require 'neotest-go' {
+          args = { '-coverprofile=coverage.out' },
           experimental = {
             test_table = true,
           },

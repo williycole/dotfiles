@@ -14,6 +14,8 @@ vim.opt.mouse = 'a'
 vim.opt.showmode = false
 vim.opt.signcolumn = 'yes'
 vim.opt.cursorline = true
+-- Cursor blink
+vim.o.guicursor = 'n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor'
 vim.opt.scrolloff = 10
 
 -- Search and replace
