@@ -5,8 +5,20 @@ return {
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       local lint = require 'lint'
+
+      lint.linters = lint.linters or {}
+      lint.linters.golangci_lint = {
+        cmd = 'golangci-lint',
+        args = { '--enable-all', '--out-format=json', '--path-prefix', vim.fn.getcwd(), vim.fn.getcwd() .. '/...' },
+        stdin = false,
+        stream = 'stdout',
+        ignore_exitcode = true,
+        env = {},
+      }
+
       lint.linters_by_ft = {
         markdown = { 'markdownlint-cli2' },
+        go = { 'golangci_lint' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
