@@ -1,3 +1,4 @@
+-- TODO: move to kickstart
 -- docs: https://github.com/hrsh7th/nvim-cmp
 return { -- Autocompletion
   'hrsh7th/nvim-cmp',

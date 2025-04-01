@@ -85,16 +85,15 @@ require('lazy').setup({
     },
   },
   { 'Bilal2453/luvit-meta', lazy = true },
-
+  -- Core Lsp, Linting, & Formatting
+  require 'lsp.init',
+  require 'lint.nvim-lint',
+  require 'format.conform',
   -- Additional plugins
   require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
-  require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.gitsigns',
-  -- NOTE: Archived
-  -- require 'kickstart.plugins.neo-tree',
-
   -- Custom plugins
   { import = 'custom.plugins' },
   {
