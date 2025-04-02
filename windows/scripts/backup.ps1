@@ -11,7 +11,7 @@ $destDir = "C:\Users\William\repos\dotfiles\windows"
 
 # List of folders to backup
 $foldersToBackup = @{
-    ".config" = @("scoop", "spotify-tui", "wezterm")
+    ".config" = @("scoop", "archived")
     ".glzr" = @("*")
     "profile" = @("Microsoft.PowerShell_profile.ps1")
     "ohmyposhtheme" = @("pure.omp.json")
