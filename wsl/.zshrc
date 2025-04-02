@@ -32,6 +32,7 @@ alias lg="/path/to/lazygit"
 # ZSH_THEME="darkblood"
 # ZSH_THEME="bira"
 # For OhMyPosh point to windows theme if using on windows and wsl
+# TODO: don't call here, call on wsl not mnt, thats not effeicent 
 eval "$(oh-my-posh init zsh --config /mnt/c/Users/William/pure.omp.json)"
 
 
