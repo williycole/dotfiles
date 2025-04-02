@@ -16,6 +16,11 @@ if wezterm.config_builder then
 	config = wezterm.config_builder()
 end
 
+-- Cursor config
+config.default_cursor_style = 'BlinkingBar'
+config.cursor_blink_rate = 600
+
+
 -- Window configuration
 config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
 
