@@ -8,8 +8,8 @@
 # Run this script from any directory to backup your dotfiles.
 
 # Define the target directories
-TARGET_DIR=~/repos/dotfiles/wsl
-NVIM_TARGET_DIR2=~/repos/dotfiles/windows
+WSL_DIR=~/repos/dotfiles/wsl
+WIN_DIR=~/repos/dotfiles/windows
 
 # Function to sync files/directories using rsync
 # Arguments:
@@ -25,20 +25,24 @@ sync_dotfiles() {
 }
 
 # Sync individual dotfiles
-sync_dotfiles ~/.zshrc "$TARGET_DIR/"
-sync_dotfiles ~/.bashrc "$TARGET_DIR/"
+sync_dotfiles ~/.zshrc "$WSL_DIR/"
+sync_dotfiles ~/.bashrc "$WSL_DIR/"
 
 # Sync specific .config subdirectories
 # For each directory, we sync the contents to a similarly named
 # directory in the backup location
-sync_dotfiles ~/.config/nvim/ "$TARGET_DIR/nvim/"
-sync_dotfiles ~/.config/nvim/ "$NVIM_TARGET_DIR2/nvim/"
-sync_dotfiles ~/.config/nvim.bak/ "$NVIM_TARGET_DIR/archived/"
-sync_dotfiles ~/.config/nvim.bak/ "$NVIM_TARGET_DIR2/archived/"
-sync_dotfiles ~/.config/lazygit/ "$TARGET_DIR/lazygit/"
-sync_dotfiles ~/.config/go/ "$TARGET_DIR/go/"
-sync_dotfiles ~/.config/dlv/ "$TARGET_DIR/dlv/"
-sync_dotfiles ~/.config/scripts/ "$TARGET_DIR/scripts/"
+
+# NOTE: Synce dotfiles for WSL
+sync_dotfiles ~/.config/nvim/ "$WSL_DIR/nvim/"
+sync_dotfiles ~/.config/lazygit/ "$WSL_DIR/lazygit/"
+sync_dotfiles ~/.config/nvim.bak/ "$WSL_DIR/archived/nvim"
+sync_dotfiles ~/.config/go/ "$WSL_DIR/go/"
+sync_dotfiles ~/.config/dlv/ "$WSL_DIR/dlv/"
+sync_dotfiles ~/.config/scripts/ "$WSL_DIR/scripts/"
+
+# NOTE: Sync dotfiles for Windows
+sync_dotfiles ~/.config/nvim/ "$WIN_DIR/nvim/"
+sync_dotfiles ~/.config/nvim.bak/ "$WIN_DIR/archived/nvim"
 
 echo "Dotfiles synchronized successfully!"
 
