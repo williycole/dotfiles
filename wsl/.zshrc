@@ -157,7 +157,7 @@ alias dci='USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group doc
 # spin up devcontainer
 alias dcu='devcontainer up --workspace-folder .'
 # attach to dev container
-alias adc='~/.config/scripts/attach_to_dev_container.sh'
+alias dca='~/.config/scripts/attach_to_dev_container.sh'
 # clear cache for new dev container build 
 alias dcc='docker builder prune --all --force USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose build --no-cache'
 

@@ -3,6 +3,7 @@ return {
   {
     "LazyVim/LazyVim",
     opts = {
+      transparent = true,
       colorscheme = "kanagawa",
     },
   },
