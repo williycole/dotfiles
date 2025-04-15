@@ -32,7 +32,7 @@ return {
 
 宇宙で会おう、カウボーイ...
 ]]
-    logo = string.rep("\n", 8) .. logo .. "\n\n" .. datetime .. "\n\n"
+    logo = string.rep("\n", 8) .. logo .. "\n" .. datetime .. "\n"
 
     local opts = {
       theme = "doom",
