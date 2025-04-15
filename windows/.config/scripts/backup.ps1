@@ -4,8 +4,9 @@
 $sourceDirs = @{
     ".config" = "C:\Users\William\.config"
     ".glzr" = "C:\Users\William\.glzr"
-    "profile" = "C:\Users\William\Documents\WindowsPowerShell" 
+    "profile" = "C:\Users\William\Documents\WindowsPowerShell"
     "ohmyposhtheme" = "C:\Users\William"
+    "alacritty"= "C:\Users\William\AppData\Roaming\alacritty"
 }
 $destDir = "C:\Users\William\repos\dotfiles\windows"
 
@@ -15,6 +16,7 @@ $foldersToBackup = @{
     ".glzr" = @("*")
     "profile" = @("Microsoft.PowerShell_profile.ps1")
     "ohmyposhtheme" = @("pure.omp.json")
+    "alacritty"=@(".")
 }
 
 # Function to copy folder

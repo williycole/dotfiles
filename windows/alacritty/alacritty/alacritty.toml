@@ -1,0 +1,80 @@
+[env]
+TERM = "xterm-256color"
+
+[general]
+import = [
+  "~/AppData/Roaming/alacritty/themes/alacritty/themes/{kanagawa_dragon}.toml",
+]
+working_directory = "None"
+live_config_reload = true
+
+[window]
+dimensions = { columns = 100, lines = 35 }
+padding = { x = 8, y = 8 }
+decorations = "full"
+opacity = 0.95
+blur = true
+startup_mode = "Windowed"
+title = "Time to Plow"
+dynamic_title = true
+
+[font]
+size = 11
+normal = { family = "DroidSansM Nerd Font Propo" }
+bold = { family = "DroidSansM Nerd Font Propo" }
+italic = { family = "DroidSansM Nerd Font Propo" }
+bold_italic = { family = "DroidSansM Nerd Font Propo" }
+
+[cursor]
+style = { shape = "Block", blinking = "On" }
+vi_mode_style = { shape = "Underline", blinking = "On" }
+
+# Set WSL as default shell with tmux
+[terminal.shell]
+program = "wsl"
+args = ["~", "-e", "tmux", "new-session", "-A", "-s", "main"]
+# Set WSL as default shell without tmux
+# [terminal.shell]
+# program = "wsl"
+# args = ["~"]
+
+[mouse]
+hide_when_typing = true
+
+# Key bindings
+[[keyboard.bindings]]
+key = "Q"
+mods = "Control"
+action = "Quit"
+
+[[keyboard.bindings]]
+key = "Y"
+mods = "Control"
+action = "Copy"
+
+[[keyboard.bindings]]
+key = "V"
+mods = "Control"
+action = "Paste"
+
+[[keyboard.bindings]]
+key = "F"
+mods = "Control|Shift"
+action = "ToggleFullscreen"
+
+[[keyboard.bindings]]
+key = "M"
+mods = "Control|Shift"
+action = "ToggleMaximized"
+
+# Spawn new WSL window
+[[keyboard.bindings]]
+key = "N"
+mods = "Control|Shift"
+action = "SpawnNewInstance"
+
+# Spawn new PowerShell window
+[[keyboard.bindings]]
+key = "P"
+mods = "Control|Shift"
+command = { program = "alacritty", args = ["-e", "powershell"] }
