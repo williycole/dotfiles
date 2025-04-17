@@ -120,8 +120,18 @@ plugins=(git zsh-autosuggestions)
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
 
-# General Alias's & Functions
+# Aliases & Functions
+#
+# Set personal aliases, overriding those provided by Oh My Zsh libs,
+# plugins, and themes. Aliases can be placed here, though Oh My Zsh
+# users are encouraged to define aliases within a top-level file in
+# the $ZSH_CUSTOM folder, with .zsh extension. Examples:
+# - $ZSH_CUSTOM/aliases.zsh
+# - $ZSH_CUSTOM/macos.zsh
 # For a full list of active aliases, run `alias`.
+# Example aliases
+# alias zshconfig="mate ~/.zshrc"
+# alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ggs="cd ~/repos/ggs" 
 alias cnvim="cd ~/.config/nvim"
 alias cbv="cd ~/repos/cb-vault/" 
@@ -137,40 +147,31 @@ alias bdf='~/.config/scripts/backup_dotfiles.sh'
 alias dfw='sudo ufw disable'
 alias efw='sudo ufw enable'
 alias rsf='rm -rf ~/.local/share/nvim/swap/*'
-alias spt='ncspot'
-
-#source python venv on ubuntu
-alias pinit='python3.12 -m venv .venv'
-alias psource='source .venv/bin/activate'
-alias pinstall='pip install -r requirements.txt'
-
-# Ghostty
-alias lc="ghostty +list-keybinds"
-
-
-# AI Tooling
 alias ol='ollama'
 alias olr='ollama run deepseek-r1:1.5b'
-
-
-# Docker 
+# docker 
 alias dsa='docker stop $(docker ps -a -q)'
 alias dra='docker rm $(docker ps -a -q)'
 alias dka='docker kill $(docker ps -q)'
 alias dpa='docker system prune -a'
-
-
-# Devcontainers 
+# dev conainter funcs some docker 
 #
 # for inital building of docker/devcontainer env
 alias dci='USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose run --rm -it --build dev-init'
+
 # spin up devcontainer
 alias dcu='devcontainer up --workspace-folder .'
+
 # attach to dev container
 alias dca='~/.config/scripts/attach_to_dev_container.sh'
-# clear cache for new dev container build 
-# alias dcc='USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose build --no-cache'
 
+# clear cache for new dev container build 
+alias dcc='USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose build --no-cache'
+
+# start it up with the stuff you need
+alias dcs='~/.config/scripts/start_dev_containter.sh'
+#USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose up -d
+# dcs='~/.config/scripts/start_devcontainter.sh'
 
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
@@ -182,5 +183,3 @@ export PATH="$PATH:/usr/local/go/bin"
 
 # if docker leavers your groups run `newgrp docker` then run `groups`
 #
-
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"

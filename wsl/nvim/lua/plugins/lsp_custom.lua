@@ -1,22 +1,4 @@
--- In lua/plugins/lsp_custom.lua
--- return {
---   "neovim/nvim-lspconfig",
---   opts = {
---     servers = {
---       angularls = {
---         root_dir = function(fname)
---           return require("lspconfig.util").root_pattern("angular.json", "project.json")(fname)
---         end,
---         settings = {
---           angular = {
---             schemas = { "CUSTOM_ELEMENTS_SCHEMA" },
---           },
---         },
---       },
---     },
---   },
--- }
--- In lua/plugins/lsp_custom.lua
+-- Custom/Non LazyExtra Lsp related Defaults
 return {
   "neovim/nvim-lspconfig",
   opts = {
@@ -43,6 +25,13 @@ return {
         end
 
         return true
+      end,
+      pyright = function(_, opts)
+        -- Custom Pyright settings (example: point to your venv)
+        opts.settings = opts.settings or {}
+        opts.settings.python = opts.settings.python or {}
+        opts.settings.python.pythonPath = vim.fn.getcwd() .. "/.venv/bin/python"
+        return false -- let LazyVim do the rest of the setup
       end,
     },
   },

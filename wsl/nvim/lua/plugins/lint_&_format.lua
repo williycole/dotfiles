@@ -1,5 +1,5 @@
 -- formatting and linting to respect project settings
-return {
+local nvimlint = {
   -- In lua/plugins/linting.lua
   {
     "mfussenegger/nvim-lint",
@@ -22,16 +22,40 @@ return {
       },
     },
   },
-  -- In lua/plugins/formatting.lua
-  {
-    "stevearc/conform.nvim",
-    opts = {
-      -- Make Prettier use project config
-      formatters = {
-        prettier = {
-          prepend_args = { "--config-precedence", "prefer-file" },
-        },
-      },
-    },
-  },
 }
+
+local conform = {
+  "stevearc/conform.nvim",
+  opts = function(_, opts)
+    opts.formatters = opts.formatters or {}
+
+    -- Define your custom prettier formatter for Angular HTML
+    opts.formatters.prettier_htmlangular = {
+      command = "prettier",
+      args = {
+        "--config-precedence",
+        "cli-override", -- force CLI flags to take precedence
+        "--parser",
+        "angular",
+        "--trailing-comma",
+        "none",
+        "--stdin-filepath",
+        "$FILENAME",
+        -- other defaults you could set
+        -- "--tab-width",
+        -- "2",
+        -- "--single-quote",
+        -- "true",
+        -- "--print-width",
+        -- "120",
+      },
+      stdin = true,
+    }
+
+    opts.formatters_by_ft = opts.formatters_by_ft or {}
+    -- Map the htmlangular filetype to your custom formatter
+    opts.formatters_by_ft.htmlangular = { "prettier_htmlangular" }
+  end,
+}
+
+return { nvimlint, conform }
