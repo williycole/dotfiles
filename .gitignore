@@ -52,3 +52,12 @@ ubuntu-and-wsl/.config/snap
 ubuntu-and-wsl/.config/.bash_logout
 ubuntu-and-wsl/go/telemetry/local
 ubuntu-and-wsl/scripts
+ubuntu/.config/.cache
+ubuntu/.config/.local
+ubuntu/.config/.ssh
+ubuntu/.config/go/telemetry/local
+ubuntu/.config/snap
+ubuntu/.config/repos/dotfiles
+ubuntu/archived/nvim
+ubuntu/go/telemetry/local
+ubuntu/.config/.bash_logout
