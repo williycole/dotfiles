@@ -3,8 +3,6 @@ return {
   "nvimdev/dashboard-nvim",
   lazy = false, -- As https://github.com/nvimdev/dashboard-nvim/pull/450, dashboard-nvim shouldn't be lazy-loaded to properly handle stdin.
   opts = function()
-    -- local datetime = os.date("%Y-%m-%d %H:%M:%S")
-    -- To this (12-hour format with AM/PM):
     local datetime = os.date("%Y-%m-%d %I:%M:%S %p")
     local logo = [[
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -32,7 +30,7 @@ return {
 
 宇宙で会おう、カウボーイ...
 ]]
-    logo = string.rep("\n", 8) .. logo .. "\n" .. datetime .. "\n"
+    logo = string.rep("\n", 3) .. logo .. "\n" .. datetime .. "\n"
 
     local opts = {
       theme = "doom",

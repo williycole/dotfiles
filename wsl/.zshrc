@@ -1,4 +1,5 @@
 # If you come from bash you might have to change your $PATH.
+#
 # export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
 export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 export PATH="/usr/local/bin:$PATH"
@@ -20,7 +21,7 @@ setopt appendhistory
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
-# Lazygit Setup
+# Lazygit Setup TODO: Fix this
 export PATH=$PATH:/path/to/lazygit/directory
 alias lg="/path/to/lazygit"
 
@@ -33,7 +34,9 @@ alias lg="/path/to/lazygit"
 # ZSH_THEME="bira"
 # For OhMyPosh point to windows theme if using on windows and wsl
 # 
-eval "$(oh-my-posh init zsh --config /mnt/c/Users/William/pure.omp.json)"
+eval "$(oh-my-posh init zsh --config $HOME/.config/ohmyposh/pure.omp.json)"
+
+
 
 
 # Set list of themes to pick from when loading at random
@@ -151,15 +154,24 @@ alias dsa='docker stop $(docker ps -a -q)'
 alias dra='docker rm $(docker ps -a -q)'
 alias dka='docker kill $(docker ps -q)'
 alias dpa='docker system prune -a'
-# dev conainter funcs some docker
-# Readme init
+# dev conainter funcs some docker 
+#
+# for inital building of docker/devcontainer env
 alias dci='USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose run --rm -it --build dev-init'
+
 # spin up devcontainer
 alias dcu='devcontainer up --workspace-folder .'
+
 # attach to dev container
 alias dca='~/.config/scripts/attach_to_dev_container.sh'
+
 # clear cache for new dev container build 
-alias dcc='docker builder prune --all --force USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose build --no-cache'
+alias dcc='USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose build --no-cache'
+
+# start it up with the stuff you need
+alias dcs='~/.config/scripts/start_dev_containter.sh'
+#USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose up -d
+# dcs='~/.config/scripts/start_devcontainter.sh'
 
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
@@ -167,3 +179,7 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(oh-my-posh init zsh)"
+export PATH="$PATH:/usr/local/go/bin"
+
+# if docker leavers your groups run `newgrp docker` then run `groups`
+#
