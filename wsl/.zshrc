@@ -168,10 +168,6 @@ alias dca='~/.config/scripts/attach_to_dev_container.sh'
 # clear cache for new dev container build 
 alias dcc='USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose build --no-cache'
 
-# start it up with the stuff you need
-alias dcs='~/.config/scripts/start_dev_containter.sh'
-#USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose up -d
-# dcs='~/.config/scripts/start_devcontainter.sh'
 
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
