@@ -1,10 +1,10 @@
 # title = "SEE YOU IN SPACE COWBOY..."
-window-decoration = auto
-# background-opacity = 0.9
-# background-blur = true
+# window-decoration = auto
+window-decoration = false
 theme = dark:Kanagawa Wave,light:Kanagawa Wave
 font-size = 11
-
+# background-opacity = 0.6
+# background-blur = true
 
 
 # This is the configuration file for Ghostty.

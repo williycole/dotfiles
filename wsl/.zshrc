@@ -159,6 +159,9 @@ alias dra='docker rm $(docker ps -a -q)'
 alias dka='docker kill $(docker ps -q)'
 alias dpa='docker system prune -a'
 
+# GQL
+alias rgql='go run github.com/99designs/gqlgen generate'
+
 
 # Devcontainers 
 #
@@ -184,3 +187,4 @@ export PATH="$PATH:/usr/local/go/bin"
 #
 
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+export PATH=$PATH:$HOME/go/bin
