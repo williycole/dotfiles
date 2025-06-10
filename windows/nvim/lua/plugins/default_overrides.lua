@@ -1,12 +1,6 @@
 -- all overrides for LazyVim Defaults
 return {
   {
-    "nvim-lspconfig",
-    opts = {
-      inlay_hints = { enabled = false },
-    },
-  },
-  {
     "folke/snacks.nvim",
     opts = {
       picker = {
@@ -29,6 +23,12 @@ return {
         end,
         desc = "Search Icons",
       },
+    },
+  },
+  {
+    "nvim-lspconfig",
+    opts = {
+      inlay_hints = { enabled = false },
     },
   },
 }
