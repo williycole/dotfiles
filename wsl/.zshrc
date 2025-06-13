@@ -120,13 +120,15 @@ plugins=(git zsh-autosuggestions)
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
 
-# General Alias's & Functions
-# For a full list of active aliases, run `alias`.
+# Repos/Naviagtion
+alias ktf="cd ~/repos/key-to-focus/" 
 alias ggs="cd ~/repos/ggs" 
 alias cnvim="cd ~/.config/nvim"
 alias cbv="cd ~/repos/cb-vault/" 
 alias r="cd ~/repos" 
 alias h='cd ~'
+
+# Basic commands
 alias termset="cd ~/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbweLocalState"
 alias lg='lazygit'
 alias ld='lazydocker'
@@ -147,11 +149,9 @@ alias pinstall='pip install -r requirements.txt'
 # Ghostty
 alias lc="ghostty +list-keybinds"
 
-
 # AI Tooling
 alias ol='ollama'
 alias olr='ollama run deepseek-r1:1.5b'
-
 
 # Docker 
 alias dsa='docker stop $(docker ps -a -q)'
@@ -161,6 +161,7 @@ alias dpa='docker system prune -a'
 
 # GQL
 alias rgql='go run github.com/99designs/gqlgen generate'
+alias ggql='go run github.com/99designs/gqlgen generate'
 
 
 # Devcontainers 
