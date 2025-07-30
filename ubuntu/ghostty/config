@@ -2,8 +2,8 @@
 # window-decoration = auto
 window-decoration = false
 theme = dark:Kanagawa Wave,light:Kanagawa Wave
-font-size = 11
-# background-opacity = 0.6
+font-size = 13
+# background-opacity = 0.8
 # background-blur = true
 
 

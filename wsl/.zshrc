@@ -23,7 +23,6 @@ export ZSH="$HOME/.oh-my-zsh"
 
 # Lazygit Setup TODO: Fix this
 export PATH=$PATH:/path/to/lazygit/directory
-alias lg="/path/to/lazygit"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time Oh My Zsh is loaded, in which case,
@@ -130,8 +129,6 @@ alias h='cd ~'
 
 # Basic commands
 alias termset="cd ~/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbweLocalState"
-alias lg='lazygit'
-alias ld='lazydocker'
 alias l='lsd'
 alias n='nvim'
 alias bat='batcat'
@@ -140,11 +137,22 @@ alias dfw='sudo ufw disable'
 alias efw='sudo ufw enable'
 alias rsf='rm -rf ~/.local/share/nvim/swap/*'
 alias spt='ncspot'
+alias c='clear'
+alias sz='source ~/.zshrc'
 
 #source python venv on ubuntu
 alias pinit='python3.12 -m venv .venv'
 alias psource='source .venv/bin/activate'
 alias pinstall='pip install -r requirements.txt'
+
+# Mousless
+alias ml='sudo mouseless --config ~/.config/mouseless/config.yaml'
+alias mld='sudo mouseless --debug --config ~/.config/mouseless/config.yaml'
+
+# LazyGit & LazyDocker
+alias lg='lazygit'
+alias ld='lazydocker'
+
 
 # Ghostty
 alias lc="ghostty +list-keybinds"
@@ -159,9 +167,13 @@ alias dra='docker rm $(docker ps -a -q)'
 alias dka='docker kill $(docker ps -q)'
 alias dpa='docker system prune -a'
 
+# Kube
+alias kgs='kubectl get services'
+alias kgns='kubectl get ns'
+
 # GQL
 alias rgql='go run github.com/99designs/gqlgen generate'
-alias ggql='go run github.com/99designs/gqlgen generate'
+alias ggql='go get github.com/99designs/gqlgen@v0.17.43'
 
 
 # Devcontainers 
@@ -173,7 +185,7 @@ alias dcu='devcontainer up --workspace-folder .'
 # attach to dev container
 alias dca='~/.config/scripts/attach_to_dev_container.sh'
 # clear cache for new dev container build 
-# alias dcc='USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose build --no-cache'
+alias dcci='USER_ID=$(id -u) GROUP_ID=$(id -g) DOCKER_GROUP_ID=$(getent group docker | cut -d: -f3) docker compose build --no-cache'
 
 
 # Generated for envman. Do not edit.
