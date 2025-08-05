@@ -168,13 +168,22 @@ alias dka='docker kill $(docker ps -q)'
 alias dpa='docker system prune -a'
 
 # Kube
+alias k='kubectl'
 alias kgs='kubectl get services'
 alias kgns='kubectl get ns'
+alias kgp='kubectl get pods --show-labels' ## basic
+alias kdp='kubectl describe pod' ## all the deets
+alias kgl='kubectl logs -f' ## attach to pod with live logging
+alias kgpv='kubectl get pods --all-namespaces --show-labels' ## verbose
+alias kgc='kubectl config get-contexts'
+alias kgcc='kubectl config current-context'
+
+# Google 
+alias gcgc='gcloud container clusters list'
 
 # GQL
 alias rgql='go run github.com/99designs/gqlgen generate'
 alias ggql='go get github.com/99designs/gqlgen@v0.17.43'
-
 
 # Devcontainers 
 #
