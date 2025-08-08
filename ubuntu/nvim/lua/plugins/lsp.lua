@@ -75,6 +75,7 @@ end
 
 -- nvim-lint.eslint installed through LazExtras so here we just handle some options
 -- this lets warnigns be a little less noisy for typescript
+
 local eslint_lsp = function(_, opts)
   opts.settings = opts.settings or {}
   opts.settings.workingDirectories = { mode = "auto" }
