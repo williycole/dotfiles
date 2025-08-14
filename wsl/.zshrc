@@ -177,6 +177,11 @@ alias kgl='kubectl logs -f' ## attach to pod with live logging
 alias kgpv='kubectl get pods --all-namespaces --show-labels' ## verbose
 alias kgc='kubectl config get-contexts'
 alias kgcc='kubectl config current-context'
+## K9s TUI
+alias k9h='k9s help' ## List all available CLI options
+alias k9i='k9s info' # Get info about K9s runtime (logs, configs, etc..)
+alias k9p='k9s -c pod' ## Run K9s and launch in pod view via the pod command.
+alias k9='k9s --readonly' ## Start K9s in readonly mode - with all modification commands disabled
 
 # Google 
 alias gcgc='gcloud container clusters list'
