@@ -6,7 +6,6 @@ return {
   opts = function()
     local datetime = os.date("%Y-%m-%d %I:%M:%S %p")
     local logo = [[
-
 Chase Understanding Not Results
 ⠀⠀⠀⠀⠀⠀⢀⣀⣀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⢰⡄⠀⠀⣠⣾⣿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -21,7 +20,6 @@ Chase Understanding Not Results
 ⠀⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣾⣷⣿⣶⣾⣷⣶⣦⡀⠀⠀
 ⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⡄
 A Knight always has is breathing.
-... Sir Thomas Lemuel Hawke
 ]]
     logo = string.rep("\n", 1) .. logo .. "\n" .. datetime .. "\n"
 

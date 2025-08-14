@@ -1,14 +1,18 @@
+local extra_themes = {
+  { "rose-pine/neovim" },
+  { "rebelot/kanagawa.nvim" }, -- already installed but we want to set it as default
+  { "sainnhe/everforest" },
+  { "sainnhe/gruvbox-material" },
+  { "EdenEast/nightfox.nvim" },
+  { "lunarvim/darkplus.nvim" },
+}
+
 return {
-  {
-    "rebelot/kanagawa.nvim",
-    opts = {
-      theme = "wave",
-    },
-  },
+  { extra_themes },
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "kanagawa",
+      colorscheme = "kanagawa-wave", -- default theme
     },
   },
 }
