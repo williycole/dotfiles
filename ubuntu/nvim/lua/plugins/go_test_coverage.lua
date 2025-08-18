@@ -1,12 +1,13 @@
--- Easy helper for running go test coverage and highlighting results in Neovim.
-return {
-  "andythigpen/nvim-coverage",
-  config = function()
-    require("coverage").setup()
-    local function GoRunAndHighlightCoverage()
-      vim.cmd("!go test -coverprofile=coverage.out ./...")
-      require("coverage").load(true)
-    end
-    vim.keymap.set("n", "<leader>tc", GoRunAndHighlightCoverage, { desc = "Run & Toggle Go Coverage" })
-  end,
-}
+-- Easy helper for running go test coverage and highlighting results in Neovim with Neotest
+-- return {
+--   "andythigpen/nvim-coverage",
+--   config = function()
+--     require("coverage").setup()
+--     local function GoRunAndHighlightCoverage()
+--       vim.cmd("!go test -coverprofile=coverage.out ./...")
+--       require("coverage").load(true)
+--     end
+--     vim.keymap.set("n", "<leader>tc", GoRunAndHighlightCoverage, { desc = "Run & Toggle Go Coverage" })
+--   end,
+-- }
+return {}
