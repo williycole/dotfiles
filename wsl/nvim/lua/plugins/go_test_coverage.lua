@@ -1,3 +1,7 @@
+-- NOTE: current work places uses devcotnainers, this on its own will not run there.
+-- That said, I'm ditching this and LazyExtra Neotest and the like for the time being.
+-- Just makes testing easier to deal with for now.
+--
 -- Easy helper for running go test coverage and highlighting results in Neovim with Neotest
 -- return {
 --   "andythigpen/nvim-coverage",

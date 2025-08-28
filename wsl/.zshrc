@@ -128,6 +128,7 @@ alias r="cd ~/repos"
 alias h='cd ~'
 
 # Basic commands
+alias grepenv='grep -r "os.Getenv"'
 alias termset="cd ~/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbweLocalState"
 alias l='lsd'
 alias n='nvim'
@@ -136,7 +137,17 @@ alias bdf='~/.config/scripts/backup_dotfiles.sh'
 alias dfw='sudo ufw disable'
 alias efw='sudo ufw enable'
 alias rsf='rm -rf ~/.local/share/nvim/swap/*'
-alias spt='ncspot'
+## run spotifyd in the background with spt
+sptd() {
+    # Start spotifyd if not already running
+    if ! pgrep -x spotifyd >/dev/null; then
+        spotifyd --no-daemon &
+        # give it a second to start
+        sleep 1
+    fi
+    # Launch spotify-tui
+    spt
+}
 alias c='clear'
 alias sz='source ~/.zshrc'
 
@@ -177,6 +188,7 @@ alias kgl='kubectl logs -f' ## attach to pod with live logging
 alias kgpv='kubectl get pods --all-namespaces --show-labels' ## verbose
 alias kgc='kubectl config get-contexts'
 alias kgcc='kubectl config current-context'
+alias kcuc='kubectl config use-context'
 ## K9s TUI
 alias k9h='k9s help' ## List all available CLI options
 alias k9i='k9s info' # Get info about K9s runtime (logs, configs, etc..)
