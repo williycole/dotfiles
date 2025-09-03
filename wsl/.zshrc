@@ -164,6 +164,9 @@ alias mld='sudo mouseless --debug --config ~/.config/mouseless/config.yaml'
 alias lg='lazygit'
 alias ld='lazydocker'
 
+# Copilot-Cli
+alias cpe='gh copilot explain'
+alias cps='gh copilot suggest'
 
 # Ghostty
 alias lc="ghostty +list-keybinds"
@@ -172,7 +175,7 @@ alias lc="ghostty +list-keybinds"
 alias ol='ollama'
 alias olr='ollama run deepseek-r1:1.5b'
 
-# Docker 
+# Docker
 alias dsa='docker stop $(docker ps -a -q)'
 alias dra='docker rm $(docker ps -a -q)'
 alias dka='docker kill $(docker ps -q)'
