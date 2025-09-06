@@ -46,6 +46,7 @@
   "neovim": { "branch": "main", "commit": "72a04c4065345b51b56aed4859ea1d884f734097" },
   "nightfox.nvim": { "branch": "main", "commit": "ba47d4b4c5ec308718641ba7402c143836f35aa9" },
   "noice.nvim": { "branch": "main", "commit": "0427460c2d7f673ad60eb02b35f5e9926cf67c59" },
+  "none-ls.nvim": { "branch": "main", "commit": "df778107fd2f0503f5606363ce13437132056d54" },
   "nui.nvim": { "branch": "main", "commit": "de740991c12411b663994b2860f1a4fd0937c130" },
   "nvim-dap": { "branch": "master", "commit": "082a4568dc3127acc93d8497379eefe41d7fc626" },
   "nvim-dap-go": { "branch": "main", "commit": "b4421153ead5d726603b02743ea40cf26a51ed5f" },
