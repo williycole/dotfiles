@@ -18,3 +18,12 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.expandtab = true
   end,
 })
+
+vim.g.lazyvim_prettier_needs_config = false
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*",
+  callback = function()
+    require("conform").format({ async = false })
+  end,
+})
