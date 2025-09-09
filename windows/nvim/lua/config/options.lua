@@ -19,6 +19,18 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- Add autocmd for source.organizeImports code action
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = { "*.ts", "*.tsx", "*.js", "*.jsx" },
+  callback = function(args)
+    vim.lsp.buf.code_action({
+      context = { only = { "source.organizeImports" } },
+      apply = true,
+      buffer = args.buf,
+    })
+  end,
+})
+
 vim.g.lazyvim_prettier_needs_config = false
 
 vim.api.nvim_create_autocmd("BufWritePre", {
