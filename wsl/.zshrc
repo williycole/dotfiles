@@ -24,6 +24,8 @@ export ZSH="$HOME/.oh-my-zsh"
 # Lazygit Setup TODO: Fix this
 export PATH=$PATH:/path/to/lazygit/directory
 
+
+export BIOME_CONFIG_PATH=~/.config/nvim/biome.json
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
@@ -34,8 +36,6 @@ export PATH=$PATH:/path/to/lazygit/directory
 # For OhMyPosh point to windows theme if using on windows and wsl
 # 
 eval "$(oh-my-posh init zsh --config $HOME/.config/ohmyposh/pure.omp.json)"
-
-
 
 
 # Set list of themes to pick from when loading at random
