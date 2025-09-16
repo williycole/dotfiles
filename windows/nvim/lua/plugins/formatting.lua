@@ -22,6 +22,7 @@ return {
         json = { "prettier" }, -- Explicitly keep Prettier for non-TS files
         yaml = { "prettier" },
         lua = { "stylua" }, -- Keep Stylua for Lua
+        go = { "gofmt" }, -- use default gofmt for go files
       },
       format_on_save = {
         timeout_ms = 1000, -- Allow time for LSP and none-ls formatters
@@ -52,9 +53,9 @@ return {
   {
     "nvimtools/none-ls.nvim",
     opts = {
-      sources = { -- Ensure Go formatters are enabled if not auto-configured
+      sources = {
+        -- LazyExtras gives us gofmt and gopls but these o not handle imports
         require("null-ls").builtins.formatting.goimports,
-        require("null-ls").builtins.formatting.gofumpt,
       },
     },
   },

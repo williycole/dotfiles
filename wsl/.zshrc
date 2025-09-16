@@ -21,10 +21,6 @@ setopt appendhistory
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
-# Lazygit Setup TODO: Fix this
-export PATH=$PATH:/path/to/lazygit/directory
-
-
 export BIOME_CONFIG_PATH=~/.config/nvim/biome.json
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time Oh My Zsh is loaded, in which case,
@@ -118,6 +114,7 @@ plugins=(git zsh-autosuggestions)
 
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
+
 
 # Repos/Naviagtion
 alias ktf="cd ~/repos/key-to-focus/" 
