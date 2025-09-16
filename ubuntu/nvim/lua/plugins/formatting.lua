@@ -21,8 +21,9 @@ return {
       formatters_by_ft = {
         json = { "prettier" }, -- Explicitly keep Prettier for non-TS files
         yaml = { "prettier" },
-        lua = { "stylua" }, -- Keep Stylua for Lua
-        go = { "gofmt" }, -- use default gofmt for go files
+        lua = { "stylua" },
+        go = { "gofmt" }, -- Default gofmt for go files, always favor gopls
+        python = { "black" }, -- use black for python files
       },
       format_on_save = {
         timeout_ms = 1000, -- Allow time for LSP and none-ls formatters
