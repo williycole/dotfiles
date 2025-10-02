@@ -4,6 +4,7 @@
 export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 export PATH="/usr/local/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export TERM=xterm
 
 # NVM setup
 export NVM_DIR="$HOME/.nvm"
@@ -120,9 +121,10 @@ plugins=(git zsh-autosuggestions)
 alias ktf="cd ~/repos/key-to-focus/" 
 alias ggs="cd ~/repos/ggs" 
 alias cnvim="cd ~/.config/nvim"
-alias cbv="cd ~/repos/cb-vault/" 
+alias v="cd ~/repos/cb-vault/"
 alias r="cd ~/repos" 
 alias h='cd ~'
+alias g="cd ~/repos/workbench/gamedev"
 
 # Basic commands
 alias grepenv='grep -r "os.Getenv"'
@@ -223,7 +225,6 @@ eval "$(oh-my-posh init zsh)"
 export PATH="$PATH:/usr/local/go/bin"
 
 # if docker leavers your groups run `newgrp docker` then run `groups`
-#
 
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 export PATH=$PATH:$HOME/go/bin
