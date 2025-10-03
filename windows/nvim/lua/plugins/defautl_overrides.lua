@@ -29,6 +29,11 @@ return {
     "nvim-lspconfig",
     opts = {
       inlay_hints = { enabled = false },
+      settings = {
+        Lua = {
+          hint = { enable = true },
+        },
+      },
     },
   },
   -- Add aerial override here

@@ -19,6 +19,7 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- NOTE: this may need to be corrected, see note in formatting.lua file
 -- Add autocmd for source.organizeImports code action
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = { "*.ts", "*.tsx", "*.js", "*.jsx" },

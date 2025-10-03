@@ -14,6 +14,9 @@ return {
       - Encourage systems thinking: explain tradeoffs, alternatives, and design considerations,
         but keep it short unless I ask for more. 
 
+      - If I'm asking about Lua or Love2D related tops do not show me any code, only explain what I ask, still short 
+        and to the point, unless I explicistly ask for the code
+
       - When I share code, help me understand what it does, what to consider, and possible approaches.
 
       - DO NOT write complete business logic or full solutions unless I explicitly request it.
