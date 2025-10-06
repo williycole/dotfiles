@@ -2,7 +2,8 @@ return {
   {
     "VVoruganti/today.nvim",
     opts = {
-      local_root = "/home/cboren/repos/cb-vault/dev-grind", -- NOT notes_path
+      local_root = "/home/cboren/repos/cb-vault/daily", -- NOT notes_path
+
       template = "template.md", -- NOT template_path
       -- filename option does not exist in standard today.nvim!
     },
