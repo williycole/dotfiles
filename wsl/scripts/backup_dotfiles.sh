@@ -11,6 +11,7 @@
 WSL_DIR=~/repos/dotfiles/wsl
 WIN_DIR=~/repos/dotfiles/windows
 UBUNTU_DIR=~/repos/dotfiles/ubuntu/
+OMARCHY_DIR=~/repos/dotfiles/omarchy
 
 # Function to sync files/directories using rsync
 # Arguments:
@@ -49,9 +50,15 @@ sync_dotfiles ~/.config/scripts/ "$WSL_DIR/scripts/"
 sync_dotfiles ~/.config/nvim/ "$WIN_DIR/nvim/"
 sync_dotfiles ~/.config/nvim.bak/ "$WIN_DIR/archived/nvim"
 
-echo "Dotfiles synchronized successfully!"
+# NOTE: Sync dotfiles for Omarchy
+sync_dotfiles ~/.zshrc "$OMARCHY_DIR/"
+sync_dotfiles ~/.bashrc "$OMARCHY_DIR/"
+sync_dotfiles ~/.config/nvim/ "$OMARCHY_DIR/nvim/"
+sync_dotfiles ~/.config/lazygit/ "$OMARCHY_DIR/lazygit/"
+sync_dotfiles ~/.config/ghostty/config "$OMARCHY_DIR/ghostty/"
+sync_dotfiles ~/.config/nvim.bak/ "$OMARCHY_DIR/archived/nvim"
+sync_dotfiles ~/.config/scripts/ "$OMARCHY_DIR/scripts/"
 
-# Note: After running this script, remember to:
-# 1. Review the changes in your dotfiles repository
-# 2. Commit the changes
-# 3. Push the commits to your remote repository if applicable
+
+
+echo "Dotfiles synchronized successfully!"
