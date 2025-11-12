@@ -30,3 +30,5 @@ alias dsa='docker stop $(docker ps -a -q)'
 alias dra='docker rm $(docker ps -a -q)'
 alias dka='docker kill $(docker ps -q)'
 alias dpa='docker system prune -a'
+
+. "$HOME/.local/share/../bin/env"
