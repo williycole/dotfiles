@@ -10,8 +10,8 @@ source ~/.local/share/omarchy/default/bash/rc
 # Make an alias for invoking commands you use constantly
 # alias p='python'
 alias cnvim="cd ~/.config/nvim"
-alias cbv="cd ~/repos/cb-vault/" 
-alias r="cd ~/repos" 
+alias cbv="cd ~/repos/cb-vault/"
+alias r="cd ~/repos"
 alias h='cd ~'
 alias lg='lazygit'
 alias ld='lazydocker'
@@ -25,7 +25,7 @@ alias rsf='rm -rf ~/.local/share/nvim/swap/*'
 alias ol='ollama'
 alias olr='ollama run deepseek-r1:1.5b'
 
-# docker 
+# docker
 alias dsa='docker stop $(docker ps -a -q)'
 alias dra='docker rm $(docker ps -a -q)'
 alias dka='docker kill $(docker ps -q)'
