@@ -8,6 +8,7 @@ source ~/.local/share/omarchy/default/bash/rc
 # Add your own exports, aliases, and functions here.
 #
 # Make an alias for invoking commands you use constantly
+alias dbeaver='~/apps/dbeaver/dbeaver'
 alias p='python'
 alias cnvim="cd ~/.config/nvim"
 alias cbv="cd ~/Repos/cb-vault/"

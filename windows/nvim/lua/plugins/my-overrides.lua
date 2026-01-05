@@ -8,80 +8,65 @@ return {
       },
     },
   },
-  {
-    "neovim/nvim-lspconfig",
-    opts = function(_, opts)
-      opts.servers = opts.servers or {}
-
-      -- NOTE: this turns off inlay_hints globally by default
-      opts.inlay_hints = { enabled = false }
-
-      -- ESLint: no formatting
-      opts.servers.eslint = { format = false }
-
-      -- vtsls: enable formatting
-      opts.servers.vtsls = {
-        settings = {
-          typescript = { format = { enable = true } },
-          javascript = { format = { enable = true } },
-        },
-      }
-
-      -- lua_ls: keep your hints config (this is *Lua* hints, not inlay)
-      opts.servers.lua_ls = {
-        settings = {
-          Lua = {
-            hint = {
-              enable = true,
-              paramType = true,
-              paramName = "All",
-              arrayIndex = "Enable",
-              semicolon = "All",
-              setType = true,
-            },
+{
+  "neovim/nvim-lspconfig",
+  opts = function(_, opts)
+    opts.servers = opts.servers or {}
+    
+    -- NOTE: this turns off inlay_hints globally by default
+    opts.inlay_hints = { enabled = false }
+    
+    -- ESLint: no formatting
+    opts.servers.eslint = { format = false }
+    
+    -- vtsls: enable formatting
+    opts.servers.vtsls = {
+      settings = {
+        typescript = { format = { enable = true } },
+        javascript = { format = { enable = true } },
+      },
+    }
+    opts.servers.lua_ls = {
+      settings = {
+        Lua = {
+          hint = {
+            enable = true,
+            paramType = true,
+            paramName = "All",
+            arrayIndex = "Enable",
+            semicolon = "All",
+            setType = true,
           },
         },
-      }
-
-      -- basedpyright: **NO inlayHints in settings**
-      opts.servers.basedpyright = {
-        settings = {
-          basedpyright = {
-            analysis = {
-              typeCheckingMode = "basic",
-              autoSearchPaths = true,
-              useLibraryCodeForTypes = true,
-            },
-          },
-          python = {
-            analysis = {
-              typeCheckingMode = "basic",
-              autoSearchPaths = true,
-              useLibraryCodeForTypes = true,
-            },
+      },
+    }
+    opts.servers.basedpyright = {
+      settings = {
+        basedpyright = {
+          analysis = {
+            typeCheckingMode = "basic",
+            autoSearchPaths = true,
+            useLibraryCodeForTypes = true,
           },
         },
-      }
+        python = {
+          analysis = {
+            typeCheckingMode = "basic",
+            autoSearchPaths = true,
+            useLibraryCodeForTypes = true,
+          },
+        },
+      },
+    }
 
-      return opts
-    end,
-  },
+    return opts
+  end,
+},
   {
     "nvimdev/dashboard-nvim",
     lazy = false, -- As https://github.com/nvimdev/dashboard-nvim/pull/450, dashboard-nvim shouldn't be lazy-loaded to properly handle stdin.
     opts = function()
       local datetime = os.date("%Y-%m-%d %I:%M:%S %p")
-      local logo2 = [[
-████████████████████████████████████████████████████████████████████████████
-█ ▄▄▀████ █▀▄█ ▄▄▀██▄██ ▄▄▄█ ████▄ ▄███ ▄▄▀███ ██ ███ █ ▄▄▀█ ██ █ ▄▄████████
-█ ▀▀ ████ ▄▀██ ██ ██ ▄█ █▄▀█ ▄▄ ██ ████ ▀▀ ███ ██▄▀ ▀▄█ ▀▀ █ ▀▀ █▄▄▀████████
-█ ██ ████ ██ █▄██▄█▄▄▄█▄▄▄▄█▄██▄██▄████ ██ ███▄▄██▄█▄██▄██▄█▀▀▀▄█▄▄▄████████
-████████████████████████████████████████████████████████████████████████████
-█ ██ █ ▄▄▀█ ▄▄████ ██ ██▄██ ▄▄████ ▄▄▀█ ▄▄▀█ ▄▄█ ▄▄▀█▄ ▄█ █████▄██ ▄▄▀█ ▄▄▄█
-█ ▄▄ █ ▀▀ █▄▄▀████ ▄▄ ██ ▄█▄▄▀████ ▄▄▀█ ▀▀▄█ ▄▄█ ▀▀ ██ ██ ▄▄ ██ ▄█ ██ █ █▄▀█
-█ ██ █▄██▄█▄▄▄████ ██ █▄▄▄█▄▄▄████ ▀▀ █▄█▄▄█▄▄▄█▄██▄██▄██▄██▄█▄▄▄█▄██▄█▄▄▄▄█
-████████████████████████████████████████████████████████████████████████████
-]]
       local logo = [[
  __ ___ ___        _         ___          __  __   _    _  ___ 
 (_  )_  )_   \_)  / ) / /     )   )\ )   (_   )_) )_)  / ` )_  

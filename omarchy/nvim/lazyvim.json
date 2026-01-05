@@ -15,6 +15,8 @@
     "lazyvim.plugins.extras.editor.overseer",
     "lazyvim.plugins.extras.editor.refactoring",
     "lazyvim.plugins.extras.editor.telescope",
+    "lazyvim.plugins.extras.lang.clangd",
+    "lazyvim.plugins.extras.lang.cmake",
     "lazyvim.plugins.extras.lang.docker",
     "lazyvim.plugins.extras.lang.dotnet",
     "lazyvim.plugins.extras.lang.elixir",
