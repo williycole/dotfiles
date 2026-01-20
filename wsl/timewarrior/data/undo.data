@@ -1,0 +1,22 @@
+txn:
+  type: interval
+  before: 
+  after: {"id":0,"start":"20260119T145742Z","tags":["BootDev C"]}
+txn:
+  type: interval
+  before: {"id":1,"start":"20260119T145742Z","tags":["BootDev C"]}
+  after: 
+  type: interval
+  before: 
+  after: {"id":1,"start":"20260119T145742Z","end":"20260119T162112Z","tags":["BootDev C"]}
+txn:
+  type: interval
+  before: 
+  after: {"id":0,"start":"20260120T154440Z","tags":["BootDev C"]}
+txn:
+  type: interval
+  before: {"id":1,"start":"20260120T154440Z","tags":["BootDev C"]}
+  after: 
+  type: interval
+  before: 
+  after: {"id":1,"start":"20260120T154440Z","end":"20260120T162604Z","tags":["BootDev C"]}
