@@ -140,11 +140,15 @@ return {
 
     "folke/snacks.nvim",
     opts = {
+      image = { enabled = true },
       picker = {
         enabled = true,
         icons = {
           icon_sources = { "nerd_fonts", "emoji" }, -- Enable both Nerd Fonts and emojis
         },
+        previewers = {
+          image = { enabled = true },
+        }
       },
       zen = {
         toggles = { dim = false, wrap = true },

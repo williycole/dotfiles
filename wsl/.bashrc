@@ -8,7 +8,10 @@ source ~/.local/share/omarchy/default/bash/rc
 # Add your own exports, aliases, and functions here.
 #
 # Make an alias for invoking commands you use constantly
-alias dbeaver='~/apps/dbeaver/dbeaver'
+alias dbeaver='~/Apps/dbeaver/dbeaver'
+alias ol='ollama'
+alias olr='ollama run deepseek-r1:1.5b'
+alias aseprite='~/Apps/aseprite/bin/aseprite'
 alias p='python'
 alias cnvim="cd ~/.config/nvim"
 alias cbv="cd ~/Repos/cb-vault/"
@@ -23,10 +26,6 @@ alias bdf='~/Scripts/backup_dotfiles.sh'
 alias dfw='sudo ufw disable'
 alias efw='sudo ufw enable'
 alias rsf='rm -rf ~/.local/share/nvim/swap/*'
-alias ol='ollama'
-alias olr='ollama run deepseek-r1:1.5b'
-alias aseprite='~/apps/Aseprite_1.3.15.5-x64.AppImage'
-
 # docker
 alias dsa='docker stop $(docker ps -a -q)'
 alias dra='docker rm $(docker ps -a -q)'

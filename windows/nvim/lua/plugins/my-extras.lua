@@ -4,7 +4,7 @@ return {
     opts = {
       local_root = "/home/cb/repos/cb-vault/daily", -- NOT notes_path
 
-      template = "template.md", -- NOT template_path
+      template = "template.md",                     -- NOT template_path
       -- filename option does not exist in standard today.nvim!
     },
     keys = {
@@ -25,10 +25,10 @@ return {
     version = "2.*",
     opts = {},
     keys = {
-      { "<leader>v", ft = "lua", desc = "LÖVE" },
-      { "<leader>vv", "<cmd>LoveRun<cr>", ft = "lua", desc = "Run LÖVE" },
-      { "<leader>vs", "<cmd>LoveStop<cr>", ft = "lua", desc = "Stop LÖVE" },
-      { "<leader>vh", "<cmd>help love2d<cr>", ft = "lua", desc = "Help LÖVE" },
+      { "<leader>v",  ft = "lua",             desc = "LÖVE" },
+      { "<leader>vv", "<cmd>LoveRun<cr>",     ft = "lua",   desc = "Run LÖVE" },
+      { "<leader>vs", "<cmd>LoveStop<cr>",    ft = "lua",   desc = "Stop LÖVE" },
+      { "<leader>vh", "<cmd>help love2d<cr>", ft = "lua",   desc = "Help LÖVE" },
     },
   },
   {
