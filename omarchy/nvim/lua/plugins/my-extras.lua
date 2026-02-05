@@ -1,3 +1,4 @@
+-- NOTE: where I put all extra plugins
 return {
   {
     "VVoruganti/today.nvim",

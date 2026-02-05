@@ -1,10 +1,36 @@
+-- NOTE: Where I put all my overrides for lsp, lint, etc
 return {
+  -- {
+  --   "stevearc/conform.nvim",
+  --   opts = function(_, opts)
+  --     opts.formatters_by_ft = opts.formatters_by_ft or {
+  --
+  --
+  --     }
+  --     opts.formatters_by_ft.html = { "prettier" }
+  --     opts.formatters_by_ft.htmx = { "prettier" }
+  --     return opts
+  --   end,
+  -- },
   {
     "stevearc/conform.nvim",
     opts = function(_, opts)
+      -- Initialize tables if they don't exist
+      opts.formatters = opts.formatters or {}
       opts.formatters_by_ft = opts.formatters_by_ft or {}
+
+      -- Add odinfmt formatter
+      opts.formatters.odinfmt = {
+        command = "odinfmt",
+        args = { "-stdin" },
+        stdin = true,
+      }
+
+      -- Assign formatters by filetype
+      opts.formatters_by_ft.odin = { "odinfmt" }
       opts.formatters_by_ft.html = { "prettier" }
       opts.formatters_by_ft.htmx = { "prettier" }
+
       return opts
     end,
   },
