@@ -1,0 +1,6 @@
+-- Keymaps are automatically loaded on the VeryLazy event
+-- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
+-- Add any additional keymaps here
+vim.keymap.set("n", "<leader>ww", ":w<CR>", { desc = "Save File", silent = true })
+vim.keymap.set("n", "<leader>as", ":SupermavenToggle<CR>", { desc = "Toggle Supermaven" })
+vim.keymap.set("n", "<leader>dt", ":e ~/.config/nvim/todos.md<CR>", { desc = "Edit TODOs" })
