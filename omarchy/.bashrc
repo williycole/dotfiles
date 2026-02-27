@@ -36,3 +36,7 @@ alias dpa='docker system prune -a'
 . "$HOME/.cargo/env"
 export PATH="$HOME/.config/emacs/bin:$PATH"
 export PATH="$HOME/.config/emacs/bin:$PATH"
+
+# Added by flyctl installer
+export FLYCTL_INSTALL="/home/cb/.fly"
+export PATH="$FLYCTL_INSTALL/bin:$PATH"
