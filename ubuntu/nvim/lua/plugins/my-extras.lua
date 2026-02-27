@@ -117,6 +117,15 @@ return {
     end,
   },
   {
+    -- NOTE: -> git clone https://github.com/LuaCATS/love2d ~/.local/share/lua-addons/love2d to get the auto completion in .luarc.json
+    --[[
+        {
+          "workspace.library": ["~/.local/share/lua-addons/love2d/library"],
+          "diagnostics.globals": ["love"],
+          "runtime.version": "Lua 5.1",
+          "workspace.checkThirdParty": false
+        }
+    --]]
     "S1M0N38/love2d.nvim",
     event = "VeryLazy",
     version = "2.*",
