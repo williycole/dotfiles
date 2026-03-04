@@ -8,6 +8,7 @@ source ~/.local/share/omarchy/default/bash/rc
 # Add your own exports, aliases, and functions here.
 #
 # Make an alias for invoking commands you use constantly
+alias tg='twingate'
 alias dbeaver='~/Apps/dbeaver/dbeaver'
 alias ol='ollama'
 alias olr='ollama run deepseek-r1:1.5b'
