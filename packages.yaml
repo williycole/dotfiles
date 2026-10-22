@@ -170,7 +170,7 @@ packages:
   # RUNTIME for playing Godot games ("Shared binary to play games and run servers"),
   # not the editor — having it does not mean Godot is installed.
   - { name: godot, cask: godot } # OFFLINE-GAMEDEV.md
-  - { name: foliate, cask: foliate, flatpak: com.github.johnfactotum.Foliate } # epub + PDF reader (~/Books; default handler for both, see mimeapps.list)
+  - { name: foliate, cask: foliate, flatpak: com.github.johnfactotum.Foliate } # epub + PDF reader (default handler for both, see mimeapps.list)
   - { name: ares, cask: ares, flatpak: dev.ares.ares } # N64 (multi-system) emulator — OFFLINE-GAMEDEV.md
   # Spotify's flathub entry is NOT a Spotify build: it is a wrapper that downloads
   # Canonical's SNAP from api.snapcraft.io at install time. cliamp replaces it —
@@ -190,7 +190,7 @@ packages:
   # entirely — an unlocked second browser is the whole bypass. The rpm reads
   # the policy and is locked the same way Firefox is. doctor fails on the flatpak.
   - { name: chromium, dnf: chromium, bin: chromium-browser }
-  # Terminal the admin prompts open in; was on littleplow only.
+  # Terminal for prompts; was on littleplow only.
   - { name: alacritty, dnf: alacritty }
   # Flashes USB images. Replaces balena-etcher, an Electron app that bundles its
   # own Chromium (2026-10-16).
