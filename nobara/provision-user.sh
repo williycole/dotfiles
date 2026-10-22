@@ -9,7 +9,6 @@
 #   4. pi → local Ollama  [Pocket 4 only] → writes ~/.pi/agent/models.json
 #   5. tree-sitter CLI config → ~/.config/tree-sitter/config.json (nvim parser builds)
 #   6. Aseprite check → ~/Apps/aseprite/bin/aseprite (manual AppImage; paid, Humble login)
-#   7. books library clone → ~/Books (foliate/evince/okular read it)
 #   8. Odin vendor libs → build stb/miniaudio/box2d linux .a on the host
 #   9. offline reference mirror → ~/Reference (docs readable with no internet)
 #  10. omp (oh-my-pi coding agent) → prebuilt binary drop to ~/.local/bin/omp
@@ -173,25 +172,6 @@ else
   warn "aseprite missing — grab the Linux AppImage from your Humble Bundle library"
   warn "(https://www.humblebundle.com/home/library → Aseprite → Aseprite_*-x64.AppImage), then:"
   warn "  mkdir -p ~/Apps/aseprite/bin && mv ~/Downloads/Aseprite_*-x64.AppImage ~/Apps/aseprite/bin/aseprite && chmod +x ~/Apps/aseprite/bin/aseprite"
-fi
-
-# ── 7. Books library → ~/Books ────────────────────────────────
-# epubs/pdfs; read with foliate (flatpak, packages.yaml) + host
-# evince/okular. Needs the GitHub SSH key already registered (bootstrap does).
-step "7. books library → ~/Books"
-if [ -d "$HOME/Books/.git" ]; then
-  ok "~/Books present"
-elif [ "$DRY_RUN" = 1 ]; then
-  printf '  [dry-run] git clone git@github.com:williycole/books ~/Books\n'
-else
-  git clone -q git@github.com:williycole/books "$HOME/Books" \
-    && ok "cloned ~/Books" \
-    || warn "books clone failed — SSH key on GitHub yet? re-run later"
-fi
-# Foliate is sandboxed with no home access — grant read-only ~/Books (idempotent).
-if command -v flatpak >/dev/null 2>&1 && flatpak info --user com.github.johnfactotum.Foliate >/dev/null 2>&1; then
-  [ "$DRY_RUN" = 1 ] && printf '  [dry-run] flatpak override --user --filesystem=~/Books:ro Foliate\n' \
-    || { flatpak override --user --filesystem="$HOME/Books:ro" com.github.johnfactotum.Foliate; ok "foliate granted read access to ~/Books"; }
 fi
 
 # ── 8. Odin vendor libs (stb, miniaudio, box2d) ───────────────
