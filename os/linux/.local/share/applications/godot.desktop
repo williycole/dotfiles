@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Godot Engine
+GenericName=Game Engine
+Comment=Multi-platform 2D and 3D game engine
+# ABSOLUTE PATH, not a bare `godot`. .desktop files get no shell expansion, so a
+# bare name resolves against the LAUNCHER's PATH — plasmashell's, inherited at
+# session start, which does not include ~/.local/bin. The symptom is a
+# "Could not find the program 'godot'" popup. environment.d fixes the PATH for
+# anything started after it, but an already-running plasmashell keeps the old
+# one, so the absolute path is what actually makes this work.
+Exec=/home/dev/.local/bin/godot %f
+Icon=godot
+Terminal=false
+Categories=Development;IDE;
+MimeType=application/x-godot-project;
+StartupWMClass=Godot

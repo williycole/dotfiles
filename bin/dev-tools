@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+#
+# Linux-only first-run provisioning: language runtimes, CLI tools, account setup.
+#
+# Was home/.chezmoiscripts/run_once_after_10-dev-tools.sh.tmpl. chezmoi's
+# `run_once_` ran a script once per content hash, so editing it re-ran it. That
+# behaviour is reproduced here explicitly: the stamp file holds this script's
+# sha256, so a skip means "same script already succeeded" rather than "ran once,
+# ever". Nothing invisible decides when this runs.
+#
+#   just dev-tools            run if not already stamped for this version
+#   just dev-tools --force    run regardless
+#
+# Stamp: ${XDG_STATE_HOME:-~/.local/state}/dotfiles/dev-tools.stamp, written only
+# after every step reported success.
+
+set -uo pipefail   # deliberately NOT -e; each step reports and the run continues
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+STAMP="$STATE/dev-tools.stamp"
+FORCE=0
+[[ "${1:-}" == "--force" ]] && FORCE=1
+
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    echo "dev-tools: macOS — nothing to do (runtimes come from fnm/pyenv/elixir-install)"
+    exit 0
+fi
+
+hash_self() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "${BASH_SOURCE[0]}" | cut -d' ' -f1
+    else
+        shasum -a 256 "${BASH_SOURCE[0]}" | cut -d' ' -f1
+    fi
+}
+SELF_HASH="$(hash_self)"
+
+if (( ! FORCE )) && [[ -f "$STAMP" ]] && [[ "$(cat "$STAMP" 2>/dev/null)" == "$SELF_HASH" ]]; then
+    echo "dev-tools: already done for this version of the script (stamp: $STAMP)"
+    echo "           re-run anyway with: just dev-tools --force"
+    exit 0
+fi
+
+RC=0
+warn() { printf '    [warn] %s\n' "$*"; RC=1; }
+
+export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+hash -r 2>/dev/null || true
+
+LOG_DIR="$HOME/.cache/dev-bootstrap"; mkdir -p "$LOG_DIR"
+
+echo "==> [1/3] runtimes"
+if command -v mise >/dev/null; then
+    # Fast, prebuilt — synchronous so install-packages (needs node) has them.
+    echo "    fast (node/go/python/rust) — synchronous"
+    mise install -y node go python rust || warn "a fast runtime failed (see above)"
+    # Slow, source-built — detached so this returns without a 20-minute wait.
+    echo "    Erlang/Elixir — detached source build → $LOG_DIR/mise-beam.log"
+    nohup mise install -y erlang elixir >"$LOG_DIR/mise-beam.log" 2>&1 &
+    disown 2>/dev/null || true
+else
+    warn "mise not on PATH — skipping runtimes"
+fi
+
+echo "==> [2/3] CLI tools + flatpaks (install-packages; all user-level)"
+# SKIP_CUSTOM=1 skips the curl/npx 'custom installers' (peon-ping + agent skills): in a
+# headless bootstrap peon-ping's notification sound (pw-play) hangs with no audio sink and
+# wedges the whole run. Install those once later from the graphical dev session:
+# `just install`.
+if [[ -x "$REPO/bin/install-packages" ]]; then
+    SKIP_CUSTOM=1 "$REPO/bin/install-packages" || warn "install-packages had failures"
+else
+    warn "bin/install-packages missing or not executable — skipped"
+fi
+
+echo "==> [3/3] provision (Odin/ols; pi → local Ollama on Pocket 4)"
+if [[ -x "$REPO/nobara/provision-user.sh" ]]; then
+    # Pocket 4 has the eDP-1 laptop panel; the Gaming PC does not → auto-pick --pocket4.
+    if ls /sys/class/drm/*eDP-1 >/dev/null 2>&1; then P4=(--pocket4); else P4=(); fi
+    "$REPO/nobara/provision-user.sh" "${P4[@]}" || warn "provision had failures"
+else
+    warn "nobara/provision-user.sh missing or not executable — skipped"
+fi
+
+echo
+if (( RC != 0 )); then
+    echo "dev-tools: one or more steps reported a failure (named above)."
+    echo "           NO stamp written — the next run retries."
+    exit 1
+fi
+
+mkdir -p "$STATE" && printf '%s\n' "$SELF_HASH" > "$STAMP"
+echo "dev-tools: complete. Stamped $STAMP"
+echo "           Erlang/Elixir may still be compiling: tail -f $LOG_DIR/mise-beam.log"

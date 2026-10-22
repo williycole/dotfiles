@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Editor (nvim)
+Comment=Opens $EDITOR in a terminal.
+Exec=ghostty -e nvim
+Icon=nvim
+Terminal=false
+Categories=Development;TextEditor;

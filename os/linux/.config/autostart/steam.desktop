@@ -1,0 +1,31 @@
+[Desktop Entry]
+Type=Application
+Name=Steam
+Comment=Start Steam to the tray so the controller Guide button reaches it
+
+# -silent is the entire point of this file. Steam starts into the system tray
+# instead of opening the client window.
+#
+# WHY IT MATTERS: the controller Guide/Home button emits BTN_MODE, and Steam is
+# the only thing on the system listening for it — press it and Big Picture opens
+# over whatever is on screen. Nothing else grabs BTN_MODE, so a Steam that is not
+# running means a Guide button that does nothing. Autostarting it silently makes
+# the button live from login without a Steam window in the way.
+#
+# ABSOLUTE PATH for the same reason as godot.desktop: .desktop Exec gets no shell
+# expansion and resolves against the LAUNCHER's PATH. /usr/bin/steam is the distro
+# package — Nobara ships Steam preinstalled, so there is no packages.yaml entry.
+# -no-browser since 2026-09-29. Steam's store, community, workshop and news are
+# Chromium web views INSIDE the client — they render images and run script, and
+# none of the browser policy on this box touches them. The flag never loads that
+# engine. Library, downloads, launching, Proton, controller config and the Guide
+# button are unaffected; games come from Steam's content servers, not the web
+# views, so downloading is unchanged.
+Exec=/usr/bin/steam -silent -no-browser
+
+Icon=steam
+Terminal=false
+StartupWMClass=Steam
+
+# ponytail: no autostart-phase or sleep. If Steam ever races plasmashell and
+# opens a window instead of going to the tray, add X-KDE-autostart-phase=2.

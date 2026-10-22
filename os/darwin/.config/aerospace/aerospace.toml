@@ -1,0 +1,152 @@
+# =============================================================================
+# AeroSpace configuration
+# Ported from yabai + skhd
+# =============================================================================
+
+start-at-login = true
+
+# ---- Layout ----------------------------------------------------------------
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+
+
+# ---- Gaps & Padding --------------------------------------------------------
+[gaps]
+inner.horizontal = 5
+inner.vertical   = 5
+outer.left       = 10
+outer.bottom     = 10
+outer.right      = 10
+outer.top        = 10
+
+# ---- Float Rules (from yabairc) --------------------------------------------
+[[on-window-detected]]
+run = 'layout h_tiles'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.systempreferences'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.ActivityMonitor'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.calculator'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Dictionary'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.agilebits.onepassword7'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.raycast.macos'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.logi.optionsplus'
+run = 'layout floating'
+
+# =============================================================================
+# KEYBINDINGS  (ported from skhdrc — cmd = ⌘, alt = ⌥)
+# =============================================================================
+
+[mode.main.binding]
+
+# ---- Window Focus  (cmd+arrows) --------------------------------------------
+cmd-left  = 'focus left'
+cmd-right = 'focus right'
+cmd-up    = 'focus up'
+cmd-down  = 'focus down'
+
+# ---- Window Swap  (cmd+shift+arrows) ---------------------------------------
+cmd-shift-left  = 'move left'
+cmd-shift-right = 'move right'
+cmd-shift-up    = 'move up'
+cmd-shift-down  = 'move down'
+
+# ---- Window Resize  (ctrl+- / ctrl+=) ----------------------------------------
+ctrl-minus      = 'resize width -50'
+ctrl-equal      = 'resize width +50'
+ctrl-shift-minus = 'resize height -50'
+ctrl-shift-equal = 'resize height +50'
+
+# ---- Window Operations -----------------------------------------------------
+cmd-q = 'close'
+alt-shift-f = 'fullscreen'
+cmd-shift-0 = 'balance-sizes'
+
+# ---- Terminal / Launcher mode  (cmd+return → mode, then key) ---------------
+cmd-enter = 'mode 🚀'
+
+# ---- App Launchers ---------------------------------------------------------
+cmd-b = 'exec-and-forget open -na /Applications/Firefox.app'
+cmd-m = 'exec-and-forget open -na /Applications/Spotify.app'
+
+# ---- System ----------------------------------------------------------------
+cmd-ctrl-t = 'exec-and-forget open -a "Activity Monitor"'
+
+# ---- Workspaces  (alt+1-0) -------------------------------------------------
+alt-1 = 'workspace 1'
+alt-2 = 'workspace 2'
+alt-3 = 'workspace 3'
+alt-4 = 'workspace 4'
+alt-5 = 'workspace 5'
+alt-6 = 'workspace 6'
+alt-7 = 'workspace 7'
+alt-8 = 'workspace 8'
+alt-9 = 'workspace 9'
+alt-0 = 'workspace 10'
+
+# ---- Move window to workspace + follow  (alt+shift+1-0) --------------------
+alt-shift-1 = ['move-node-to-workspace 1', 'workspace 1']
+alt-shift-2 = ['move-node-to-workspace 2', 'workspace 2']
+alt-shift-3 = ['move-node-to-workspace 3', 'workspace 3']
+alt-shift-4 = ['move-node-to-workspace 4', 'workspace 4']
+alt-shift-5 = ['move-node-to-workspace 5', 'workspace 5']
+alt-shift-6 = ['move-node-to-workspace 6', 'workspace 6']
+alt-shift-7 = ['move-node-to-workspace 7', 'workspace 7']
+alt-shift-8 = ['move-node-to-workspace 8', 'workspace 8']
+alt-shift-9 = ['move-node-to-workspace 9', 'workspace 9']
+alt-shift-0 = ['move-node-to-workspace 10', 'workspace 10']
+
+# ---- Next / prev workspace  (cmd+alt+tab) ----------------------------------
+cmd-alt-tab       = 'workspace-back-and-forth'
+cmd-alt-shift-tab = 'workspace-back-and-forth'
+
+# ---- Monitor focus  (cmd+shift+alt+arrows) ---------------------------------
+cmd-shift-alt-left  = 'focus-monitor left'
+cmd-shift-alt-right = 'focus-monitor right'
+cmd-shift-alt-up    = 'focus-monitor up'
+cmd-shift-alt-down  = 'focus-monitor down'
+
+# ---- Move window to monitor  (cmd+ctrl+alt+arrows) -------------------------
+cmd-ctrl-alt-left  = ['move-node-to-monitor left',  'focus-monitor left']
+cmd-ctrl-alt-right = ['move-node-to-monitor right', 'focus-monitor right']
+cmd-ctrl-alt-up    = ['move-node-to-monitor up',    'focus-monitor up']
+cmd-ctrl-alt-down  = ['move-node-to-monitor down',  'focus-monitor down']
+
+# ---- Window Cycling  (alt+tab) ---------------------------------------------
+alt-tab       = 'focus dfs-next'
+alt-shift-tab = 'focus dfs-prev'
+
+# =============================================================================
+# LAUNCHER MODE  (cmd+enter → mode, then single key)
+# =============================================================================
+
+[mode."🚀".binding]
+esc     = 'mode main'
+b       = ['exec-and-forget open -na /Applications/Firefox.app',  'mode main']
+c       = ['exec-and-forget open -na /Applications/cmux.app',     'mode main']
+g       = ['exec-and-forget open -na /Applications/Ghostty.app',  'mode main']
+s       = ['exec-and-forget open -na /Applications/Safari.app',   'mode main']
+
+

@@ -1,0 +1,12 @@
+[Desktops]
+Number=10
+Rows=2
+
+[Plugins]
+krohnkiteEnabled=true
+move-to-desktopEnabled=true
+
+[Script-krohnkite]
+floatUtility=true
+floatingClass=[steam_app_],gamescope,eldenring.exe,mpv,imv
+layoutPerDesktop=true

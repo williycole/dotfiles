@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Terminal: order coffee
+Comment=terminal.shop over SSH — browse and order coffee in the terminal.
+# Same shape as yt.desktop: ghostty -e, absolute command, no shell PATH needed.
+Exec=/bin/sh -c 'exec ghostty -e ssh terminal.shop'
+Icon=utilities-terminal
+Terminal=false
+Categories=Network;
+Keywords=coffee;terminal;shop;ssh;

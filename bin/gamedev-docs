@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+#
+# gamedev-docs — mirror the offline gamedev reference set: N64 homebrew + Godot.
+#
+# Named for packages.yaml, which already tags godot and ares "OFFLINE-GAMEDEV.md".
+# This is the docs half of that intent.
+#
+# Offline docs survive any network. Pull them down once and read them from
+# disk. Re-run it whenever you want a fresher copy.
+#
+# NOT mirrored, because you already have it: libdragon's own API docs and its
+# whole examples/ tree ship inside the source clone that `libdragon init` makes.
+# That is the reference you will actually use most, and it is offline already.
+#
+# Two rules copied from bin/dots, for the same reasons:
+#   1. Nothing aborts halfway. A site that fails is named and the run continues,
+#      then exits non-zero. One dead host must not cost you the other three.
+#   2. Nothing outside the output directory is written or deleted.
+#
+# Usage:  bin/gamedev-docs [output-dir]      (default: ~/Documents/gamedev-docs)
+
+set -uo pipefail          # NOT -e: see rule 1.
+
+OUT="${1:-${GAMEDEV_DOCS:-$HOME/Documents/gamedev-docs}}"
+
+command -v wget >/dev/null || { echo "gamedev-docs: wget not installed" >&2; exit 1; }
+
+# Per-site ceiling. A recursive wget against a wiki is unbounded by nature, and
+# ultra64.ca carries the scanned SDK manuals as large PDFs. 500m each is enough
+# for all four and small enough that a crawl gone wrong cannot fill the disk.
+QUOTA=500m
+
+# Politeness, not performance. These are volunteer-run community sites.
+#
+# NOT --no-verbose. Fedora ships wget2 as `wget`, and wget2's --no-verbose is
+# SILENT — not "one line per file" the way wget 1.x is. A 30-60 minute crawl that
+# prints nothing is indistinguishable from a hang, and the first thing anyone does
+# is kill it. The per-file chatter is the progress bar.
+# --max-threads=1 is what makes --wait mean anything. wget2 is MULTITHREADED by
+# default, and the delay is per thread, so parallel workers still hit the host in
+# bursts. n64squid sits behind Cloudflare and answered with connection resets
+# ("Failed to read 102400 bytes ... errno=104") until this was pinned to one
+# thread. Slower on purpose: these are volunteer-run sites and getting
+# rate-limited costs more time than the delay does.
+# --no-clobber is what makes a re-run resume instead of starting over. Without it
+# wget saves a second copy as file.1 and the whole mirror is refetched, which on a
+# 235MB pile of scanned SDK manuals is not a small mistake. wget 1.x refuses -nc
+# together with --convert-links; wget2 accepts both, verified — a second pass over
+# the same tree added zero duplicates and left the file count unchanged.
+COMMON=(--recursive --convert-links --adjust-extension --page-requisites
+        --no-parent --timeout=30 --tries=3 --max-threads=1 --no-clobber
+        --wait=0.5 --random-wait "--quota=$QUOTA")
+
+failed=()
+
+# $1 site label  $2 depth  $3 start URL  $4 extra args as one string (may be empty)
+mirror() {
+  local label="$1" depth="$2" url="$3" extra="$4" host
+  host="${url#*://}"; host="${host%%/*}"
+
+  # Resolve first and say so plainly. A filtered name fails as NXDOMAIN, which
+  # wget reports as a generic resolve error. Naming it here is the difference
+  # between "the site is down" and "I need to permit the domain".
+  if ! getent hosts "$host" >/dev/null 2>&1; then
+    echo "  !! $label — $host does not resolve here; re-run once it does."
+    failed+=("$label")
+    return
+  fi
+
+  echo "==> $label ($host)"
+  # shellcheck disable=SC2086  # $extra is a deliberate word-split of wget flags
+  if wget "${COMMON[@]}" --level="$depth" $extra --directory-prefix="$OUT" "$url"; then
+    echo "    done"
+  else
+    # wget exits 8 on any server 4xx/5xx, which a stray broken link is enough to
+    # cause. The mirror is still usable, so this is reported, never fatal.
+    echo "  !! $label — wget exited $? (partial mirror kept)"
+    failed+=("$label")
+  fi
+}
+
+mkdir -p "$OUT" || { echo "gamedev-docs: cannot create $OUT" >&2; exit 1; }
+echo "==> mirroring into $OUT"
+
+# MediaWiki generates an unbounded URL space: every page also exists as an edit
+# form, a history view, and a diff between any two revisions. Without the reject
+# list this crawl never ends.
+#
+# NO --span-hosts, and that is deliberate. The wiki images live on a second host
+# (static.miraheze.org) so spanning looks like the obvious answer, but
+# --page-requisites IGNORES --domains: wget fetches requisites from any host it is
+# allowed to span to, and --domains does not constrain them. Measured, not assumed
+# — `-H -D n64brew.dev,static.miraheze.org` pulled 16 hosts including
+# fonts.googleapis.com and drive.google.com, and a pcre --reject-regex on
+# everything off-host did not stop it either. Without -H the crawl stays on
+# n64brew.dev exactly. The images are fetched by name below instead.
+#
+# CEILING: the offline wiki is readable but UNSTYLED. MediaWiki serves its CSS
+# from /w/load.php, which n64brew's robots.txt disallows, so wget skips it. That
+# same disallow is what keeps the crawl bounded, so robots stays respected —
+# `-e robots=off` would fetch the stylesheets and reopen the unbounded URL space
+# in the same move. Content and diagrams are all there; the layout is plain.
+mirror "N64brew wiki" 6 "https://n64brew.dev/wiki/Getting_Started" \
+  "--reject-regex=(/w/|action=|oldid=|diff=|printable=|Special:|Talk:|User:)"
+
+# The diagrams ARE the content on a hardware wiki, so pull them by name from the
+# HTML just mirrored. --force-directories puts them under the same tree, and the
+# sed repoints the pages at the local copies — --convert-links only rewrites what
+# its own run downloaded, so these would otherwise stay absolute and break offline.
+#
+# CEILING: the sed assumes a page two levels down (n64brew.dev/wiki/Foo.html),
+# which is every article. A page mirrored at the tree root keeps an absolute image
+# URL and shows a broken image offline. Worth fixing only if that ever appears.
+if [ -d "$OUT/n64brew.dev" ]; then
+  echo "==> N64brew wiki images (static.miraheze.org)"
+  imglist="$(mktemp)"
+  grep -rhoE 'https://static\.miraheze\.org/n64wiki/[^"'"'"' )]+' "$OUT/n64brew.dev" \
+    2>/dev/null | sed 's/&amp;.*//' | sort -u > "$imglist"
+  if [ -s "$imglist" ]; then
+    wget --timeout=30 --tries=3 --force-directories --no-clobber --max-threads=1 \
+         "--quota=$QUOTA" --directory-prefix="$OUT" --input-file="$imglist" \
+      || echo "  !! some images failed (pages still readable)"
+    find "$OUT/n64brew.dev" -name '*.html' -exec \
+      sed -i 's#https://static\.miraheze\.org/#../../static.miraheze.org/#g' {} + \
+      2>/dev/null
+    echo "    $(wc -l < "$imglist") image(s)"
+  else
+    echo "    none referenced"
+  fi
+  rm -f "$imglist"
+fi
+
+# WordPress regenerates every uploaded image at a dozen sizes and links them all,
+# so a plain mirror pulls shiba-match-5.jpg, -300x225, -768x576 and -150x150 as
+# four separate files. Rejecting the resized variants keeps the original, which is
+# the one the article actually displays.
+mirror "N64Squid libdragon tutorial" 5 "https://n64squid.com/homebrew/" \
+  "--reject-regex=(-[0-9]+x[0-9]+\\.(jpg|jpeg|png|gif|webp)$|/wp-json/|\\?replytocom=)"
+mirror "ultra64.ca (official SDK docs + manuals)" 4 "https://ultra64.ca/resources/" ""
+mirror "libdragon online docs" 5 "https://libdragon.dev/" ""
+
+# Godot ships official offline bundles, but only through nightly.link, which
+# redirects to GitHub Actions artifact storage on productionresultssaN.blob.core.
+# windows.net — an unpredictable hostname, so permitting it means permitting a
+# wildcard into Azure blob storage. Not worth it for a zip. docs.godotengine.org
+# resolves and mirrors fine, so take the slower path.
+#
+# --no-parent pins this to /en/stable, which is what keeps every other language
+# and every old version out. The class reference is ~1500 pages and is the part
+# you most want on a plane, so it is included and the quota is raised to match.
+mirror "Godot docs (stable, incl. class reference)" 8 \
+  "https://docs.godotengine.org/en/stable/" \
+  "--quota=1500m --reject-regex=(\\?highlight=|_sources/|/_downloads/)"
+
+echo
+du -sh "$OUT" 2>/dev/null
+if [ ${#failed[@]} -gt 0 ]; then
+  echo "==> done with ${#failed[@]} failure(s): ${failed[*]}"
+  echo "    Re-run safe: wget skips what it already has."
+  exit 1
+fi
+echo "==> done. Start here:"
+echo "    N64:   xdg-open $OUT/n64brew.dev/wiki/Getting_Started.html"
+echo "    Godot: xdg-open $OUT/docs.godotengine.org/en/stable/getting_started/first_2d_game/index.html"

@@ -1,0 +1,13 @@
+{
+  "default_pack": "ocarina_of_time",
+  "pack_rotation": [
+    "ocarina_of_time",
+    "zelda-a-link-to-the-past"
+  ],
+  "notification_style": "overlay",
+  "debug": true,
+  "debug_retention_days": 7,
+  "notification_position": "bottom-center",
+  "pack_rotation_mode": "round-robin",
+  "notification_all_screens": true
+}

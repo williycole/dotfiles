@@ -1,0 +1,10 @@
+# jjui — jj TUI. Symlinked to ~/.config/jjui/config.toml by `just link`.
+# Binary comes from mise (home/.config/mise/config.toml). Trial started 2026-10-07
+# as the lazygit stand-in for jj repos; lazygit stays for browsing colocated repos.
+# Keys: `?` help, `p` preview, `d` diff, `S` squash, `s` split, `r` rebase, `b` bookmark,
+# `g` git push/fetch, `u` undo, `o` op log, `shift+l` revset bar, `f` ace jump.
+# Full reference: https://idursun.github.io/jjui/customization/config-toml/
+
+[ui]
+# Agents commit behind my back; repaint without a manual refresh.
+auto_refresh_interval = 5

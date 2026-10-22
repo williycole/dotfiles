@@ -1,0 +1,56 @@
+#:schema https://yazi-rs.github.io/schemas/yazi.json
+[opener]
+edit = [
+  { run = 'nvim "$@"', block = true, desc = "Neovim" },
+]
+
+# casty is a real Chrome driven from the terminal, so an .html opens as the
+# rendered page rather than as markup. Preview stays raw HTML — this is only
+# what Enter does. UNVERIFIED: casty takes `casty [url]` and this passes a
+# file:// URL built from yazi's absolute path; test on a local .html before
+# trusting it.
+browse = [
+  { run = 'casty "file://%s1"', block = true, desc = "casty (real Chrome)" },
+]
+
+[open]
+prepend_rules = [
+  { url = "*.html", use = "browse" },
+  { url = "*.htm", use = "browse" },
+]
+
+[mgr]
+show_hidden = true
+
+[plugin]
+# Markdown renders through glow instead of showing raw text. glow (27k stars,
+# actively developed) over mdcat, whose original repo is archived and whose
+# Homebrew formula now points at an 88-star continuation. It is also the same
+# renderer the `cat` override in shell/common.sh uses, so one tool covers the
+# shell and the file manager.
+#   $w = preview width · $t = terminal theme (dark/light/auto) · $1 = file path
+#
+# mediainfo covers audio and subtitles only. Its README suggests taking over
+# {audio,video,image}/* wholesale, but yazi's built-in image and video
+# previewers already show the actual picture/frame — handing those to mediainfo
+# would trade a preview for a metadata table. Audio is the real gap.
+# NOTE: mediainfo also wants ImageMagick for AI/EPS/PSD rendering. Not installed
+# — those stay unpreviewed, which is fine for a code tree.
+prepend_previewers = [
+  { url = "*.md", run = 'piper -- glow -w $w -s $t "$1"' },
+  { url = "*.markdown", run = 'piper -- glow -w $w -s $t "$1"' },
+  { mime = "audio/*", run = "mediainfo" },
+  { mime = "application/{subrip,x-subrip}", run = "mediainfo" },
+]
+
+# Preloading is what makes the audio preview feel instant rather than lazy.
+prepend_preloaders = [
+  { mime = "audio/*", run = "mediainfo" },
+]
+
+# git.yazi needs both rules: files and directories are fetched separately.
+# `group` means only the first match in the group runs.
+prepend_fetchers = [
+  { url = "*", run = "git", group = "git" },
+  { url = "*/", run = "git", group = "git" },
+]

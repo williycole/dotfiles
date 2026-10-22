@@ -1,0 +1,95 @@
+# ── secrets: never commit secret material ─────────────────────────────────────
+# Config references secrets at runtime instead of containing them. One `op inject`
+# into a gitignored ~/.secrets at bootstrap, then shells source it.
+**/auth.json
+**/.secrets
+**/secrets.*
+*.age
+*.key
+*.pem
+*.p12
+*.pfx
+**/id_rsa*
+**/id_ed25519*
+**/id_ecdsa*
+**/.netrc
+**/.pgpass
+
+# Token caches. The pattern below is deliberately broad. The previous rule named
+# `windows/.config/spotify-tui/client.yml`, but the committed path was
+# `windows/.config/archived/spotify-tui/client.yml`. One missing path segment meant
+# the rule never applied, and live Spotify credentials were committed and pushed.
+# Match on filename, not location.
+**/client.yml
+**/.spotify_token_cache.json
+**/*token_cache*
+
+# ── data that is never config ─────────────────────────────────────────────────
+# ~/.local/share/atuin/history.db is ~7 MB of every command ever entered on this
+# machine. Shell history is data, and atuin sync is its answer — see
+# openspec/backlog/atuin-history-sync.md.
+**/.local/share/atuin/
+**/history.db
+**/*.db-shm
+**/*.db-wal
+**/.zsh_history
+**/.bash_history
+**/.python_history
+**/.psql_history
+**/.node_repl_history
+
+# ── chezmoi local state ───────────────────────────────────────────────────────
+# Lives outside the repo (~/.config/chezmoi); ignore any stray copy. This section
+# goes away entirely at task 8.2.
+.chezmoistate*
+
+# ── OS / editor noise ─────────────────────────────────────────────────────────
+.DS_Store
+*.swp
+
+# Removed 2026-08-27: ~60 entries for the `windows/`, `wsl/`, `ubuntu/`, and
+# `ubuntu-and-wsl/` trees. Those directories were deleted by the June 2026 chezmoi
+# migration, except `windows/`, which task 3.14 removes. Rules for paths that no
+# longer exist hid the fact that `windows/` was still tracked.
+
+# ── installer-owned files: never track these ──────────────────────────────────
+# Rescued from home/.chezmoiignore before task 8.1 deleted it. That file's first
+# two sections were the per-OS split, now the os/ directories. This third section
+# was the only record of WHICH files belong to an installer rather than to us.
+#
+# herdr and plannotator write these themselves and overwrite them on every update.
+# Each carries a "managed by <tool>, updating overwrites this" header. Tracking any
+# of them meant drift on every upstream version bump, and a restore offering to put
+# the older version back. Recreated on a new machine by `herdr integration install
+# <target>` and plannotator's own installer, both of which bin/install-packages runs.
+**/.claude/hooks/herdr-agent-state.sh
+**/.pi/agent/extensions/herdr-agent-state.ts
+**/.omp/agent/extensions/herdr-omp-agent-state.ts
+**/.config/opencode/plugins/herdr-agent-state.js
+**/.cursor/herdr-agent-state.sh
+**/.claude/skills/plannotator-annotate
+**/.claude/skills/plannotator-last
+**/.claude/skills/plannotator-review
+
+# App-managed STATE, never hand-edited config. The app rewrites these constantly,
+# so tracking them is perpetual drift. lazyvim.json holds only news-read hashes and
+# install_version — the real config is lua/config/lazy.lua, which IS tracked. Do not
+# re-add lazyvim.json.
+#
+# The rule: a file belongs here only if it holds ZERO config you would want on
+# another machine. Anything holding tooling or preferences (like .pi/agent/settings.json,
+# which carries provider, model and packages) is source of truth and stays tracked.
+**/.config/nvim/lazyvim.json
+
+# Embedded repo internals — never deploy a nested .git. An accidental add of an
+# agent's working tree once slurped its whole .git. Keep the agent's files, not its repo.
+**/.agents/local/ponytail/.git
+**/.agents/local/ponytail/.git/**
+
+# cliamp — Spotify credentials and the client_id that pairs with them. This repo
+# is cloned onto a work machine; neither belongs in it.
+.config/cliamp/
+
+# Python bytecode next to scripts in os/linux/.local/bin (yt imports itself as a module)
+__pycache__/
+*.pyc

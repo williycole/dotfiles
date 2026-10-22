@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+#
+# docker — podman shim that drops libdragon's hardcoded `-u <uid>:<gid>`.
+#
+# Nobara has no Docker; /usr/bin/docker is podman-docker, a thin alias. That is
+# fine for almost everything and wrong for exactly one thing: libdragon-docker
+# hardcodes `-u $(id -u):$(id -g)` (modules/docker-utils.js, no env override) on
+# the assumption that Docker's daemon runs as root and that uid therefore owns
+# both the bind mount and the image.
+#
+# Under ROOTLESS podman that assumption inverts. The host user is already mapped
+# to root inside the container, so:
+#
+#   default        container uid 1001 is a subuid owning nothing
+#                  -> mkdir: cannot create directory 'build/': Permission denied
+#   --userns=keep-id
+#                  container uid 1001 maps back to the host user, but is not root
+#                  -> chown: changing ownership of '/n64_toolchain/...': Operation not permitted
+#   no -u at all   container root == host user: writes the bind mount AND chowns
+#                  the toolchain. Verified directly before this file was written.
+#
+# So the fix is to drop the flag, not to add one. Scoped as narrowly as possible:
+# only libdragon commands are touched and everything else is handed to podman
+# byte-for-byte, because a global `-u` strip would silently change how every other
+# container runs.
+#
+# CEILING: identification is by image/path name. A libdragon command that mentions
+# libdragon nowhere in its arguments and targets a container this cannot inspect
+# would keep its -u and fail the old way. Upstream adding an override makes this
+# file deletable — check `libdragon help` after an update.
+
+set -uo pipefail
+
+engine=podman
+command -v "$engine" >/dev/null || { echo "docker-shim: podman not found" >&2; exit 127; }
+
+is_libdragon=0
+
+# Cheap pass first: the image name on run/create, and --workdir /libdragon on exec,
+# both put the string straight in argv.
+case " $* " in *libdragon*) is_libdragon=1 ;; esac
+
+# Otherwise, for `exec`, ask what image the target container came from. `docker exec`
+# names a container id, which carries no hint on its own.
+if [ "$is_libdragon" -eq 0 ] && [ "${1:-}" = "exec" ]; then
+  for arg in "$@"; do
+    case "$arg" in
+      exec|-*) continue ;;                      # flag, or the subcommand itself
+    esac
+    img=$("$engine" inspect --format '{{.ImageName}}' "$arg" 2>/dev/null)
+    case "$img" in *libdragon*) is_libdragon=1 ;; esac
+    break                                        # first bare word is the container
+  done
+fi
+
+if [ "$is_libdragon" -eq 0 ]; then
+  exec "$engine" "$@"
+fi
+
+# Strip `-u X` and `--user X` in both their split and joined spellings.
+args=()
+skip=0
+for arg in "$@"; do
+  if [ "$skip" -eq 1 ]; then skip=0; continue; fi
+  case "$arg" in
+    -u|--user)   skip=1; continue ;;
+    -u=*|--user=*) continue ;;
+  esac
+  args+=("$arg")
+done
+
+exec "$engine" "${args[@]}"

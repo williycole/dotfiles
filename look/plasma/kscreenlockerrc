@@ -1,0 +1,7 @@
+[Daemon]
+Autolock=true
+Timeout=30
+
+[Greeter][Wallpaper][org.kde.image][General]
+Image=file:///usr/share/wallpapers/F44/
+PreviewImage=file:///usr/share/wallpapers/F44/

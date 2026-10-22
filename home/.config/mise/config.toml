@@ -1,0 +1,46 @@
+# Global mise config — symlinked to ~/.config/mise/config.toml.
+# Pins language runtimes so every machine resolves identical versions.
+# Replaces the old hand-rolled pyenv / fnm / ~/.elixir-install PATH hacks.
+# Run `mise install` (from any dir) to install these. No apply step: this file and
+# ~/.config/mise/config.toml are one inode.
+[tools]
+# VERSION POLICY (owner, 2026-10-08): stable and current, never edge.
+#   LTS where the project has one (node).  Otherwise the latest STABLE release
+#   (mise "latest" never picks betas or RCs). No exceptions: erlang and elixir
+#   have no LTS line, so they track latest stable too (owner, 2026-10-08:
+#   if work lags, that is handled at work).
+erlang = "latest"
+elixir = "latest"
+node = "lts"
+go = "latest"
+python = "3.14"
+rust = "latest"
+jj = "latest"
+jjui = "latest" # jj TUI, lazygit-shaped; trial started 2026-10-07. Config: home/.config/jjui/config.toml
+# just drives host-level scripts (install-packages, doctor.sh, bootstrap.sh,
+# bin/dots), so it has to be a real host binary. mise provides it without admin.
+just = "latest"
+tmux = "latest"
+atuin = "latest"
+glow = "latest"
+lazygit = "latest"
+delta = "latest"
+lazydocker = "latest"
+cmake = "latest"
+uv = "latest"
+jq = "latest"
+btop = "latest"
+lua = "latest"
+ripgrep = "latest"
+fd = "latest"
+fzf = "latest"
+bat = "latest"
+eza = "latest"
+zoxide = "latest"
+starship = "latest"
+yazi = "latest"
+gh = "latest"
+
+[settings]
+# Activate runtimes on cd into project dirs without prompting.
+experimental = false

@@ -1,0 +1,5 @@
+background ="#000000"
+custom-shader = shaders/wiggle.glsl
+custom-shader = shaders/balatro.glsl
+custom-shader = shaders/tft.glsl
+font-family = "m6x11"

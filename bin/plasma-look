@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# plasma-look — try every downloaded Plasma Global Theme WITH its panel layout, then come back.
+#
+#   plasma-look backup       # snapshot current look + panel layout to ~/plasma-look-backup
+#   plasma-look list         # names you can pass to try
+#   plasma-look try <name>   # apply theme including its panel layout (--resetLayout)
+#   plasma-look restore      # put the snapshot back, then log out/in
+#
+# Virtual desktops, krohnkite and Meta+N shortcuts are KWin state; no theme touches them.
+set -euo pipefail
+
+B="$HOME/plasma-look-backup"
+# ponytail: whole files, not per-key. The snapshot is from this same login, so a
+# full copy back is exact; kwinrc's [Desktops] ids are identical either way.
+FILES=(kdeglobals kwinrc plasmarc plasma-org.kde.plasma.desktop-appletsrc
+       kglobalshortcutsrc kcminputrc ksplashrc kscreenlockerrc)
+
+case "${1:-}" in
+  backup)
+    mkdir -p "$B"
+    for f in "${FILES[@]}"; do [ -f "$HOME/.config/$f" ] && cp "$HOME/.config/$f" "$B/"; done
+    ls "$B" ;;
+  list)
+    plasma-apply-lookandfeel --list ;;
+  try)
+    [ -d "$B" ] || { echo "no snapshot yet - run: plasma-look backup" >&2; exit 1; }
+    [ -n "${2:-}" ] || { echo "usage: plasma-look try <name>" >&2; exit 1; }
+    plasma-apply-lookandfeel -a "$2" --resetLayout ;;
+  restore)
+    [ -d "$B" ] || { echo "no snapshot at $B" >&2; exit 1; }
+    # plasmashell holds appletsrc in memory and writes it on exit: stop it first
+    # or the copy is clobbered.
+    systemctl --user stop plasma-plasmashell
+    for f in "${FILES[@]}"; do [ -f "$B/$f" ] && cp "$B/$f" "$HOME/.config/"; done
+    systemctl --user start plasma-plasmashell
+    qdbus org.kde.KWin /KWin reconfigure || true
+    echo "restored. log out and back in so colors, cursors and shortcuts reload everywhere." ;;
+  *)
+    sed -n '2,8p' "$0" ;;
+esac

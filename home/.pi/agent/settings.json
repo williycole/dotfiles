@@ -1,0 +1,42 @@
+{
+  "lastChangelogVersion": "1.0.2",
+  "defaultProvider": "cursor",
+  "defaultModel": "composer-2.5:fast",
+  "defaultThinkingLevel": "high",
+  "theme": "terminal",
+  "quietStartup": true,
+  "collapseChangelog": true,
+  "doubleEscapeAction": "tree",
+  "treeFilterMode": "user-only",
+  "editorPaddingX": 2,
+  "autocompleteMaxVisible": 10,
+  "packages": [
+    "npm:pi-web-access",
+    "npm:@codexstar/pi-listen",
+    "npm:pi-markdown-preview",
+    "../../Repos/tell",
+    "npm:pi-btw",
+    {
+      "source": "npm:@plannotator/pi-extension",
+      "skills": []
+    },
+    "npm:pi-terminal-theme",
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:@juicesharp/rpiv-todo",
+    "npm:@juicesharp/rpiv-advisor",
+    "npm:context-mode",
+    "npm:pi-mcp-adapter",
+    "git:github.com/DietrichGebert/ponytail",
+    "npm:pi-claude-bridge",
+    "npm:pi-subagents",
+    "npm:pi-lens",
+    "npm:pi-simplify",
+    "npm:@carlosgtrz/pi-run-timer",
+    "git:github.com/jonjonrankin/pi-caveman",
+    "npm:pi-peon-adapter",
+    "npm:pi-cursor-sdk",
+    "npm:pi-vim",
+    "npm:pi-elixir"
+  ],
+  "tuiMode": "fullscreen"
+}

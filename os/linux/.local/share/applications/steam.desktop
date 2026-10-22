@@ -1,0 +1,64 @@
+[Desktop Entry]
+# A USER-SCOPE OVERRIDE of the distro's /usr/share/applications/steam.desktop.
+#
+# WHY NOT EDIT THE PACKAGE FILE: a Steam update rewrites it, and the flag would
+# vanish with no signal. A file at the same name under ~/.local/share shadows the
+# system one permanently, and `just link` puts it there.
+#
+# WHAT -no-browser DOES: Steam's store, community, workshop and news pages are
+# Chromium web views running inside the client. They render images and execute
+# script, and NONE of the browser policy on this box applies to them — they are
+# not Chromium the application, they are CEF embedded in Steam. The flag never
+# loads that engine at all. Library, downloads, launching, Proton settings,
+# controller config and the Guide button all still work, and games download from
+# Steam's content servers rather than through the web views.
+#
+# THE ACTIONS ARE CUT DOWN, not just flagged. Store, Community, News and Friends
+# are gone from the Actions list below: with -no-browser they would open a dead
+# pane, and leaving them in the right-click menu is an invitation to keep
+# clicking. Library, Servers, Screenshots, Settings and Big Picture remain.
+#
+# KNOWN GAPS, stated rather than implied:
+#   - Big Picture ignores -no-browser. Family View's PIN is the
+#     only lock that applies there.
+#   - A steam:// URL from a game or a link can still reach the client, but the
+#     store view is dead without the browser, so it fails harmlessly.
+#   - Buying games happens on the phone. The purchase lands in this library
+#     within seconds and installs from here.
+#
+# Localised Name[..] lines from the distro file are dropped on purpose: this is
+# an override, and carrying 26 translations of "Screenshots" would make a real
+# change to Exec hard to see in a diff.
+Name=Steam
+Comment=Games, library and downloads. Store and community are not loaded.
+Exec=/usr/bin/steam -no-browser %U
+Icon=steam
+Terminal=false
+Type=Application
+Categories=Network;FileTransfer;Game;
+MimeType=x-scheme-handler/steam;x-scheme-handler/steamlink;
+Actions=Library;Servers;Screenshots;Settings;BigPicture;
+PrefersNonDefaultGPU=true
+X-KDE-RunOnDiscreteGpu=true
+
+[Desktop Action Library]
+Name=Library
+Exec=/usr/bin/steam -no-browser steam://open/games
+
+[Desktop Action Servers]
+Name=Servers
+Exec=/usr/bin/steam -no-browser steam://open/servers
+
+[Desktop Action Screenshots]
+Name=Screenshots
+Exec=/usr/bin/steam -no-browser steam://open/screenshots
+
+[Desktop Action Settings]
+Name=Settings
+Exec=/usr/bin/steam -no-browser steam://open/settings
+
+[Desktop Action BigPicture]
+# Big Picture ignores -no-browser; the flag is here only so this entry does not
+# become the one launcher that starts Steam with its web engine loaded.
+Name=Big Picture
+Exec=/usr/bin/steam -no-browser steam://open/bigpicture

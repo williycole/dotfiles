@@ -1,0 +1,14 @@
+{
+    "KPlugin": {
+        "Id": "move-to-desktop",
+        "Name": "Move Window to Desktop",
+        "Description": "Meta+Shift+<digit> sends the active window to that virtual desktop",
+        "License": "MIT",
+        "Version": "1.0",
+        "EnabledByDefault": true
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-MainScript": "code/main.js",
+    "KPackageStructure": "KWin/Script"
+}

@@ -1,0 +1,136 @@
+onboarding = false
+
+[theme]
+# Mimic the host terminal (Ghostty) entirely — no herdr-side theming. herdr
+# chrome follows the active Ghostty theme (Kanagawa Wave). No [theme.custom]:
+# panel_bg = "reset" was tried but its
+# transparency killed the moving selection highlight's contrast.
+name = "terminal"
+
+[terminal]
+# default kept: shell_mode = "auto" (login shells on macOS, current behavior elsewhere)
+# New panes/tabs inherit the source pane's dir — split inside a worktree, stay in it.
+new_cwd = "follow"
+
+[worktrees]
+# default kept: directory = "~/.herdr/worktrees" (herdr-managed, auto-created on first use)
+
+[keys]
+# prefix = ctrl+space, matched to the tmux prefix so one set of muscle memory
+# drives both (they are used one at a time, never nested — nesting would make the
+# inner prefix unreachable). NOT ctrl+h — ctrl+h is ASCII 0x08 = Backspace and
+# eating it broke Backspace even under Ghostty. ctrl+space is NUL (0x00), aliases
+# no printable key; the only cost is panes lose ctrl+space (readline set-mark).
+# Previous value was ctrl+f, kept here in case ctrl+space misbehaves in a terminal.
+# NOTE: a prefix change needs a herdr restart — reload-config won't rebind it live.
+prefix = "ctrl+space"
+
+previous_tab = "prefix+h"
+next_tab = "prefix+l"
+
+focus_pane_left = "prefix+left"
+focus_pane_down = "prefix+down"
+focus_pane_up = "prefix+up"
+focus_pane_right = "prefix+right"
+
+# Navigate mode (sidebar jump mode): vim keys instead of arrows. Arrows stay as
+# permanent aliases. Plain keys are safe here because they only fire while the
+# mode is open. ctrl+hjkl is taken by smart-splits, so no global alt+hjkl.
+navigate_workspace_up = "k"
+navigate_workspace_down = "j"
+navigate_pane_left = "h"
+navigate_pane_right = "l"
+
+# Agent + worktree workflow (herdr's core purpose; unbound by default).
+# prev/next use p/n (herdr's vacated default tab keys — we moved tabs to h/l).
+# Avoids prefix+[ which is herdr's copy_mode.
+open_worktree = "prefix+shift+o"
+# remove_worktree: intentionally menu-only (destructive; kept behind the confirm menu).
+previous_agent = "prefix+p"
+next_agent = "prefix+n"
+focus_agent = "prefix+alt+1..9"
+
+# tmux parity. herdr defaults differ from the tmux bindings in ~/.tmux.conf for
+# these three; herdr moves so the tmux side stays untouched.
+detach = "prefix+d"             # tmux: prefix+d (herdr default was prefix+q)
+rename_tab = "prefix+r"         # tmux: bind r rename-window (default was prefix+shift+t)
+resize_mode = "prefix+ctrl+r"   # evicted by rename_tab (default was prefix+r)
+
+toggle_sidebar = "prefix+e"      # default was prefix+b
+edit_scrollback = "prefix+shift+e"  # evicted by toggle_sidebar (default was prefix+e)
+
+# tmux: bind T new-window "ghostty +list-themes"
+[[keys.command]]
+key = "prefix+shift+t"
+type = "pane"
+command = "~/.config/tmux/ghostty-theme-picker.sh"
+
+# tmux: bind G run-shell "~/.config/tmux/ghostty-reload.sh"
+# alt+g, not prefix+g: prefix+g is herdr's goto.
+[[keys.command]]
+key = "prefix+alt+g"
+type = "shell"
+command = "~/.config/tmux/ghostty-reload.sh"
+
+# Plugin: ray.file-explorer (speardragon/herdr-yazi) — Yazi in a herdr pane.
+[[keys.command]]
+key = "prefix+y"
+type = "plugin_action"
+command = "ray.file-explorer.open"
+description = "open file explorer"
+
+[[keys.command]]
+key = "prefix+shift+y"
+type = "plugin_action"
+command = "ray.file-explorer.open-tab"
+description = "open file explorer in a new tab"
+
+# Plugin: smart-splits.nvim — one set of <C-hjkl> that moves between Neovim
+# splits AND herdr panes. NO prefix: these are global keys, so the chord is the
+# same inside and outside nvim. The plugin's script asks herdr which process the
+# focused pane runs; nvim gets the key forwarded so it can move its own splits,
+# and at a split edge herdr moves pane focus instead. At the outermost edge the
+# key goes back to the app, so shell <C-l> (clear) and <C-h> (backspace) survive.
+# Linked from the lazy.nvim clone, not `plugin install`: the herdr manifest ships
+# inside the Neovim plugin repo. Needs jq.
+[[keys.command]]
+key = "ctrl+h"
+type = "plugin_action"
+command = "smart-splits.nvim.left"
+description = "navigate left (vim/herdr)"
+
+[[keys.command]]
+key = "ctrl+j"
+type = "plugin_action"
+command = "smart-splits.nvim.down"
+description = "navigate down (vim/herdr)"
+
+[[keys.command]]
+key = "ctrl+k"
+type = "plugin_action"
+command = "smart-splits.nvim.up"
+description = "navigate up (vim/herdr)"
+
+[[keys.command]]
+key = "ctrl+l"
+type = "plugin_action"
+command = "smart-splits.nvim.right"
+description = "navigate right (vim/herdr)"
+
+[ui]
+show_agent_labels_on_pane_borders = true
+
+[ui.toast]
+delivery = "terminal"
+
+[ui.sound]
+enabled = true
+
+# Plugin: mroth.jj-status — jj bookmark + status tokens for the spaces sidebar.
+# The built-in `branch` row is git-only and reads empty under jj, where `@` is
+# usually NOT sitting on a bookmark. First two rows are herdr's defaults, kept.
+# The jj row collapses to nothing on non-jj workspaces. Rows refresh on space
+# switch / herdr start / the plugin's `refresh` action — herdr has no event for
+# commands run inside a pane, so it will not update while you stay in one space.
+[ui.sidebar.spaces]
+rows = [["state_icon", "workspace"], ["branch", "git_status"], ["$jj_bookmark", "$jj_status"]]

@@ -1,0 +1,64 @@
+# Theme (Kanagawa Wave — matches omarchy default)
+theme = Kanagawa Wave
+# macOS follows the system light/dark switch. Linux just keeps Kanagawa. A
+# coordinated live-swap theme across every app is deliberately not wanted.
+config-file = ?auto/theme.ghostty
+
+# Font
+font-family = "JetBrainsMono Nerd Font"
+font-style = Regular
+font-size = 20
+
+# Window
+window-theme = ghostty
+window-padding-x = 14
+window-padding-y = 14
+window-decoration = false
+
+confirm-close-surface=false
+quit-after-last-window-closed = true
+resize-overlay = never
+
+# Cursor styling
+cursor-style = "block"
+cursor-style-blink = false
+
+# Cursor styling + SSH session terminfo
+# (all shell integration options must be passed together)
+shell-integration-features = no-cursor,ssh-env
+
+# Transparency (tune opacity 0.0–1.0 to taste; all OSes)
+background-opacity = 0.85
+
+# Per-OS settings. `config-file` is repeatable and `?` means skip-if-absent,
+# which is what replaced the two chezmoi `eq .chezmoi.os "darwin"` blocks this
+# file used to carry. os.conf is a symlink from os/darwin/ or os/linux/, so
+# whichever machine this is gets its own and the other never sees it.
+config-file = ?os.conf
+
+# Keyboard bindings
+keybind = shift+insert=paste_from_clipboard
+keybind = control+insert=copy_to_clipboard
+keybind = super+control+shift+alt+arrow_down=resize_split:down,100
+keybind = super+control+shift+alt+arrow_up=resize_split:up,100
+keybind = super+control+shift+alt+arrow_left=resize_split:left,100
+keybind = super+control+shift+alt+arrow_right=resize_split:right,100
+keybind = super+x=close_surface
+# NOT REBOUND, recorded so it is not re-invented: ctrl+shift+n (new window) and
+# ctrl+shift+t (new tab) both open in the CURRENT window's working directory,
+# because window-inherit-working-directory and tab-inherit-working-directory are
+# on by Ghostty's own default.
+#
+# This replaces an old external helper that read the
+# focused window's PID from hyprctl, walked to its child shell, and read
+# /proc/<pid>/cwd so SUPER+RETURN could open a terminal in the same directory.
+# On KWin the active window's PID needs a KWin script and a D-Bus return channel
+# (the machinery the keystroke watcher uses) - a lot of moving parts to reproduce something the
+# terminal already does natively.
+#
+# The trade: Meta+Return is a GLOBAL shortcut, so it spawns a fresh Ghostty
+# process and always starts in $HOME. Same-directory is ctrl+shift+n from inside
+# a terminal. One key became two contexts; nothing was lost.
+
+# Slowdown mouse scrolling
+mouse-scroll-multiplier = 0.95

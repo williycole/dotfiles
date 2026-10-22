@@ -1,0 +1,270 @@
+command_alias_start_index: 200
+keybindings:
+  prefix_table: Space
+title:
+  style: align=centre,bold
+  prefix: tmux
+  prefix_style: fg=green,align=centre,bold
+position:
+  x: R
+  y: P
+custom_variables:
+  - name: log_info
+    value: "#[fg=green,italics] [info]#[default]#[italics]"
+macros:
+  - name: reload-config
+    commands:
+      - source-file $HOME/.tmux.conf
+      - display "Config reloaded!"
+  - name: restart-pane
+    commands:
+      - display "Restarting pane..."
+      - "respawnp -k -c #{pane_current_path}"
+items:
+  - name: Run command
+    key: space
+    command: command-prompt
+  - name: Last window
+    key: "^"
+    command: last-window
+  - name: Cycle pane
+    key: tab
+    command: select-pane -t :.+
+  - name: Last pane
+    key: "`"
+    command: last-pane
+  - name: Copy mode
+    key: c
+    command: copy-mode
+  - separator: true
+  - name: +Windows
+    key: w
+    menu:
+      - name: Choose session (tree)
+        key: s
+        command: choose-tree -Zs
+      - name: Choose window (tree)
+        key: w
+        command: choose-tree -Zw
+      - name: Previous window
+        key: p
+        command: previous-window
+      - name: Next window
+        key: n
+        command: next-window
+      - name: New window (here)
+        key: c
+        command: "neww -c #{pane_current_path}"
+      - separator: true
+      - name: Split right (vertical bar)
+        key: /
+        command: "splitw -h -c #{pane_current_path}"
+      - name: Split down (dash)
+        key: "-"
+        command: "splitw -v -c #{pane_current_path}"
+      - separator: true
+      - name: +Layout presets
+        key: l
+        menu:
+          - name: Cycle next layout
+            key: l
+            command: nextl
+            transient: true
+          - name: Even horizontal
+            key: h
+            command: selectl even-horizontal
+          - name: Even vertical
+            key: v
+            command: selectl even-vertical
+          - name: Main horizontal (big top)
+            key: H
+            command: selectl main-horizontal
+          - name: Main vertical (big left)
+            key: V
+            command: selectl main-vertical
+          - name: Tiled (grid)
+            key: t
+            command: selectnl tiled
+      - name: Rotate panes forward
+        key: o
+        command: rotatew
+        transient: true
+      - name: Rotate panes backward
+        key: O
+        command: rotatew -D
+        transient: true
+      - separator: true
+      - name: Rename window
+        key: R
+        command: command-prompt -I "#W" "renamew -- \"%%\""
+      - name: Kill window
+        key: X
+        command: 'confirm -p "Kill window #W? (y/n)" killw'
+  - name: +Panes
+    key: p
+    menu:
+      - name: Last pane
+        key: tab
+        command: lastp
+      - name: Show pane numbers (jump)
+        key: p
+        command: displayp -d 0
+      - separator: true
+      - name: Go left
+        key: h
+        command: selectp -L
+      - name: Go down
+        key: j
+        command: selectp -D
+      - name: Go up
+        key: k
+        command: selectp -U
+      - name: Go right
+        key: l
+        command: selectp -R
+      - separator: true
+      - name: Swap with left pane
+        key: H
+        command: swapp -t "{left-of}"
+      - name: Swap with pane below
+        key: J
+        command: swapp -t "{down-of}"
+      - name: Swap with pane above
+        key: K
+        command: swapp -t "{up-of}"
+      - name: Swap with right pane
+        key: L
+        command: swapp -t "{right-of}"
+      - separator: true
+      - name: Zoom/unzoom pane
+        key: z
+        command: resizep -Z
+      - name: Break pane to new window
+        key: "!"
+        command: break-pane
+      - name: +Resize pane
+        key: r
+        menu:
+          - name: Left (small)
+            key: h
+            command: resizep -L
+            transient: true
+          - name: Down (small)
+            key: j
+            command: resizep -D
+            transient: true
+          - name: Up (small)
+            key: k
+            command: resizep -U
+            transient: true
+          - name: Right (small)
+            key: l
+            command: resizep -R
+            transient: true
+          - name: Left (large)
+            key: H
+            command: resizep -L 10
+            transient: true
+          - name: Down (large)
+            key: J
+            command: resizep -D 10
+            transient: true
+          - name: Up (large)
+            key: K
+            command: resizep -U 10
+            transient: true
+          - name: Right (large)
+            key: L
+            command: resizep -R 10
+            transient: true
+      - separator: true
+      - name: Kill pane
+        key: X
+        command: 'confirm -p "Kill pane #P? (y/n)" killp'
+      - name: Respawn pane
+        key: R
+        macro: restart-pane
+      - separator: true
+      - name: Copy whole pane
+        key: y
+        command: run-shell "tmux capture-pane -pS - | pbcopy && tmux display \"Pane copied\""
+  - name: +Sessions
+    key: s
+    menu:
+      - name: Choose session (tree)
+        key: s
+        command: choose-tree -Zs
+      - name: New session
+        key: N
+        command: new
+      - name: Rename session
+        key: r
+        command: command-prompt -I "#S" "rename-session -- \"%%\""
+      - name: Kill session
+        key: X
+        command: 'confirm -p "Kill session #S? (y/n)" kill-session'
+      - name: Kill OTHER sessions
+        key: O
+        command: 'confirm -p "Kill all sessions except #S? (y/n)" "kill-session -a"'
+      - name: Kill sessions (pick)
+        key: k
+        command: display-popup -E -w 60% -h 40% "~/.config/tmux/kill-sessions.sh"
+  - name: +Buffers
+    key: b
+    menu:
+      - name: Choose buffer
+        key: b
+        command: choose-buffer -Z
+      - name: List buffers
+        key: l
+        command: lsb
+      - name: Paste buffer
+        key: p
+        command: pasteb
+  - name: +Client
+    key: C
+    menu:
+      - name: Choose client
+        key: c
+        command: choose-client -Z
+      - name: Last client
+        key: l
+        command: switchc -l
+      - name: Reload config
+        key: r
+        macro: reload-config
+      - name: Detach
+        key: D
+        command: detach
+      - separator: true
+      - name: +Plugins (tpm)
+        key: P
+        menu:
+          - name: Install plugins
+            key: i
+            command: run-shell $TMUX_PLUGIN_MANAGER_PATH/tpm/bindings/install_plugins
+          - name: Update plugins
+            key: u
+            command: run-shell $TMUX_PLUGIN_MANAGER_PATH/tpm/bindings/update_plugins
+          - name: Clean unused plugins
+            key: c
+            command: run-shell $TMUX_PLUGIN_MANAGER_PATH/tpm/bindings/clean_plugins
+  - separator: true
+  - name: Ghostty themes
+    key: T
+    command: "neww ~/.config/tmux/ghostty-theme-picker.sh"
+  - name: Ghostty reload config
+    key: G
+    command: run-shell "~/.config/tmux/ghostty-reload.sh"
+  - name: casty (web) keys
+    key: W
+    command: display-popup -w 62 -h 24 -E "casty --help | less"
+  - name: Clock
+    key: t
+    command: clock-mode
+  - name: Show messages
+    key: "~"
+    command: show-messages
+  - name: Search keys (fzf)
+    key: "?"
+    command: display-popup -E "tmux list-keys -N | fzf"

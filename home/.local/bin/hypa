@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+set -eu
+SELF="$(realpath "$0" 2>/dev/null || printf '%s' "$0")"
+OLD_IFS="$IFS"
+IFS=:
+for dir in $PATH; do
+  [ -n "$dir" ] || continue
+  candidate="$dir/hypa"
+  [ -x "$candidate" ] || continue
+  real_candidate="$(realpath "$candidate" 2>/dev/null || printf '%s' "$candidate")"
+  if [ "$real_candidate" != "$SELF" ]; then
+    IFS="$OLD_IFS"
+    exec "$candidate" "$@"
+  fi
+done
+IFS="$OLD_IFS"
+# Nothing else on PATH, so fall back to the pi-installed npm package.
+#
+# This used to be the literal path
+#   ~/.pi/agent/npm/node_modules/@hypabolic/hypa-darwin-arm64/bin/hypa
+# which is wrong twice over for a file in the SHARED layer: it hardcodes one
+# username, and it names one platform triple. On Nobara it would simply dangle.
+#
+# The platform packages are published as @hypabolic/hypa-<os>-<arch>, so glob for
+# whichever one is actually installed. @hypabolic/hypa/bin.js is the platform-neutral
+# dispatcher and covers anything the glob misses.
+_hypa_root="$HOME/.pi/agent/npm/node_modules/@hypabolic"
+for _hypa_bin in "$_hypa_root"/hypa-*/bin/hypa; do
+  [ -x "$_hypa_bin" ] || continue
+  exec "$_hypa_bin" "$@"
+done
+if [ -f "$_hypa_root/hypa/bin.js" ] && command -v node >/dev/null 2>&1; then
+  exec node "$_hypa_root/hypa/bin.js" "$@"
+fi
+
+echo "hypa: not found on PATH, and no @hypabolic package under $_hypa_root" >&2
+echo "      install it with: pi install hypa" >&2
+exit 127

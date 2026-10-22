@@ -1,0 +1,12 @@
+schema: spec-driven
+
+# Project context — shown to AI when creating artifacts.
+context: |
+  Project: {{PROJECT_NAME}}
+  # TODO: tech stack, conventions, domain knowledge.
+  # e.g. Tech stack: <...>; conventional commits; Domain: <...>
+
+# Per-artifact rules (optional)
+#   rules:
+#     proposal:
+#       - Keep proposals tight; include a Non-goals section

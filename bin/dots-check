@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# dots-check — prove `dots prune` removes ONLY dead links into this repo.
+#
+# prune is the one place bin/dots deletes anything in $HOME, so it is the one
+# place worth a check. Runs against a throwaway HOME; touches nothing real.
+#
+#   bin/dots-check        exits 0 and prints "ok" lines, or exits 1 naming the miss
+set -uo pipefail
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+FAKE="$(mktemp -d)"
+trap 'rm -rf "$FAKE"' EXIT
+fail=0
+want() { if eval "$2"; then echo "  ok   $1"; else echo "  FAIL $1"; fail=1; fi; }
+
+mkdir -p "$FAKE/.config/app" "$FAKE/elsewhere"
+ln -s "$REPO/home/this-file-does-not-exist"      "$FAKE/.config/app/dead-into-repo"
+ln -s "$REPO/justfile"                           "$FAKE/.config/app/live-into-repo"
+ln -s "$FAKE/elsewhere/gone"                     "$FAKE/.config/app/dead-elsewhere"
+ln -s "relative-gone"                            "$FAKE/.config/app/dead-relative"
+echo keep > "$FAKE/.config/app/real-file"
+
+# sync is the dry run: it must name the dead link and delete nothing.
+out="$(HOME="$FAKE" bash "$REPO/bin/dots" sync 2>&1)"
+want "dry run names the dead link"        '[[ "$out" == *"prune .config/app/dead-into-repo"* ]]'
+want "dry run deletes nothing"            '[[ -L "$FAKE/.config/app/dead-into-repo" ]]'
+
+HOME="$FAKE" bash "$REPO/bin/dots" prune >/dev/null 2>&1
+want "dead link into the repo is removed" '[[ ! -L "$FAKE/.config/app/dead-into-repo" ]]'
+want "live link into the repo is kept"    '[[ -L "$FAKE/.config/app/live-into-repo" ]]'
+want "dead link elsewhere is kept"        '[[ -L "$FAKE/.config/app/dead-elsewhere" ]]'
+want "dead relative link is kept"         '[[ -L "$FAKE/.config/app/dead-relative" ]]'
+want "real file is kept"                  '[[ "$(cat "$FAKE/.config/app/real-file")" == keep ]]'
+want "the repo itself is untouched"       '[[ -f "$REPO/justfile" ]]'
+
+exit "$fail"

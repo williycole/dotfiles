@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# godot-nvim — open a Godot script in nvim instead of Godot's built-in editor.
+#
+# Wired up in Godot: Editor Settings -> Text Editor -> External
+#     Use External Editor : on
+#     Exec Path           : /home/dev/.local/bin/godot-nvim
+#     Exec Flags          : {file} {line} {col}
+#
+# Godot passes 1-based {line}/{col}. It also offers {project}, which this does
+# not use: nvim resolves the project from the file's own path via the gdscript
+# LSP root_markers (project.godot), so passing it would be a second source of
+# truth for the same answer.
+#
+# WHY A WRAPPER AT ALL. Godot runs Exec Path directly, with no shell — the same
+# constraint as a .desktop file. So there is no place to put "reuse my session
+# if one is open, otherwise start one", and without that every double-click in
+# the FileSystem dock spawns another terminal.
+set -euo pipefail
+
+FILE="${1:?usage: godot-nvim <file> [line] [col]}"
+LINE="${2:-1}"
+COL="${3:-1}"
+
+# Godot hands over a path relative to the project when invoked from some docks.
+# Its cwd IS the project directory, so resolving against $PWD is correct.
+[ -e "$FILE" ] || FILE="$PWD/$FILE"
+
+# FAIL LOUDLY ON BAD EXEC FLAGS. Godot swallows stdout and stderr from the
+# external editor, so a wrong Exec Flags string produced an empty nvim and no
+# error anywhere — which is exactly what happened on 2026-09-22, with
+# `"+call cursor({line}, {col})" {file}` (the flags for calling nvim directly)
+# left in place while Exec Path pointed here. This script takes {file} first,
+# so it received the +call string as the filename and dutifully opened it.
+#
+# A desktop notification is the only channel that reaches the owner from here.
+if [ ! -f "$FILE" ]; then
+  msg="godot-nvim: not a file: '$FILE'
+Godot Exec Flags must be exactly:  {file} {line} {col}"
+  command -v notify-send >/dev/null && notify-send -u critical "Godot external editor" "$msg"
+  echo "$msg" >&2
+  exit 2
+fi
+
+FILE=$(readlink -f -- "$FILE")
+
+# nvim 0.12 listens on $XDG_RUNTIME_DIR/nvim.<pid>.<n> unless told otherwise.
+RUNTIME="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+# Pick a LIVE server whose cwd contains this file, newest first.
+#
+# Newest-socket-wins alone is wrong in the common case: a scratch nvim in $HOME
+# is often newer than the one actually open on the game, and the script would
+# land in the wrong session with no indication why. Matching on cwd costs one
+# --remote-expr per candidate and removes the guess.
+#
+# Stale sockets outlive their process, so every candidate is probed rather than
+# trusted; a dead one fails the getcwd() call and is skipped.
+SOCK=""
+for s in $(ls -t "$RUNTIME"/nvim.*.0 2>/dev/null); do
+  cwd=$(nvim --server "$s" --remote-expr 'getcwd()' 2>/dev/null) || continue
+  [ -n "$cwd" ] || continue
+  case "$FILE" in "$cwd"/*) SOCK="$s"; break ;; esac
+done
+
+if [ -n "$SOCK" ]; then
+  # --remote handles the path (spaces, unicode) so the filename never has to
+  # survive a round trip through :edit inside a keystroke string.
+  nvim --server "$SOCK" --remote "$FILE"
+  # Cursor placement is separate for exactly that reason: only digits here.
+  nvim --server "$SOCK" --remote-send "<C-\\><C-N>:call cursor($LINE,$COL)<CR>zz"
+  # NOTE: this does NOT raise the terminal window. Wayland has no
+  # activate-by-request for another client, by design, so the file is waiting in
+  # the session you already have rather than stealing focus. Alt-tab.
+else
+  # No session open on this project: start one. `ghostty -e` matches
+  # dev-editor.desktop, which is the pattern already used in this repo.
+  ghostty -e nvim "+call cursor($LINE,$COL)" "$FILE" &
+fi

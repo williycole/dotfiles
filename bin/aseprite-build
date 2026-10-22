@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# aseprite-build — install or update Aseprite from source, to the latest STABLE release.
+#
+#   aseprite-build           build if missing or older than the latest stable release
+#   aseprite-build --check   print installed vs latest, change nothing
+#
+# WHY FROM SOURCE. Aseprite is paid and its binaries sit behind a login (Humble
+# Bundle / aseprite.org). This box blocks every browser download
+# (DownloadRestrictions=3) and cannot even log in to Humble (no JS, dl.humble.com
+# refused), so neither machine could get a binary at all — bigplow had none on
+# 2026-10-08. The source is public on GitHub, and the EULA allows compiling it
+# for your own use (not redistributing the result). Every stable release ships
+# Aseprite-vX-Source.zip.
+#
+# VERSION POLICY: releases/latest — GitHub excludes prereleases from it, so this
+# never picks a beta. Matches the repo-wide rule: stable and current, not edge.
+#
+# COST. A first build is ~10-15 min. The source tree and build dir persist in
+# ~/.cache/aseprite-build, and new source is rsynced in with --checksum, so a
+# patch release only recompiles the files that actually changed.
+#
+# Needs (packages.yaml, admin batch): the Fedora list from INSTALL.md
+# "Linux dependencies" — gcc-c++ clang libcxx-devel cmake ninja-build unzip and
+# the X11/GL/fontconfig -devel set incl. libXrandr-devel. Links against
+# libstdc++, per INSTALL.md "Linux details": the prebuilt Skia is libstdc++.
+# (A first version guessed libc++ from memory and failed at link with 1674
+# undefined std:: symbols, 2026-10-08. Read the doc, not memory.)
+set -euo pipefail
+
+APP="$HOME/Apps/aseprite"
+WORK="$HOME/.cache/aseprite-build"
+API="https://api.github.com/repos/aseprite"
+say() { printf '  %s\n' "$*"; }
+
+latest_tag() {
+  curl -fsSL -H 'User-Agent: dotfiles' "$API/aseprite/releases/latest" |
+    python3 -c 'import json,sys; print(json.load(sys.stdin)["tag_name"])'
+}
+installed_tag() {
+  if [ -f "$APP/VERSION" ]; then cat "$APP/VERSION"; return; fi
+  # An AppImage from before this script: read its own --version.
+  local v; v=$("$APP/bin/aseprite" --version 2>/dev/null | sed -n 's/^Aseprite \([0-9.]*\).*/v\1/p' | head -n1)
+  echo "${v:-none}"
+}
+# true if $1 is an older version than $2 (both vX.Y.Z[.W])
+older() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "${1#v}" "${2#v}" | sort -V | head -n1)" = "${1#v}" ]; }
+
+want=$(latest_tag) || { say "aseprite: could not reach GitHub — skipped"; exit 0; }
+have=$(installed_tag)
+if [ "${1:-}" = "--check" ]; then say "aseprite: installed $have, latest stable $want"; exit 0; fi
+if [ "$have" != none ] && ! older "$have" "$want"; then
+  say "aseprite $have (latest stable)"; exit 0
+fi
+
+for t in clang clang++ ninja cmake unzip rsync; do
+  command -v "$t" >/dev/null || { say "aseprite: '$t' missing — run just update (admin batch installs it)"; exit 1; }
+done
+
+say "aseprite: $have -> $want, building from source (first build ~10-15 min)"
+mkdir -p "$WORK"
+cd "$WORK"
+rm -rf "dl-$want"; mkdir "dl-$want"
+curl -fsSL -o "dl-$want/src.zip" "https://github.com/aseprite/aseprite/releases/download/$want/Aseprite-$want-Source.zip"
+unzip -q "dl-$want/src.zip" -d "dl-$want/src"
+mkdir -p src
+rsync -a --checksum --delete "dl-$want/src/" src/
+
+# The Skia build each Aseprite version needs is pinned in its own source tree:
+# laf/misc/skia-tag.txt, turned into a URL by laf/misc/skia-url.sh — the same
+# pair the official build.sh uses. (INSTALL.md does not name the tag; reading
+# it there found nothing, caught by testing before this ever ran.)
+skia_tag=$(xargs < src/laf/misc/skia-tag.txt)
+skia_url=$(cd src && bash laf/misc/skia-url.sh Release-x64)
+if [ ! -f "skia-$skia_tag/out/Release-x64/libskia.a" ]; then
+  say "aseprite: fetching Skia $skia_tag"
+  curl -fsSL -o "dl-$want/skia.zip" "$skia_url"
+  rm -rf "skia-$skia_tag"; unzip -q "dl-$want/skia.zip" -d "skia-$skia_tag"
+fi
+S="$WORK/skia-$skia_tag"
+
+mkdir -p build
+cd build
+CC=clang CXX=clang++ cmake -G Ninja \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_CXX_FLAGS:STRING=-stdlib=libstdc++ \
+  -DCMAKE_EXE_LINKER_FLAGS:STRING=-stdlib=libstdc++ \
+  -DLAF_BACKEND=skia \
+  -DSKIA_DIR="$S" \
+  -DSKIA_LIBRARY_DIR="$S/out/Release-x64" \
+  -DSKIA_LIBRARY="$S/out/Release-x64/libskia.a" \
+  ../src >/dev/null
+ninja aseprite
+
+# Install: the binary needs the data/ dir next to it. Keep the previous install
+# one step back, so a bad build is one mv from undone.
+rm -rf "$APP.previous"
+[ -d "$APP" ] && mv "$APP" "$APP.previous"
+mkdir -p "$APP/bin"
+cp -a bin/aseprite bin/data "$APP/bin/"
+echo "$want" > "$APP/VERSION"
+cd "$WORK"; rm -rf "dl-$want"
+say "aseprite $want installed -> $APP/bin/aseprite (previous kept at $APP.previous)"

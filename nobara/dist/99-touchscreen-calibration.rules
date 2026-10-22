@@ -1,0 +1,28 @@
+# GPD Pocket 4 touchscreen calibration. Installed to
+# /etc/udev/rules.d/99-touchscreen-calibration.rules.
+#
+# ONLY INSTALL THIS IF TOUCH IS ACTUALLY WRONG. Test rotation without it first.
+#
+# Why it is conditional rather than part of the base install: on Wayland, KWin
+# maps touch input onto its output and applies the output transform itself, so
+# touch usually follows screen rotation with no help. Hyprland did NOT do that,
+# which is why the old setup had to call
+# `hyprctl keyword input:touchdevice:transform` alongside every display rotation
+# (see the deleted auto-rotate.sh). Installing a calibration matrix on top of a
+# compositor that already transforms touch double-applies it, and the symptom -
+# touch offset or inverted in some orientations - looks exactly like the problem
+# it was meant to fix.
+#
+# Decision procedure:
+#   1. Apply the accelerometer matrix (61-sensor-local.hwdb) and reboot.
+#   2. Rotate the device. If the display AND touch both follow, stop. Do not
+#      install this file.
+#   3. If the display rotates but touch does not follow, install this, reload
+#      udev rules, and re-test each orientation.
+#
+# Device name confirmed on this machine 2026-08-16 from /proc/bus/input/devices;
+# it matches what the ArchWiki GPD Pocket 4 page documents. The matrix value is
+# the ArchWiki one and has NOT been verified here, because step 2 above may make
+# it unnecessary.
+
+ACTION=="add|change", KERNEL=="event[0-9]*", ATTRS{name}=="NVTK0603:00 0603:F001", ENV{LIBINPUT_CALIBRATION_MATRIX}="0 1 0 -1 0 1"

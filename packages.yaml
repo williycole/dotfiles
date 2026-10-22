@@ -1,0 +1,291 @@
+# Declarative cross-OS CLI tool list. Read by bin/install-packages.
+#
+# Each entry names the package per manager; OMIT a manager to skip that path:
+#   brew:    Homebrew formula (macOS)
+#   cask:    Homebrew cask (macOS GUI apps)
+#   uv:      Python app installed with `uv tool install` — user-level, no admin
+#   flatpak: Flathub app id — installed with `flatpak install --user` (GUI, no admin)
+#   npm:     global npm package (all OSes, via mise's node — user-level)
+#   dnf:     Fedora package. LAST RESORT: there is no user-level source for it.
+#            NOT installed by install-packages — see "the one admin prompt" below.
+#   copr:    optional COPR repo (macOS-irrelevant; kept for reference)
+#   bin:     binary to probe for "already present?" when it differs from the
+#            package name (ripgrep→rg, git-delta→delta, clang-tools-extra→clangd)
+#   pc:      pkg-config module to probe instead, for -devel packages with no binary
+#   skip_if_nvidia: true — never install on a box with an NVIDIA GPU. For packages
+#            that need DRM KMS, which the system setup switches off there (nvidia-drm.modeset=0).
+#   os:      linux | mac — install on that OS only. The npm and uv paths have no
+#            per-OS manager to omit, so this is how a Linux-only tool stays off the mac.
+#
+# NON-admin model (Nobara): the owner is a standard user with no sudo.
+# Everything installable without a password uses mise / uv / npm / flatpak --user.
+#
+# mise tools are NOT listed here. There is no `mise:` key any more (removed
+# 2026-10-03): the ONE source for them is home/.config/mise/config.toml [tools],
+# installed by `mise install`. Until then 22 tools carried a `mise:` key here AND
+# an entry there, and install-packages ran `mise use -g`, which wrote the entry
+# back into config.toml — two lists, each claiming to be the source. The
+# `brew:`/`dnf:` keys below for the same names (jq, ripgrep, tmux, …) are the
+# Mac path and the "already on host?" probe; on Linux mise has already put them
+# on PATH, so they never reach the admin batch.
+#
+# The one admin prompt: packages left with only a `dnf:` source cannot be installed
+# by the owner at all. install-packages does NOT try. It probes each one (`bin:`/
+# `pc:`, then rpm) and prints everything still missing as a SINGLE
+# `pkexec dnf install -y ...` line. The admin is asked once for the whole set
+# instead of once per package, and packages Nobara already ships never appear.
+#
+# There is no dev container. Nobara ran a `dev` distrobox for a while, because
+# root-in-container gave a no-sudo owner a way to dnf-install things. It drifted
+# into holding ten daily-driver tools behind exported wrappers, so the same tool
+# lived in two places and `~/.local/bin/tmux` was a shell script, not tmux. mise
+# covers those directly, so the container was removed rather than curated.
+#
+# Language runtimes (go, node, python, elixir, erlang, rust) are NOT here — mise owns
+# them (see home/.config/mise/config.toml).
+#
+# NB: install failures are silent per-package (✗ in output only) — re-run to retry.
+packages:
+  # ── core CLI ──────────────────────────────────────────────
+  - { name: git, brew: git, dnf: git }
+  - { name: curl, brew: curl, dnf: curl }
+  - { name: wget, brew: wget, dnf: wget }
+  - { name: unzip, brew: unzip, dnf: unzip }
+  - { name: jq, brew: jq, dnf: jq }
+  # yq: mac via brew; on Nobara the mikefarah binary is bootstrapped to ~/.local/bin
+  # by install-packages (Fedora's repo `yq` is the incompatible Python tool).
+  - { name: yq, brew: yq }
+  - { name: tree, brew: tree, dnf: tree }
+  - { name: htop, brew: htop, dnf: htop }
+  - { name: btop, brew: btop, dnf: btop }
+  - { name: httpie, bin: http, brew: httpie, uv: httpie } # Python app — uv tool, no admin
+  - { name: tte, uv: terminaltexteffects, os: linux } # terminal text effects (was pipx on littleplow only)
+  - { name: piper, uv: piper-tts, os: linux } # neural TTS for say-reply.sh; the voice model is fetched by install-packages
+  - { name: yt-dlp, uv: yt-dlp } # `yt` needs it for the signed-in feeds; was missing here, found on bigplow 2026-10-02
+  - { name: mpv, dnf: mpv } # `yt` plays with it; also missing here, bigplow 2026-10-02 (admin batch, 10 pkgs, no upgrades)
+  - { name: lua, brew: lua, dnf: lua }
+
+  # ── modern unix replacements ──────────────────────────────
+  - { name: ripgrep, bin: rg, brew: ripgrep, dnf: ripgrep }
+  - { name: fd, bin: fd, brew: fd, dnf: fd-find }
+  - { name: fzf, brew: fzf, dnf: fzf }
+  - { name: bat, brew: bat, dnf: bat }
+  - { name: glow, brew: glow, dnf: glow } # markdown renderer (cat *.md -> glow, see common.sh); in base Fedora repos
+
+  - { name: eza, brew: eza, dnf: eza }
+  - { name: zoxide, brew: zoxide, dnf: zoxide }
+  - { name: starship, brew: starship, dnf: starship, copr: atim/starship } # TODO(verify): COPR repo
+  - { name: atuin, brew: atuin, dnf: atuin } # stock Fedora has it; atim/atuin COPR is dead (verified 2026-07)
+  - { name: yazi, brew: yazi, dnf: yazi, copr: lihaohong/yazi } # TODO(verify): COPR repo
+  # yazi's mediainfo plugin shells out to this; without it that previewer is dead.
+  # Homebrew's formula is `media-info`, Fedora's package is `mediainfo`.
+  - { name: mediainfo, brew: media-info, dnf: mediainfo }
+
+  # ── editor / git / shell ──────────────────────────────────
+  # neovim: mac via brew. Linux: provision-user.sh drops latest-stable to ~/.local
+  # (Fedora's rpm lags; refactor.nvim needs 0.12+) — no dnf entry on purpose, the
+  # ~/.local drop is already on PATH.
+  - { name: neovim, brew: neovim }
+  - { name: tmux, brew: tmux, dnf: tmux }
+  # herdr: agent multiplexer (homebrew-core, mac). No Fedora pkg — add a linux path if needed.
+  - { name: herdr, brew: herdr }
+  - { name: lazygit, brew: lazygit, dnf: lazygit, copr: atim/lazygit } # TODO(verify): COPR repo
+  # jj (Jujutsu VCS): NOT in base Fedora → community COPR.
+  # VERIFIED: aldantanneo/jj-vcs (active F42-44+rawhide) provides pkg `jj-cli`.
+  - { name: jj, bin: jj, brew: jj, dnf: jj-cli, copr: aldantanneo/jj-vcs } # verified 2026-07
+  # lazyjj (jj TUI): only COPR (stephaneklein/lazyjj) is stale — F42/x86_64, ~14mo old →
+  # Nobara builds from crates.io via install-packages (cargo → ~/.local/bin). mac via brew.
+  - { name: lazyjj, brew: lazyjj }
+  # jjui: the other jj TUI, log-centric, closest to lazygit. Linux via mise
+  # (config.toml [tools]); mac via brew. Trial 2026-10-07.
+  - { name: jjui, brew: jjui }
+  - { name: git-delta, bin: delta, brew: git-delta, dnf: git-delta }
+  - { name: gh, brew: gh, dnf: gh }
+  - { name: just, brew: just, dnf: just }
+  # gitmux: tmux git-status.sh needs it. Go tool, no Fedora pkg → Nobara installs via
+  # install-packages (`go install` to ~/.local/bin). Config is ~/.gitmux.conf (tracked).
+  - { name: gitmux, brew: gitmux }
+  # overmind: mac-only per preference — no dnf/linux path on purpose.
+  # (opencode already provisioned via npm 'opencode-ai' below — no brew entry needed.)
+  - { name: overmind, brew: overmind }
+  # bun: both — brew on mac; Nobara via install-packages (bun.sh installer → ~/.bun, on PATH).
+  - { name: bun, brew: bun }
+  - { name: coreutils, brew: coreutils } # mac: GNU coreutils
+  - { name: zsh-completions, brew: zsh-completions } # mac zsh only
+  - {
+      name: zsh-autosuggestions,
+      brew: zsh-autosuggestions,
+    }
+  - {
+      name: zsh-syntax-highlighting,
+      brew: zsh-syntax-highlighting,
+    }
+
+  # ── containers ────────────────────────────────────────────
+  # Nobara: podman/podman-docker are HOST base (admin-installed Phase 2), NOT here.
+  - { name: docker, cask: docker } # mac: Docker Desktop (unchanged)
+  - { name: docker-compose, brew: docker-compose } # mac; linux uses host podman-compose (Phase 2)
+  - {
+      name: lazydocker,       brew: lazydocker,
+      dnf: lazydocker,
+      copr: atim/lazydocker,
+    } # TODO(verify): COPR repo
+
+  # ── agent sandbox (linux only) ─────────────────────────────
+  # HARD dependencies of the `claude` command on these boxes, not extras.
+  # /etc/claude-code/managed-settings.json (written by the system setup) sets
+  # sandbox.failIfUnavailable, which makes Claude Code EXIT AT STARTUP when the
+  # sandbox cannot start rather than silently running commands unsandboxed. So a
+  # box missing either of these has no working `claude` at all — which is the
+  # right direction for a security gate and the wrong one to discover by
+  # surprise. Both ship in the Nobara base today (verified on littleplow
+  # 2026-10-15); listed so bigplow is asserted too and an update that drops one
+  # shows up in doctor instead of in a broken terminal.
+  # `bin: bwrap` because the package is bubblewrap and the binary is not.
+  - { name: bubblewrap, bin: bwrap, dnf: bubblewrap }
+  - { name: socat, dnf: socat }
+
+  # ── time tracking ─────────────────────────────────────────
+
+  # ── terminal / game dev / gui (linux via flatpak --user) ──
+  - { name: ghostty, cask: ghostty } # NOT on Flathub — Nobara installs the host rpm (terra repo) in SETUP.md Step 8
+  # LÖVE is a DEV TOOL here, not a menu app, so it is the host rpm rather than a
+  # flatpak. Changed 2026-10-03 after the flatpak proved to be the wrong shape:
+  #
+  #   * flatpaks export no command on PATH. /etc/profile.d/flatpak.sh sets
+  #     XDG_DATA_DIRS (which is what puts them in the app menu) and never touches
+  #     PATH, in a login shell either. So `love .` could not work at all — the
+  #     owner hit exactly that, and bash offered to install the rpm instead.
+  #   * `flatpak info --show-permissions org.love2d.love2d` is
+  #     `filesystems=host:ro`. READ-ONLY. A LÖVE game writes save data, and the
+  #     workflow is `love .` inside a project directory.
+  #
+  # Same version either way (11.5), and the rpm is in the `nobara` repo already
+  # trusted for everything else. macOS keeps the cask.
+  - { name: love, cask: love, dnf: love, bin: love } # OFFLINE-GAMEDEV.md
+  # Godot is the OFFICIAL BUILD from godotengine.org, NOT a flatpak — owner's call
+  # 2026-08-20. provision-user.sh drops the binary to ~/.local/bin/godot, so there is
+  # no `flatpak:` key here and doctor checks for the binary instead.
+  # Note: Nobara may already have `godot-runner` installed as a dependency. That is a
+  # RUNTIME for playing Godot games ("Shared binary to play games and run servers"),
+  # not the editor — having it does not mean Godot is installed.
+  - { name: godot, cask: godot } # OFFLINE-GAMEDEV.md
+  - { name: foliate, cask: foliate, flatpak: com.github.johnfactotum.Foliate } # epub + PDF reader (~/Books; default handler for both, see mimeapps.list)
+  - { name: ares, cask: ares, flatpak: dev.ares.ares } # N64 (multi-system) emulator — OFFLINE-GAMEDEV.md
+  # Spotify's flathub entry is NOT a Spotify build: it is a wrapper that downloads
+  # Canonical's SNAP from api.snapcraft.io at install time. cliamp replaces it —
+  # a plain binary that embeds go-librespot and is its own Spotify Connect device,
+  # so nothing else has to run. Needs Premium. Installed by provision-user.sh
+  # step 13, not from here, because it is a GitHub release drop like godot/nvim.
+  # Keeping the flatpak line would reinstall the snap-downloader on every machine.
+  - { name: spotify, cask: spotify } # macOS only; Linux uses cliamp
+  # Chromium-based browser. Only reason it's here: 8BitDo's "Ultimate Software
+  # Online" web tool (web.8bitdo.com) is WebUSB-only, and Firefox does not
+  # implement WebUSB at all — a security-scope decision on Mozilla's side, not
+  # a bug. Flatpak Chromium is confirmed to work with WebUSB's device-permission
+  # prompt. NOTE: as of this beta the web tool is firmware-update only, no
+  # button remapping UI — see antimicrox below for that.
+  # RPM, NOT the flatpak. A flatpak browser runs in its own namespace and cannot
+  # read /etc/chromium/policies/managed/, so it would ignore the image block
+  # entirely — an unlocked second browser is the whole bypass. The rpm reads
+  # the policy and is locked the same way Firefox is. doctor fails on the flatpak.
+  - { name: chromium, dnf: chromium, bin: chromium-browser }
+  # Terminal the admin prompts open in; was on littleplow only.
+  - { name: alacritty, dnf: alacritty }
+  # Flashes USB images. Replaces balena-etcher, an Electron app that bundles its
+  # own Chromium (2026-10-16).
+  - { name: gnome-disks, dnf: gnome-disk-utility, bin: gnome-disks }
+  # Controller-to-keyboard/mouse remapping (8BitDo Ultimate 2). 8BitDo's own
+  # software (Ultimate Software V2) is Windows/macOS/mobile only, and the
+  # Linux web version (web.8bitdo.com, see chromium above) is firmware-update
+  # only as of this beta — no remap UI. AntiMicroX maps controller input to
+  # keyboard/mouse system-wide, not just inside Steam.
+  - { name: antimicrox, flatpak: io.github.antimicrox.antimicrox }
+
+  # Steam Deck Mode — adds a "Steam Big Picture" entry to the SDDM session list, so
+  # you can log straight into controller-only Game Mode instead of Plasma. Nobara
+  # ships gamescope and kde-steamdeck-additions but NOT this session package, so it
+  # has to be asked for. dnf-only: no user-level source exists, so it surfaces in
+  # install-packages' single `pkexec dnf install` line rather than being installed.
+  # Purely additive — Plasma stays the default session; log out to switch back.
+  #
+  # AMD boxes only, and install-packages enforces that rather than trusting a note.
+  # gamescope takes the display through DRM KMS, which needs nvidia-drm.modeset=1.
+  # The system setup pins nvidia-drm.modeset=0 on every NVIDIA box because nvidia-open
+  # with modeset=1 black-screens bigplow (RTX 4080 SUPER) on boot. Selecting the session
+  # under that pin just bounces back to SDDM; the REAL hazard is "fixing" the bounce by
+  # flipping the arg to 1, which black-screens the next boot behind the GRUB password.
+  # doctor.sh (~196) fails the box if modeset=0 ever goes missing. Hence skip_if_nvidia:
+  # bigplow never even sees this in the admin batch, so the bad idea never starts.
+  - { name: gamescope-session-steam, dnf: gamescope-session-steam, skip_if_nvidia: true }
+  - { name: aerospace, cask: nikitabobko/tap/aerospace } # mac WM only
+  - { name: zennotes, cask: zennotes/tap/zennotes } # mac cask; Nobara = host rpm (GitHub release) admin-installed — see nobara/README.md step 8
+  - { name: karabiner-elements, cask: karabiner-elements } # mac only — its config is tracked
+
+  # ── systems / game-dev toolchains ─────────────────────────
+  # Odin: compiler + LSP (ols) + formatter. On Nobara these are binary drops /
+  # host builds (handled by run_once provisioning), not package-manager
+  # installs — so mac (brew) only here.
+  - { name: odin, brew: odin }
+  - { name: ols, brew: ols }
+  - { name: odinfmt, brew: odinfmt }
+  # C/C++: cmake for the nvim cmake extra + builds. clangd comes via Mason.
+  # On mac the compiler is the base system (Xcode CLT); on Nobara it's admin-installed
+  # on the host — dnf-only entries below (no brew → skipped on mac).
+  - { name: cmake, brew: cmake, dnf: cmake }
+  - { name: gcc, dnf: gcc }
+  - { name: gcc-c++, bin: g++, dnf: gcc-c++ }
+  - { name: clang, dnf: clang }
+  - { name: clang-tools-extra, bin: clangd, dnf: clang-tools-extra } # clangd, clang-format
+  - { name: gdb, dnf: gdb }
+  - { name: make, dnf: make }
+  # erlang/OTP builds from source via mise (kerl) — needs autoconf, and erts'
+  # configure fails ("No curses library functions found") without ncurses-devel.
+  - { name: autoconf, dnf: autoconf }
+  - { name: ncurses-devel, pc: ncurses, dnf: ncurses-devel }
+  # Odin vendor bindings link SYSTEM libs on linux (vendor ships only raylib
+  # prebuilt) — these -devel pkgs make vendor:sdl2/sdl3/glfw/enet/lua link on the
+  # host. stb/miniaudio/box2d build from vendored source (provision step 9).
+  - { name: SDL2-devel, pc: sdl2, dnf: SDL2-devel }
+  - { name: SDL2_image-devel, pc: SDL2_image, dnf: SDL2_image-devel }
+  - { name: SDL2_mixer-devel, pc: SDL2_mixer, dnf: SDL2_mixer-devel }
+  - { name: SDL2_net-devel, pc: SDL2_net, dnf: SDL2_net-devel }
+  - { name: SDL2_ttf-devel, pc: SDL2_ttf, dnf: SDL2_ttf-devel }
+  - { name: SDL3-devel, pc: sdl3, dnf: SDL3-devel }
+  - { name: SDL3_image-devel, pc: sdl3-image, dnf: SDL3_image-devel }
+  - { name: SDL3_ttf-devel, pc: sdl3-ttf, dnf: SDL3_ttf-devel }
+  - { name: glfw-devel, pc: glfw3, dnf: glfw-devel }
+  - { name: enet-devel, pc: enet, dnf: enet-devel }
+  - { name: lua-devel, pc: lua, dnf: lua-devel }
+  - { name: lz4-devel, pc: liblz4, dnf: lz4-devel }
+  # Aseprite from source (bin/aseprite-build): the Fedora list in its
+  # INSTALL.md "Linux dependencies" (the rest — clang, cmake, unzip, X11/GL/
+  # fontconfig -devel — is already in this file).
+  - { name: ninja-build, dnf: ninja-build, bin: ninja }
+  - { name: libcxx-devel, dnf: libcxx-devel }
+  - { name: libXrandr-devel, dnf: libXrandr-devel }
+
+  # ── mac runtime managers ──────────────────────────────────
+  # Mac keeps its own runtime managers (NOT mise); these install them on a mac
+  # rebuild. Linux uses mise instead.
+  - { name: fnm, brew: fnm }
+  - { name: pyenv, brew: pyenv }
+
+  # ── npm globals (all OSes, via mise node) ─────────────────
+  - { name: pi, npm: "@earendil-works/pi-coding-agent" } # pi coding agent (2nd agent alongside Claude; extensions installed in bin/install-packages)
+  - { name: openspec, npm: "@fission-ai/openspec" } # spec-driven workflow CLI (`openspec` — used across both agents)
+  - { name: agent-skill-manager, npm: agent-skill-manager } # asm — cross-agent skill inventory/manager
+  - { name: typescript, npm: typescript }
+  - { name: ts-node, npm: ts-node }
+  # nvim-treesitter (main branch) compiles parsers via this CLI; :TSInstall panics
+  # without ~/.config/tree-sitter/config.json — provision-user.sh step 5 runs
+  # `tree-sitter init-config` once this is on PATH.
+  - { name: tree-sitter, bin: tree-sitter, npm: tree-sitter-cli }
+  - { name: context-mode, npm: context-mode }
+  - { name: bw, npm: "@bitwarden/cli", os: linux } # Bitwarden CLI — rotate-secrets.sh records the new password in the vault; Nobara only
+  - { name: libdragon, npm: libdragon } # N64 toolchain (needs host podman + podman-docker shim)
+  # ONE AGENT, ONE DOOR (owner's decision 2026-10-19): codex, copilot, gemini
+  # and opencode are NOT installed. Each is a coding agent with a shell that the
+  # managed Claude Code policy does not govern. install-packages removes them.
+  - { name: ghui, npm: "@kitlangton/ghui", os: linux }
+  - { name: playwright, npm: playwright, os: linux }

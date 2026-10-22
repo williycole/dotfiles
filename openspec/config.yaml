@@ -1,0 +1,64 @@
+schema: spec-driven
+
+# Project context — shown to AI when creating artifacts.
+context: |
+  Dotfiles for a MacBook (Apple Silicon) and Nobara/Fedora desktops, managed as
+  plain files + symlinks. This repo is PUBLIC: no personal data, no secrets.
+
+  Config files live at literal paths (`home/.config/nvim/init.lua`) and reach
+  `$HOME` as symlinks, so the repo file and the live file are ONE INODE. No apply
+  step, no drift, no backup step. Layering replaces templating: `home/` then
+  `os/darwin|linux/` then `host/<hostname>/`, later wins; `os/linux/` IS the Linux
+  gate. A small copy-set exists only for files macOS or an app rewrites (`~/Library`
+  plists, VS Code) where a symlink cannot survive.
+
+  `bin/dots` does the linking and `just` is the front door: `link`, `copy`, `perms`,
+  `sync` (dry run) / `sync-apply`, `adopt path=…`, `dots-doctor`. Package installs
+  are a SEPARATE recipe (`just install` → `bin/install-packages`) and never happen
+  as a side effect of linking.
+
+  EXTENSION (optional): `DOTS_EXTRA` (default `~/.local/share/dots/extra`) may
+  name a directory with an `overlay/` that `bin/dots` layers LAST, a
+  `packages.yaml` read after this one, and a `justfile` whose `update`, `doctor`,
+  `desktop`, `pull` run after this repo's. Nothing in this repo may depend on it.
+
+  HARD RULES, taken from failures this repo already had:
+  - NO recipe aborts halfway. Report per-item failure by name and keep going.
+  - NO recipe ever deletes in `$HOME`. Only creates links and copies the small set.
+  - `home/` stays the default; `os/` and `host/` overlays stay THIN.
+  - `home/` IS THE MAC TOO. A Linux-only file (KDE, XDG mimeapps, podman shims,
+    Godot, anything with `/home/<user>` in it) goes in `os/linux/` or
+    `copy/os/linux/`, never `home/` or `copy/home/`. `just update` exits on darwin
+    after `bin/dots sync-apply` + `bin/install-packages`; keep it that way.
+  - NEVER commit secrets or personal data. Config references secrets at runtime
+    (`source ~/.secrets`, `include ~/.gitconfig.local`).
+  - `~/.local/share/atuin/` is never tracked.
+  - `~/.claude/settings.json` on Linux is app-owned and deliberately UNMANAGED.
+
+  TOOLING that is already good and should not be reinvented: `packages.yaml`
+  (brew/cask/mise/uv/flatpak/npm/dnf), `mise` owns language runtimes, `justfile` is
+  the front door, `bin/` holds scripts. Nobara installs without the admin password
+  by design — mise/uv/npm are user-level and flatpak is `--user`. Packages with no
+  user-level source are printed as one batched `pkexec dnf install` line.
+
+  WORK TRACKING — OpenSpec is the source of truth. Three buckets:
+  - `openspec/backlog/*.md`     = NOT-planned ideas
+  - `openspec/changes/`         = PLANNED / in-flight  (`openspec list`)
+  - `openspec/changes/archive/` = DONE
+  `backlog/` is this repo's own convention; OpenSpec neither reads nor lists it.
+
+  VCS — this repo is jj-colocated. Use `jj`, never mutating `git` commands.
+  `jj undo` and `jj op log` are the recovery path. Work on a jj change, not
+  directly on the bookmark.
+
+  NAMING — change slug is `<area>-<descriptor>`, lowercase kebab, <= 4 words,
+  area first. Areas in use: dotfiles, nobara, agent.
+
+# Per-artifact rules
+rules:
+  proposal:
+    - State the failure this fixes, not the feature it adds.
+    - Name what is explicitly out of scope.
+  tasks:
+    - Every task that touches real files must be runnable against HOME=/tmp/fakehome first.
+    - Destructive steps get a stated rollback.

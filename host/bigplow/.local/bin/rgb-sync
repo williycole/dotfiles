@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# rgb-sync — one command for every RGB zone on the box (RAM, motherboard/case
+# fan headers via OpenRGB, Thermalright cooler LED via trcc) instead of
+# juggling two separate tools with different device names and mode names.
+#
+# Solid color is the one case that looks genuinely synced: every device has
+# an equivalent "just show this color, no animation" mode (OpenRGB calls it
+# Direct, trcc calls it STATIC). Animated modes (rainbow, breathing, ...) are
+# NOT phase-synced across devices — each controller runs its own clock, and
+# OpenRGB's mode names differ per device family (RAM has no plain "Rainbow",
+# it has "Rainbow Wave"), so this only passes through whatever mode name you
+# give each tool rather than pretending to unify them. Good enough for "match
+# everything to one accent color"; not a substitute for per-device tuning in
+# `openrgb --gui` or `trcc gui` when you want that.
+#
+# No root needed for either tool once `trcc setup` has already run once.
+set -euo pipefail
+
+usage() {
+  echo "usage: rgb-sync <RRGGBB> [mode]" >&2
+  echo "  mode defaults to a solid color on everything (OpenRGB Direct + trcc STATIC)" >&2
+  echo "  mode can also be rainbow or breathing — NOT phase-synced across devices, see script header" >&2
+  exit 2
+}
+
+hex="${1:?}" || usage
+mode="${2:-static}"
+[ -n "${1:-}" ] || usage
+hex="${hex#\#}"
+
+case "$mode" in
+  static)
+    openrgb --mode Direct --color "$hex"
+    trcc led mode 0416:8001 STATIC
+    trcc led color 0416:8001 "#$hex"
+    ;;
+  rainbow)
+    # Each OpenRGB device family names this differently; let OpenRGB match
+    # "rainbow" against whatever each device actually calls it.
+    openrgb --mode rainbow
+    trcc led mode 0416:8001 RAINBOW
+    ;;
+  breathing)
+    openrgb --mode breathing --color "$hex"
+    trcc led mode 0416:8001 BREATHING
+    trcc led color 0416:8001 "#$hex"
+    ;;
+  *)
+    usage
+    ;;
+esac
+
+echo "rgb-sync: applied $mode${hex:+ #$hex} to OpenRGB devices + trcc cooler (0416:8001)"

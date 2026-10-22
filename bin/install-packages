@@ -1,0 +1,496 @@
+#!/usr/bin/env bash
+# install-packages — install CLI tools from packages.yaml using the right
+# package manager for this OS. Each package installs independently; one failure
+# does NOT abort the run. Re-running is safe (idempotent).
+#
+# macOS: brew/cask on the host.
+# Nobara: the owner is a NON-admin user, so nothing here uses host
+#   `sudo`. Tools come from uv (`uv:`), npm (`npm:`) or flatpak --user — all
+#   user-level, no password. Anything left with only a `dnf:` source is a genuine
+#   holdout: it is NOT installed here. Instead every missing one is collected and
+#   printed as a SINGLE `pkexec dnf install` line to hand to the admin, so the
+#   whole set costs one password prompt instead of one per package.
+#
+#   mise tools are NOT here (removed 2026-10-03). They live ONLY in
+#   home/.config/mise/config.toml [tools], installed by `mise install`. This
+#   script used to run `mise use -g` for a `mise:` key, which WROTE the entry
+#   back into config.toml — two lists, each claiming to be the source. A tool
+#   mise already put on PATH is found by the presence probe and never reaches
+#   the admin batch, so run `mise install` before this.
+#
+#   Presence is probed before adding to that batch (`bin:` for a binary, `pc:` for
+#   a pkg-config module), so packages Nobara already ships never pad the list.
+#
+# Usage: ~/Repos/dotfiles/bin/install-packages
+# Prereqs: mise install (runtimes) should be run separately.
+#          Linux: host must already have `flatpak` (admin, Phase 2).
+
+# NOTE: deliberately NO `set -e` — we want to continue past individual failures.
+set -uo pipefail
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PKGFILE="${PKGFILE:-$REPO/packages.yaml}"
+# A second package file: the extension directory's packages.yaml, read after
+# this one when it exists.
+EXTRA_PKGFILE="${EXTRA_PKGFILE:-${DOTS_EXTRA:-$HOME/.local/share/dots/extra}/packages.yaml}"
+declare -a FAILURES=()
+
+log()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
+ok()   { printf '  \033[1;32m✓\033[0m %s\n' "$*"; }
+fail() { printf '  \033[1;31m✗\033[0m %s\n' "$*"; FAILURES+=("$*"); }
+
+# ── detect OS ───────────────────────────────────────────────
+case "$(uname -s)" in
+  Darwin) OS=mac ;;
+  Linux)  OS=linux ;;
+  *) echo "Unsupported OS: $(uname -s)"; exit 1 ;;
+esac
+log "Detected OS: $OS"
+
+# Same predicate as the system setup, and it must stay the same: it pins
+# nvidia-drm.modeset=0 on any box this matches, which turns off the DRM KMS that
+# gamescope needs. A package gated `skip_if_nvidia` is one that cannot work under
+# that pin. Deliberately GPU-gated rather than hostname-gated - a third NVIDIA box
+# would inherit the right behaviour without being named here.
+has_nvidia_gpu() { lspci 2>/dev/null | grep -qiE '(VGA compatible|3D) controller.*NVIDIA'; }
+
+YQ=yq
+
+# packages with no user-level source, found missing — batched for one admin prompt
+declare -a ADMIN_BATCH=()
+# ── bootstrap package managers + yq (needed to parse packages.yaml) ─────────
+if [ "$OS" = mac ]; then
+  command -v brew >/dev/null || { echo "Homebrew required. Install from https://brew.sh"; exit 1; }
+  command -v yq   >/dev/null || brew install yq
+else
+  # Host base must already be present (admin-installed in Phase 2). We NEVER sudo here.
+  command -v flatpak   >/dev/null || log "flatpak not found — GUI apps will be skipped (ask admin: sudo dnf install flatpak)"
+
+  # mikefarah yq → user-level binary (Fedora's repo `yq` is the incompatible Python one)
+  if ! command -v yq >/dev/null; then
+    mkdir -p "$HOME/.local/bin"
+    case "$(uname -m)" in x86_64) ARCH=amd64 ;; aarch64) ARCH=arm64 ;; *) ARCH=amd64 ;; esac
+    if curl -fsSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH}" -o "$HOME/.local/bin/yq" 2>/dev/null; then
+      chmod +x "$HOME/.local/bin/yq"; YQ="$HOME/.local/bin/yq"; ok "yq (mikefarah, user binary)"
+    else fail "yq bootstrap"; echo "Cannot parse packages.yaml without yq — aborting."; exit 1; fi
+  fi
+
+  # user-level flathub remote for --user installs
+  if command -v flatpak >/dev/null; then
+    flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1 || true
+  fi
+fi
+
+# already on this host? `bin:` names a binary, `pc:` a pkg-config module.
+# Falls back to the package name when neither is given.
+have_it() {
+  local name="$1" bin="$2" pc="$3"
+  [ "$pc"  != "null" ] && { pkg-config --exists "$pc" 2>/dev/null && return 0 || return 1; }
+  [ "$bin" != "null" ] && { command -v "$bin" >/dev/null 2>&1 && return 0 || return 1; }
+  command -v "$name" >/dev/null 2>&1 && return 0
+  # Header/library-only packages (libcxx-devel) have no binary and no .pc file;
+  # without this they were never "present" and re-prompted for admin every run.
+  command -v rpm >/dev/null 2>&1 && rpm -q "$name" >/dev/null 2>&1
+}
+
+install_one() {
+  local name="$1" brew="$2" cask="$3" dnf="$4" copr="$5" flatpak="$6" npm="$7"
+  local uv="$8" bin="$9" pc="${10}" skip_nv="${11}" os_only="${12}"
+
+  # `os: linux|mac` pins a package to one OS. Needed for the npm/uv paths, which
+  # otherwise run everywhere: bw (Bitwarden CLI) is for the Nobara boxes only.
+  if [ "$os_only" != "null" ] && [ "$os_only" != "$OS" ]; then return; fi
+
+  # Skipped BEFORE any probe: the point is that this package must never reach the
+  # admin batch on an NVIDIA box, not that it installs and misbehaves later.
+  if [ "$skip_nv" = "true" ] && has_nvidia_gpu; then
+    ok "$name (skipped - NVIDIA box, see packages.yaml)"
+    return
+  fi
+
+  # npm packages install the same way on every OS (mise node, user-level)
+  if [ "$npm" != "null" ]; then
+    if npm install -g "$npm" >/dev/null 2>&1; then ok "$name (npm)"; else fail "$name (npm)"; fi
+    return
+  fi
+
+  if [ "$OS" = mac ]; then
+    if   [ "$cask" != "null" ]; then
+      if brew list --cask "$cask" >/dev/null 2>&1 || brew install --cask "$cask" >/dev/null 2>&1; then ok "$name (cask)"; else fail "$name (cask)"; fi
+    elif [ "$brew" != "null" ]; then
+      if brew list "$brew" >/dev/null 2>&1 || brew install "$brew" >/dev/null 2>&1; then ok "$name (brew)"; else fail "$name (brew)"; fi
+    fi
+  else
+    # GUI apps → flatpak --user (no admin)
+    if   [ "$flatpak" != "null" ]; then
+      # Installed in EITHER scope counts. On Nobara the user remote is removed by
+      # the system setup installs these in the system scope, as
+      # admin — so `--user install` always failed there and reported a false ✗.
+      if command -v flatpak >/dev/null && flatpak info "$flatpak" >/dev/null 2>&1; then ok "$name (flatpak)"
+      elif [ "$OS" = linux ] && [ -f /etc/fedora-release ]; then log "  • $name (flatpak — installed system-wide)"
+      elif command -v flatpak >/dev/null && flatpak install --user -y flathub "$flatpak" >/dev/null 2>&1; then ok "$name (flatpak --user)"
+      else fail "$name (flatpak)"; fi
+    # Python apps → uv tool, user-level, no admin
+    elif [ "$uv" != "null" ]; then
+      if mise exec -- uv tool install --force "$uv" >/dev/null 2>&1; then ok "$name (uv)"; else fail "$name (uv)"; fi
+    # No user-level source. Do NOT install — collect for one batched admin prompt.
+    elif [ "$dnf" != "null" ]; then
+      if have_it "$name" "$bin" "$pc"; then
+        ok "$name (already on host)"
+      else
+        ADMIN_BATCH+=("$dnf"); printf '  \033[1;33m•\033[0m %s (needs admin — batched)\n' "$name"
+      fi
+    fi
+  fi
+}
+
+# ── install everything from packages.yaml ───────────────────
+# NB: the list is read on fd 3, NOT stdin. Installers spawned in the loop (npm,
+# flatpak, mise) read/drain stdin — on fd 0 the first one swallowed the whole list
+# and only the FIRST package ever installed (found live on the Pocket 4).
+log "Installing packages from $(basename "$PKGFILE")..."
+while IFS=$'\t' read -r -u3 name brew cask dnf copr flatpak npm uv bin pc skip_nv os_only; do
+  [ -z "$name" ] && continue
+  install_one "$name" "$brew" "$cask" "$dnf" "$copr" "$flatpak" "$npm" "$uv" "$bin" "$pc" "$skip_nv" "$os_only" </dev/null
+done 3< <("$YQ" -r '.packages[] | [.name, .brew // "null", .cask // "null", .dnf // "null", .copr // "null", .flatpak // "null", .npm // "null", .uv // "null", .bin // "null", .pc // "null", .skip_if_nvidia // "null", .os // "null"] | @tsv' "$PKGFILE")
+# Then the extension's file, same loop, when it is here.
+if [ -s "$EXTRA_PKGFILE" ] && "$YQ" -e '.packages | length > 0' "$EXTRA_PKGFILE" >/dev/null 2>&1; then
+  log "Installing packages from $EXTRA_PKGFILE..."
+  while IFS=$'\t' read -r -u3 name brew cask dnf copr flatpak npm uv bin pc skip_nv os_only; do
+    [ -z "$name" ] && continue
+    install_one "$name" "$brew" "$cask" "$dnf" "$copr" "$flatpak" "$npm" "$uv" "$bin" "$pc" "$skip_nv" "$os_only" </dev/null
+  done 3< <("$YQ" -r '.packages[] | [.name, .brew // "null", .cask // "null", .dnf // "null", .copr // "null", .flatpak // "null", .npm // "null", .uv // "null", .bin // "null", .pc // "null", .skip_if_nvidia // "null", .os // "null"] | @tsv' "$EXTRA_PKGFILE")
+fi
+
+# ── the one admin prompt ────────────────────────────────────
+# Everything above installed without a password. What is left has no user-level
+# source at all. Print it as a single command so the admin is asked ONCE, rather
+# than once per package. NOT run here — the install happens at the END of the
+# script, so the password prompt does not interrupt a run that still has minutes
+# of user-level work left to do.
+
+# ── special installers (curl/npx — not in any package manager) ──────────────
+if [ "${SKIP_CUSTOM:-0}" = 1 ]; then
+  log "SKIP_CUSTOM=1 — skipping curl/npx installers."
+else
+log "Installing tools with custom installers..."
+
+# Old lazy wrappers (Omadora era) in ~/.local/bin: scripts that set package=…
+# and fetch the tool on every run. They shadow the real npm installs above and
+# are the same shape as the pi wrapper that hung updates (2026-10-08). Removed
+# only when the file is that wrapper — a real binary of the same name is kept.
+if [ "$OS" = linux ]; then
+  for _w in codex copilot gemini opencode ghui playwright-cli; do
+    _f="$HOME/.local/bin/$_w"
+    if [ -f "$_f" ] && [ ! -L "$_f" ] && grep -q '^package=' "$_f" 2>/dev/null && grep -q 'pnpm' "$_f" 2>/dev/null; then
+      rm -f "$_f" && ok "removed lazy wrapper ~/.local/bin/$_w"
+    fi
+  done
+fi
+
+# One agent, one door (2026-10-19): other coding agents are removed if present.
+# They are shells the managed Claude Code policy cannot see.
+if [ "$OS" = linux ]; then
+  for _p in @openai/codex @github/copilot @google/gemini-cli opencode-ai; do
+    if npm ls -g "$_p" >/dev/null 2>&1; then
+      npm uninstall -g "$_p" >/dev/null 2>&1 && ok "removed agent $_p" || fail "could not remove $_p"
+    fi
+  done
+fi
+
+# ruffle — Flash player, GitHub release drop (no Fedora package). Same shape as
+# cliamp below: latest STABLE tag, linux x86_64 tarball, binary to ~/.local/bin.
+if [ "$OS" = linux ]; then
+  _rv=$(curl -fsSL https://api.github.com/repos/ruffle-rs/ruffle/releases/latest 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin)["tag_name"])' 2>/dev/null || true)
+  if [ -z "$_rv" ]; then fail "ruffle (could not read the latest release)"
+  elif command -v ruffle >/dev/null 2>&1 && ruffle --version 2>/dev/null | grep -q "${_rv#v}"; then ok "ruffle $_rv (already installed)"
+  else
+    _t=$(mktemp -d)
+    _u=$(curl -fsSL "https://api.github.com/repos/ruffle-rs/ruffle/releases/tags/$_rv" | python3 -c 'import json,sys;print(next(a["browser_download_url"] for a in json.load(sys.stdin)["assets"] if a["name"].endswith("linux-x86_64.tar.gz")))' 2>/dev/null || true)
+    if [ -n "$_u" ] && curl -fsSL -o "$_t/r.tgz" "$_u" && tar -xzf "$_t/r.tgz" -C "$_t" ruffle \
+       && install -m 0755 "$_t/ruffle" "$HOME/.local/bin/ruffle"; then ok "ruffle $_rv"; else fail "ruffle (download)"; fi
+    rm -rf "$_t"
+  fi
+fi
+
+# piper voice — the neural model say-reply.sh prefers over espeak-ng: one onnx
+# (~60 MB) plus its json, from rhasspy/piper-voices on Hugging Face. The voice
+# name encodes its path (en_US-lessac-medium -> en/en_US/lessac/medium). Best
+# effort: on a box where huggingface.co does not resolve yet, this reports and
+# the hook keeps using espeak-ng.
+if [ "$OS" = linux ]; then
+  _pv="${PIPER_VOICE:-en_US-amy-medium}"; _pd="$HOME/.local/share/piper/voices"
+  _loc="${_pv%%-*}"; _rest="${_pv#*-}"; _nm="${_rest%-*}"; _q="${_rest##*-}"
+  _pu="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/${_loc%%_*}/$_loc/$_nm/$_q"
+  if [ -s "$_pd/$_pv.onnx" ] && [ -s "$_pd/$_pv.onnx.json" ]; then ok "piper voice $_pv (already installed)"
+  else
+    mkdir -p "$_pd"; _t=$(mktemp -d)
+    if curl -fsSL -o "$_t/v.onnx" "$_pu/$_pv.onnx" && curl -fsSL -o "$_t/v.json" "$_pu/$_pv.onnx.json" \
+       && [ "$(stat -c %s "$_t/v.onnx" 2>/dev/null || echo 0)" -gt 1000000 ]; then
+      mv "$_t/v.onnx" "$_pd/$_pv.onnx" && mv "$_t/v.json" "$_pd/$_pv.onnx.json" && ok "piper voice $_pv"
+    else fail "piper voice $_pv (huggingface.co not reachable yet? permit it, then: just install)"; fi
+    rm -rf "$_t"
+  fi
+fi
+
+# cliamp — terminal Spotify (go-librespot). Was only in provision-user.sh step 13,
+# which needs `gh` logged in, so a machine provisioned without it never got one
+# (bigplow, 2026-10-08). curl from the release + checksum instead: needs no login.
+CLIAMP_VER="${CLIAMP_VER:-v2.3.0}"
+if [ "$OS" = linux ]; then
+  if command -v cliamp >/dev/null 2>&1 && cliamp --version 2>/dev/null | grep -q "$CLIAMP_VER"; then
+    ok "cliamp $CLIAMP_VER (already installed)"
+  else
+    _t=$(mktemp -d); _u="https://github.com/bjarneo/cliamp/releases/download/$CLIAMP_VER"
+    if curl -fsSL -o "$_t/cliamp-linux-amd64" "$_u/cliamp-linux-amd64" \
+       && curl -fsSL -o "$_t/checksums.txt" "$_u/checksums.txt" \
+       && (cd "$_t" && grep 'cliamp-linux-amd64$' checksums.txt | sha256sum -c - >/dev/null) \
+       && install -m 0755 "$_t/cliamp-linux-amd64" "$HOME/.local/bin/cliamp"; then
+      ok "cliamp $CLIAMP_VER (release, checksum verified)"
+    else fail "cliamp (download or checksum)"; fi
+    rm -rf "$_t"
+  fi
+fi
+
+# peon-ping
+if ! command -v peon-ping >/dev/null 2>&1; then
+  if [ "$OS" = mac ]; then
+    brew install peonping/tap/peon-ping >/dev/null 2>&1 && ok "peon-ping (tap)" || fail "peon-ping (tap)"
+  else
+    curl -fsSL https://raw.githubusercontent.com/PeonPing/peon-ping/main/install.sh | bash >/dev/null 2>&1 && ok "peon-ping (curl)" || fail "peon-ping (curl)"
+  fi
+else ok "peon-ping (already installed)"; fi
+
+# peon-ping sound packs — re-downloaded from the registry (config.json is backed up, the
+# ~/.openpeon/packs/ audio blobs are not). ponytail: static list, edit when you add/remove a
+# pack (`peon packs list` shows what you have). All must exist in `peon packs list --registry`.
+hash -r 2>/dev/null || true
+if command -v peon >/dev/null 2>&1; then
+  for pk in balatro glados ocarina_of_time peasant peon sc_battlecruiser sc_kerrigan zelda-a-link-to-the-past; do
+    [ -d "$HOME/.openpeon/packs/$pk" ] && { ok "pack: $pk (present)"; continue; }
+    peon packs install "$pk" >/dev/null 2>&1 && ok "pack: $pk" || fail "pack: $pk"
+  done
+else fail "peon not on PATH — sound packs skipped"; fi
+
+# herdr (linux only — mac installs it via packages.yaml `brew: herdr`). Prebuilt binary
+# to ~/.local/bin; no Fedora pkg. `herdr update` uses the same manifest afterward.
+if [ "$OS" != mac ]; then
+  command -v herdr >/dev/null 2>&1 && ok "herdr (already installed)" || {
+    curl -fsSL https://herdr.dev/install.sh | bash >/dev/null 2>&1 && ok "herdr (curl)" || fail "herdr (curl)"
+  }
+fi
+
+# bun (linux only — mac via packages.yaml `brew: bun`). No Fedora pkg; official installer
+# → ~/.bun (on PATH via common.sh). Its installer edits shell rc, but our rc is templated,
+# so PATH is set in common.sh instead — pass BUN_INSTALL to keep the default location.
+if [ "$OS" != mac ]; then
+  command -v bun >/dev/null 2>&1 && ok "bun (already installed)" || {
+    curl -fsSL https://bun.sh/install | bash >/dev/null 2>&1 && ok "bun (curl)" || fail "bun (curl)"
+  }
+fi
+
+# gitmux (linux only — mac via packages.yaml `brew: gitmux`). No Fedora pkg; Go tool.
+# GOBIN → ~/.local/bin so it lands on PATH (common.sh) without a go/bin PATH hack.
+if [ "$OS" != mac ]; then
+  command -v gitmux >/dev/null 2>&1 && ok "gitmux (already installed)" || {
+    if command -v go >/dev/null 2>&1; then
+      GOBIN="$HOME/.local/bin" go install github.com/arl/gitmux@latest >/dev/null 2>&1 && ok "gitmux (go)" || fail "gitmux (go)"
+    else fail "gitmux — go not on PATH (mise install go first)"; fi
+  }
+fi
+
+# lazyjj (linux only — mac via packages.yaml `brew: lazyjj`). Its Fedora COPR is stale
+# (F42/x86_64, ~14mo old), so build from crates.io. Rust tool → ~/.local/bin via --root.
+if [ "$OS" != mac ]; then
+  command -v lazyjj >/dev/null 2>&1 && ok "lazyjj (already installed)" || {
+    if command -v cargo >/dev/null 2>&1; then
+      cargo install lazyjj --locked --root "$HOME/.local" >/dev/null 2>&1 && ok "lazyjj (cargo)" || fail "lazyjj (cargo)"
+    else fail "lazyjj — cargo not on PATH (mise install rust first)"; fi
+  }
+fi
+
+# tmux TPM + plugins — .tmux.conf declares plugins (@plugin) but TPM itself is a manual
+# clone; without it the `run '.../tpm/tpm'` line no-ops and nothing loads. Clone it, then
+# install_plugins reads the tracked @plugin list. ponytail: git clone, no version pin.
+TPM_DIR="$HOME/.tmux/plugins/tpm"
+if [ -d "$TPM_DIR/.git" ]; then ok "tmux tpm (already installed)"
+else git clone -q https://github.com/tmux-plugins/tpm "$TPM_DIR" && ok "tmux tpm" || fail "tmux tpm"; fi
+[ -x "$TPM_DIR/bin/install_plugins" ] && { "$TPM_DIR/bin/install_plugins" >/dev/null 2>&1 && ok "tmux plugins" || fail "tmux plugins"; }
+
+# yazi plugins — installed via `ya pkg`, declared here so a new machine gets them.
+# All first-party (yazi-rs/plugins): the yazi docs warn third-party plugins mostly
+# target yazi HEAD, and this box tracks the packaged release. `ya pkg add` on an
+# already-present package is a no-op, so re-running is safe.
+#   piper  = pipe any command as a previewer (markdown -> glow)
+#   git    = git status as a linemode   smart-enter = one key to enter-or-open
+#   toggle-pane = maximize preview      full-border = borders on all panes
+if command -v ya >/dev/null 2>&1; then
+  # Plugins declare a minimum yazi version, and `ya pkg add` does NOT enforce it:
+  # a too-old yazi installs them fine, then dies at startup with "Lua runtime failed
+  # / Plugin `git` requires at least Yazi X". Check here so the failure is visible
+  # at install time. yazi ships as a binary drop in ~/.local/bin, upgradable
+  # without admin: unzip the release asset over it.
+  # `ya pkg` replaced `ya pack`. On a ya that predates the rename EVERY add
+  # fails with the same unhelpful line, so name the real cause up front.
+  if ! ya pkg --help >/dev/null 2>&1; then
+    fail "this 'ya' has no 'pkg' subcommand (it predates the ya pack -> ya pkg rename) — upgrade yazi, then re-run"
+  fi
+  YAZI_MIN=26.8.15
+  yv=$(yazi --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+  if [ -n "$yv" ] && [ "$(printf '%s\n' "$YAZI_MIN" "$yv" | sort -V | head -1)" != "$YAZI_MIN" ]; then
+    fail "yazi $yv < $YAZI_MIN — plugins will install but fail to load at startup"
+  fi
+  # DO NOT swallow the error. This was `>/dev/null 2>&1`, so when every plugin
+  # failed on bigplow (2026-09-07) the report was ten identical "fail" lines and
+  # no cause — and ten failing at once is never ten problems, it is one. The
+  # usual one is the subcommand: `ya pack` was renamed `ya pkg`, so an older ya
+  # fails every call identically.
+  #
+  # "no-op" above was wrong: this `ya` exits non-zero on a package already in
+  # package.toml ("Error: Plugin `x.yazi` already exists in package.toml"),
+  # which read as ten fresh failures on every re-run of an already-provisioned
+  # box (bigplow, 2026-09-07 again). Treat that one message as the success it is.
+  yazi_pkg() {
+    local out
+    if out=$(ya pkg add "$1" 2>&1); then
+      ok "yazi: $2"
+    elif printf '%s' "$out" | grep -q "already exists in package.toml"; then
+      ok "yazi: $2 (already installed)"
+    else
+      fail "yazi: $2 — $(printf '%s' "$out" | grep -v '^\s*$' | tail -1)"
+    fi
+  }
+  for p in piper git smart-enter toggle-pane full-border; do
+    yazi_pkg "yazi-rs/plugins:$p" "$p"
+  done
+  # Third-party. Note `ya pkg add` rejects the `.yazi` suffix — kebab-case name only.
+  #   starship = prompt as header   relative-motions = vim counts (5j/3k)
+  #   jumplist = dir back/forward   mediainfo = audio + subtitle metadata
+  #   pref-by-location = per-directory sort/linemode/hidden
+  for p in Rolv-Apneseth/starship dedukun/relative-motions 0xHouss/jumplist \
+           boydaihungst/mediainfo boydaihungst/pref-by-location; do
+    yazi_pkg "$p" "$p"
+  done
+else
+  fail "ya not on PATH — yazi plugins skipped (brew install yazi)"
+fi
+
+# herdr plugins — herdr records nothing about what's installed (.plugins.lock stays an
+# empty file), so the set is declared here instead of relying on a plugin manager.
+# Re-running is safe: `plugin install` reports "replaces:" and re-registers, exit 0.
+if command -v herdr >/dev/null 2>&1; then
+  herdr plugin install speardragon/herdr-yazi --yes  >/dev/null 2>&1 && ok "herdr: yazi"      || fail "herdr: yazi"
+  herdr plugin install mroth/herdr-jj-status --yes    >/dev/null 2>&1 && ok "herdr: jj-status" || fail "herdr: jj-status"
+  # smart-splits ships its herdr manifest INSIDE the Neovim plugin repo, so it is linked
+  # from the lazy.nvim clone rather than installed from GitHub. Needs lazy to have cloned
+  # it first — open nvim once, or run: nvim --headless "+Lazy! install" +qa
+  SS_DIR="$HOME/.local/share/nvim/lazy/smart-splits.nvim"
+  if [ -d "$SS_DIR" ]; then
+    herdr plugin link "$SS_DIR" >/dev/null 2>&1 && ok "herdr: smart-splits" || fail "herdr: smart-splits"
+  else
+    fail "herdr: smart-splits — $SS_DIR missing (let lazy.nvim clone it, then re-run)"
+  fi
+else
+  fail "herdr not on PATH — herdr plugins skipped"
+fi
+
+# plannotator
+command -v plannotator >/dev/null 2>&1 && ok "plannotator (already installed)" || {
+  curl -fsSL https://plannotator.ai/install.sh | bash >/dev/null 2>&1 && ok "plannotator" || fail "plannotator"
+}
+
+# claude code (native installer → ~/.local/bin/claude; user-level, no admin).
+# Also what the ccp/ccw aliases in shell/common.sh wrap — without it they're dead.
+command -v claude >/dev/null 2>&1 && ok "claude (already installed)" || {
+  curl -fsSL https://claude.ai/install.sh | bash >/dev/null 2>&1 && ok "claude" || fail "claude"
+}
+
+# agent skills / extensions — four ownership rules, see README §Agents & skills:
+#   1. Plugin-owned (caveman/context-mode/playwright/ponytail): the plugin ships the skill.
+#      Never also place a copy in the shared store — that double-loads it.
+#   2. Installer-owned (peon-ping): brew writes and deletes those files; chezmoi only
+#      symlinks them (dot_claude/skills/symlink_peon-ping-*, mac-gated in .chezmoiignore).
+#   3. Ours: real files live in home/.agents/skills/ and `just link` symlinks them
+#      into ~/.agents/skills. This step only points each agent at that store.
+#      It used to `npx skills add` from a second copy in dotfiles/skills/, which
+#      replaced the links with older real files on every update (2026-10-15).
+#   4. Repo-specific skills stay in their own repo.
+# Every skill the repo owns (home/.agents/skills/*), not a hand-kept list: the
+# list went stale the day Pocock's 38 skills were vendored (2026-10-21).
+for _sd in "$REPO"/home/.agents/skills/*/; do
+  skill=$(basename "$_sd")
+  if [ ! -d "$HOME/.agents/skills/$skill" ]; then fail "skill: $skill (not linked yet — run: just link)"; continue; fi
+  for d in "$HOME/.claude/skills" "$HOME/.pi/agent/skills"; do
+    mkdir -p "$d"
+    [ -e "$d/$skill" ] || ln -s "$HOME/.agents/skills/$skill" "$d/$skill"
+  done
+  ok "skill: $skill"
+done
+
+#   Pi extensions: no plugin system — they come from the pi.dev registry via `pi install`
+#     (idempotent). Static list, edit when you add/remove a pi extension
+#     (`pi list` shows what you have).
+if command -v pi >/dev/null 2>&1; then
+  for ext in \
+    npm:pi-web-access npm:@codexstar/pi-listen npm:pi-markdown-preview npm:pi-btw \
+    npm:@plannotator/pi-extension npm:pi-terminal-theme npm:context-mode \
+    npm:@juicesharp/rpiv-ask-user-question npm:@juicesharp/rpiv-todo npm:@juicesharp/rpiv-advisor \
+    npm:pi-claude-bridge npm:pi-subagents npm:pi-lens npm:pi-simplify \
+    npm:@carlosgtrz/pi-run-timer npm:pi-peon-adapter \
+    git:github.com/DietrichGebert/ponytail git:github.com/jonjonrankin/pi-caveman; do
+    pi install "$ext" >/dev/null 2>&1 && ok "pi: $ext" || fail "pi: $ext"
+  done
+else fail "pi not on PATH — pi extensions skipped (npm i -g @earendil-works/pi-coding-agent first)"; fi
+
+#   omp (oh-my-pi): auto-discovers skills from ~/.claude/skills (no copy needed); only
+#     plugin-format tools install here. Marketplace surface is Claude-compatible. Static list.
+if command -v omp >/dev/null 2>&1; then
+  omp plugin marketplace add JuliusBrussee/caveman   >/dev/null 2>&1 || true
+  omp plugin marketplace add DietrichGebert/ponytail >/dev/null 2>&1 || true
+  for p in caveman@caveman ponytail@ponytail; do
+    # omp exits nonzero when the plugin is already installed — treat that as success
+    out=$(omp plugin install "$p" 2>&1)
+    if [ $? -eq 0 ] || printf '%s' "$out" | grep -qi 'already installed'; then
+      ok "omp: $p"
+    else
+      fail "omp: $p"
+    fi
+  done
+else fail "omp not on PATH — omp plugins skipped (bun add -g @oh-my-pi/pi-coding-agent first)"; fi
+fi  # end SKIP_CUSTOM
+
+# ── admin packages: ONE prompt, at the very END ─────────────
+# Collected during the scan above, installed here. Deliberately last: the owner
+# is non-admin, so this is the only password in the run, and asking for it
+# mid-script meant the prompt appeared while the script still had minutes of
+# work left — the admin types it, walks away, and the run is not done.
+#
+# Now it is the last thing that happens, and it RUNS rather than printing a
+# command to copy. Printing was the old behaviour and it just moved the work.
+if [ "$OS" = linux ] && [ ${#ADMIN_BATCH[@]} -gt 0 ]; then
+  printf '\n\033[1;33m==>\033[0m %d package(s) need admin:\n\n    %s\n\n' \
+    "${#ADMIN_BATCH[@]}" "${ADMIN_BATCH[*]}"
+  if [ "${SKIP_ADMIN:-0}" = 1 ] || [ ! -t 0 ]; then
+    # Headless or SKIP_ADMIN: pkexec has no session to prompt in and would fail
+    # with something unhelpful. Print the command instead of dying.
+    printf '    not run (no terminal, or SKIP_ADMIN=1). Run it yourself:\n\n'
+    printf '    pkexec dnf install -y %s\n\n' "${ADMIN_BATCH[*]}"
+  else
+    log "asking for the admin password once, for all of them"
+    if ${POLKIT_WRAP:-} pkexec dnf install -y "${ADMIN_BATCH[@]}"; then
+      ok "admin packages installed (${#ADMIN_BATCH[@]})"
+    else
+      fail "admin packages not installed — cancelled or dnf failed: pkexec dnf install -y ${ADMIN_BATCH[*]}"
+    fi
+  fi
+fi
+
+# ── summary ─────────────────────────────────────────────────
+echo
+if [ ${#FAILURES[@]} -eq 0 ]; then
+  log "All packages installed (or already present)."
+else
+  log "Done with ${#FAILURES[@]} failure(s):"
+  printf '  - %s\n' "${FAILURES[@]}"
+  echo "Re-run safe: already-installed packages are skipped."
+fi

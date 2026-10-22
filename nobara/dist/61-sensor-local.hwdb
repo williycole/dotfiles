@@ -1,0 +1,39 @@
+# GPD Pocket 4 accelerometer orientation. Installed to
+# /etc/udev/hwdb.d/61-sensor-local.hwdb.
+#
+# Corrects what iio-sensor-proxy reports so that EVERY desktop reads the true
+# orientation. Without it the sensor lies about which way up the machine is, and
+# each compositor needs its own daemon translating the lie - which is what
+# home/dot_config/hypr/scripts/auto-rotate.sh was, and why rotation died the
+# moment Hyprland was not running.
+#
+# Value taken from systemd issue 41036, where a maintainer worked it out with
+# another Pocket 4 owner. That issue is closed. This machine is the same model:
+#
+#   /sys/class/dmi/id/sys_vendor   -> GPD
+#   /sys/class/dmi/id/product_name -> G1628-04
+#   accelerometer modalias         -> acpi:MXC6655:MXC6655:
+#
+# FORMATTING IS LOAD-BEARING. The match line starts at column 0 and the property
+# line starts with EXACTLY ONE SPACE. hwdb silently ignores the entry otherwise,
+# which presents as "the matrix did nothing" rather than as an error.
+#
+# Apply with:
+#   systemd-hwdb update
+#   udevadm trigger -p DEVNAME=/dev/iio:device0
+#   systemctl restart iio-sensor-proxy
+#
+# Verify with `monitor-sensor --accel`, which must report:
+#   laptop (keyboard toward you) -> right-up
+#   rotated clockwise            -> normal
+#   keyboard up                  -> left-up
+#   keyboard right               -> bottom-up
+#
+# Those four are the CORRECTED readings for this hardware, per the same issue.
+# They are also exactly what the old hand-calibrated auto-rotate.sh observed, so
+# the note claiming this unit's sensor is uniquely mis-mounted looks wrong - the
+# ArchWiki mapping is the outlier, not this machine. Confirm against hardware
+# before trusting either statement.
+
+sensor:modalias:acpi:MXC6655:*:dmi:*:svnGPD:pnG1628-04:*
+ ACCEL_MOUNT_MATRIX=0, 1, 0; 1, 0, 0; 0, 0, -1

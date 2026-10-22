@@ -1,0 +1,81 @@
+#:schema https://yazi-rs.github.io/schemas/keymap.json
+# Yazi keymap. Only plugin bindings live here — everything else stays on yazi's
+# defaults. `prepend_keymap` wins over a default binding of the same key.
+
+# smart-enter.yazi — `l` both enters a directory and opens a file, instead of
+# needing `l` for one and Enter for the other.
+[[mgr.prepend_keymap]]
+on = "l"
+run = "plugin smart-enter"
+desc = "Enter the child directory, or open the file"
+
+# toggle-pane.yazi — blow the preview pane up to full width and back. Worth a
+# key now that markdown renders instead of showing raw text.
+[[mgr.prepend_keymap]]
+on = "F"
+run = "plugin toggle-pane max-preview"
+desc = "Maximize or restore the preview pane"
+
+# jumplist.yazi — vim-style back/forward through visited directories.
+# Alt+arrows, NOT vim's own <C-o>/<C-i>: <C-i> and <Tab> are the same byte, and
+# <Tab> is yazi's `spot` (mime inspector). Binding <C-i> would shadow it.
+[[mgr.prepend_keymap]]
+on = "<A-left>"
+run = "plugin jumplist -- --direction=back"
+desc = "Go back in jumplist"
+
+[[mgr.prepend_keymap]]
+on = "<A-right>"
+run = "plugin jumplist -- --direction=forward"
+desc = "Go forward in jumplist"
+
+# relative-motions.yazi — vim counts in the file list: 5j, 3k, 12G.
+#
+# TRADE: 1-9 are yazi's defaults for "switch to tab N", and these override them.
+# Tabs are still reachable with `[` and `]` (cycle previous/next) and `t` (new),
+# which is the better deal if you think in vim counts more often than you keep
+# nine tabs open.
+[[mgr.prepend_keymap]]
+on = "1"
+run = "plugin relative-motions 1"
+desc = "Move in relative steps"
+
+[[mgr.prepend_keymap]]
+on = "2"
+run = "plugin relative-motions 2"
+desc = "Move in relative steps"
+
+[[mgr.prepend_keymap]]
+on = "3"
+run = "plugin relative-motions 3"
+desc = "Move in relative steps"
+
+[[mgr.prepend_keymap]]
+on = "4"
+run = "plugin relative-motions 4"
+desc = "Move in relative steps"
+
+[[mgr.prepend_keymap]]
+on = "5"
+run = "plugin relative-motions 5"
+desc = "Move in relative steps"
+
+[[mgr.prepend_keymap]]
+on = "6"
+run = "plugin relative-motions 6"
+desc = "Move in relative steps"
+
+[[mgr.prepend_keymap]]
+on = "7"
+run = "plugin relative-motions 7"
+desc = "Move in relative steps"
+
+[[mgr.prepend_keymap]]
+on = "8"
+run = "plugin relative-motions 8"
+desc = "Move in relative steps"
+
+[[mgr.prepend_keymap]]
+on = "9"
+run = "plugin relative-motions 9"
+desc = "Move in relative steps"

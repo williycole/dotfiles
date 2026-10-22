@@ -1,0 +1,25 @@
+symbolPreset: nerd
+setupVersion: 1
+theme: 
+  dark: dark-arctic
+  light: dark-arctic
+modelRoles: 
+  default: google/gemini-3.5-flash:high
+  slow: google-gemini-cli/gemini-3-pro-preview
+defaultThinkingLevel: auto
+statusLine: 
+  preset: minimal
+  separator: ascii
+  sessionAccent: true
+tui: 
+  textSizing: false
+display: 
+  shimmer: classic
+browser:
+  headless: true
+skills:
+  # omp reads skills from Pi (not Claude) — Pi is the driving source.
+  enablePiUser: true
+  enablePiProject: true
+  enableClaudeUser: false
+  enableClaudeProject: false

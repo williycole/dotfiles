@@ -1,0 +1,27 @@
+[Unit]
+# A USER unit, not a system one, and that is deliberate rather than a
+# limitation: `dev` has no sudo and never will, so anything needing root could
+# not be installed, enabled or repaired by the person who uses this machine.
+# logind's PrepareForSleep signal is readable by any user on the system bus, and
+# Steam runs as the owner, so nothing here wants privilege.
+#
+# NOT /usr/lib/systemd/system-sleep/ for the same reason: those hooks are
+# root-owned, and one would have to be shipped by the system setup and re-applied on
+# every box. This follows the dotfiles instead.
+Description=Reconnect Steam after the machine wakes up
+Documentation=file:///home/dev/.local/bin/steam-resume-nudge
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/steam-resume-nudge
+# The watcher is a long-lived pipe reader. If gdbus dies, or the bus restarts,
+# the script exits non-zero and this brings it straight back — a unit that looks
+# active while watching nothing is the failure mode worth preventing, because it
+# would be invisible until the next lost save.
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

@@ -1,0 +1,585 @@
+#!/usr/bin/env bash
+#
+# dots — link config from this repo into $HOME.
+#
+# The repo file and the live file are ONE INODE. Editing either edits the same
+# bytes, so there is no apply step, no drift, and no backup step. `git status` in
+# this repo is the drift check for every linked file.
+#
+# Layering, later wins:   home/  ->  os/<darwin|linux>/  ->  host/<hostname>/
+#
+# TWO RULES, both taken from failures this repo already had (see
+# openspec/changes/dotfiles-plain-file-linking/design.md):
+#
+#   1. Nothing aborts halfway. Every item is independent. A failure is named and
+#      the run continues, then exits non-zero. Bare `set -e` in the pre-chezmoi
+#      install scripts is why config restore silently never ran.
+#
+#   2. Nothing in $HOME is ever deleted or clobbered. `ln -sf` would happily
+#      replace a real file, so link() refuses any target it does not already own
+#      and reports it instead. Removal is a deliberate manual act.
+#
+#      ONE EXCEPTION, added 2026-10-04 and deliberately narrow: `sync-apply`
+#      removes a SYMLINK that points into this repo at a file that no longer
+#      exists. Both halves matter. It is a link this tool made, and it leads
+#      nowhere, so there is no content to lose. A real file is never touched, and
+#      neither is a link that points anywhere else.
+#
+#      Why it earned an exception: deleting a file from the repo left its link
+#      behind on every machine, and `doctor` reported that to nobody. Ten dead
+#      launchers after the 2026-10-03 retirement, and two dead nvim plugin files
+#      that would have made nvim complain at startup on the machines that only
+#      pulled (2026-10-04, two launcher icons went blank).
+#
+# Reads $HOME from the environment and never hardcodes a path, so:
+#     HOME=/tmp/fakehome bin/dots link
+# exercises everything against a throwaway tree.
+#
+# Usage: dots <status|link|copy|perms|external|adopt|doctor|prune|sync|sync-apply|migrate> [args]
+
+set -uo pipefail   # deliberately NOT -e; see rule 1
+
+# REFUSE TO RUN AS ROOT. Every path here is built from $HOME, and pkexec/sudo set
+# HOME=/root — so `pkexec ./install.sh` does not link this repo into the owner's
+# home, it links 134 files into /root, all of them owned and WRITABLE by the
+# non-admin owner. Root then sources shell config, nvim config and agent config
+# from a directory that account controls, which is the same privilege hole as a
+# hand-added NOPASSWD sudoers entry.
+#
+# Happened 2026-09-06: `pkexec ./install.sh` from the repo root, meaning to run
+# a different installer. The output looked like a normal successful link run.
+# The only tell was ".bashrc exists as a real file", which is true of /root and
+# false of the owner's home, where it was already a link.
+#
+# HOME=/tmp/fakehome is still supported (see the note above) — this refuses the
+# ROOT identity, not a redirected HOME.
+if [[ ${EUID:-$(id -u)} -eq 0 ]]; then
+    printf '\033[31mrefusing to run as root.\033[0m\n' >&2
+    printf 'These are per-user dotfiles and every path comes from $HOME, which is\n' >&2
+    printf '/root under sudo/pkexec — this would link the repo into /root and leave\n' >&2
+    printf 'root reading config files a non-admin account can edit.\n\n' >&2
+    printf 'Run it as yourself, with no sudo and no pkexec.\n' >&2
+    exit 1
+fi
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"   # darwin | linux
+HOST="$(hostname -s 2>/dev/null || hostname)"
+# An optional extra layer, layered LAST so its file wins at the same path:
+# $DOTS_OVERLAY, defaulting to the extension directory's overlay/ when it
+# exists. Same three sub-layers, same mechanism — links into it count as ours
+# for relink, prune, status and sync.
+OVERLAY="${DOTS_OVERLAY:-${DOTS_EXTRA:-$HOME/.local/share/dots/extra}/overlay}"
+# Resolved, so a symlinked extension directory yields the same link targets
+# every time (links are compared by path).
+OVERLAY="$(cd "$OVERLAY" 2>/dev/null && pwd -P || true)"
+
+FAILURES=0
+CHANGES=0
+DRY=0
+MAP_COUNT=0
+
+# ── output ────────────────────────────────────────────────────────────────────
+ok()   { printf '  \033[32m✓\033[0m %s\n' "$*"; }
+act()  { printf '  \033[36m→\033[0m %s\n' "$*"; CHANGES=$((CHANGES+1)); }
+warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
+bad()  { printf '  \033[31m✗\033[0m %s\n' "$*"; FAILURES=$((FAILURES+1)); }
+head_() { printf '\n\033[1m%s\033[0m\n' "$*"; }
+
+# Reading a file mode portably. GNU coreutils and BSD stat disagree on flags, and
+# on a Mac with coreutils installed GNU comes FIRST on PATH via gnubin.
+#
+# `stat -f '%Lp' || stat -c '%a'` looks like a safe fallback and is not. GNU's -f
+# means "filesystem info", not "format"; given an invalid format it prints its
+# whole filesystem dump to STDOUT and exits 1. So the fallback runs, but the
+# garbage has already been captured, and every mode comparison reads as drift.
+# That shipped, and `just dots-status` reported five false mode-drift lines on a
+# tree whose modes were all correct. Detect once, at startup, instead.
+# -L is required, not optional. Every managed path is a symlink after cutover, and
+# a symlink carries its own mode (755 on macOS) which says nothing about the file
+# it points at. Without -L this reports drift on every single linked path.
+if stat -c '%a' / >/dev/null 2>&1; then
+    mode_of() { stat -L -c '%a' "$1" 2>/dev/null; }     # GNU coreutils
+else
+    mode_of() { stat -L -f '%Lp' "$1" 2>/dev/null; }    # BSD / stock macOS
+fi
+
+# Pure-bash whitespace trim. `echo "$x" | xargs` was the obvious one-liner and it
+# dies with "unterminated quote" the moment a value contains a quote — which URLs
+# and config values do.
+trim() { local s="$1"; s="${s#"${s%%[![:space:]]*}"}"; s="${s%"${s##*[![:space:]]}"}"; printf '%s' "$s"; }
+
+# ── layer resolution ──────────────────────────────────────────────────────────
+# Builds a "<target-relative-path>\t<absolute-source>" table for every managed
+# file, with later layers overriding earlier ones. Deliberately a temp file and
+# awk rather than an associative array: stock macOS ships bash 3.2, which has no
+# `declare -A`, and this script must run on both machines without a bash upgrade.
+# The awk pass keeps the LAST line per target, which IS the layering rule.
+MAPFILE=""
+COPYFILE=""
+cleanup() { [[ -n "$MAPFILE" ]] && rm -f "$MAPFILE"; [[ -n "$COPYFILE" ]] && rm -f "$COPYFILE"; }
+trap cleanup EXIT
+
+collect_layer() {
+    local root="$1"
+    [[ -d "$root" ]] || return 0
+    local f rel
+    while IFS= read -r -d '' f; do
+        rel="${f#"$root"/}"
+        # Files that describe the layer rather than belonging to $HOME.
+        #
+        # modes.conf at a layer ROOT is this repo's own config — os/darwin/modes.conf
+        # would otherwise land as ~/modes.conf. Only the layer-root name is skipped,
+        # so an app's own nested foo/modes.conf still links normally.
+        #
+        # .chezmoi* is kept as a guard rather than history. chezmoi is retired and
+        # those files are gone, but the failure they caused is worth not repeating:
+        # once home/ held literal target paths, .chezmoiignore looked no different
+        # from any other dotfile and got linked into $HOME with everything else.
+        case "$rel" in modes.conf|.chezmoi*|.chezmoi*/*) continue ;; esac
+        printf '%s\t%s\n' "$rel" "$f" >> "$MAPFILE.raw"
+    done < <(find "$root" \( -type f -o -type l \) -print0 2>/dev/null)
+}
+
+# targets.conf remaps a repo source to a per-OS target. Format:
+#   <repo source> | <darwin target> | <linux target>
+apply_targets_conf() {
+    local conf="$REPO/targets.conf" src dar lin want
+    [[ -f "$conf" ]] || return 0
+    while IFS='|' read -r src dar lin; do
+        src="$(trim "$src")"; dar="$(trim "$dar")"; lin="$(trim "$lin")"
+        [[ -z "$src" || "$src" == \#* ]] && continue
+        [[ -f "$REPO/$src" ]] || { warn "targets.conf: source missing: $src"; continue; }
+        case "$OS" in
+            darwin) want="$dar" ;;
+            linux)  want="$lin" ;;
+            *)      want="" ;;
+        esac
+        # An empty target for this OS means "not linked here".
+        [[ -n "$want" ]] && printf '%s\t%s\n' "$want" "$REPO/$src" >> "$MAPFILE.raw"
+    done < "$conf"
+}
+
+build_map() {
+    [[ -n "$MAPFILE" ]] || MAPFILE="$(mktemp)"
+    : > "$MAPFILE.raw"
+    collect_layer "$REPO/home"
+    collect_layer "$REPO/os/$OS"
+    collect_layer "$REPO/host/$HOST"
+    if [[ -n "$OVERLAY" ]]; then
+        collect_layer "$OVERLAY/home"
+        collect_layer "$OVERLAY/os/$OS"
+        collect_layer "$OVERLAY/host/$HOST"
+    fi
+    apply_targets_conf
+    # last line per target wins
+    awk -F'\t' 'NF==2 {m[$1]=$2} END {for (k in m) printf "%s\t%s\n", k, m[k]}' \
+        "$MAPFILE.raw" > "$MAPFILE"
+    rm -f "$MAPFILE.raw"
+    MAP_COUNT="$(wc -l < "$MAPFILE" | tr -d ' ')"
+}
+
+# Paths under copy/ are copied rather than linked (see design.md — cfprefsd and
+# editors that replace-on-save both sever symlinks silently).
+#
+# Same three layers as the link map — copy/home, copy/os/<os>, copy/host/<host>,
+# later wins — so a file only one OS replaces-on-save (Godot's editor settings,
+# with its /home/dev paths) never lands on the other. Lines are "rel<TAB>src".
+build_copy_set() {
+    [[ -n "$COPYFILE" ]] || COPYFILE="$(mktemp)"
+    : > "$COPYFILE.raw"
+    local layer root f
+    for layer in home "os/$OS" "host/$HOST"; do
+        root="$REPO/copy/$layer"
+        [[ -d "$root" ]] || continue
+        while IFS= read -r -d '' f; do
+            printf '%s\t%s\n' "${f#"$root"/}" "$f" >> "$COPYFILE.raw"
+        done < <(find "$root" -type f -print0 2>/dev/null)
+    done
+    awk -F'\t' 'NF==2 {m[$1]=$2} END {for (k in m) printf "%s\t%s\n", k, m[k]}' \
+        "$COPYFILE.raw" > "$COPYFILE"
+    rm -f "$COPYFILE.raw"
+}
+
+is_copy_target() {
+    [[ -s "${COPYFILE:-/nonexistent}" ]] || return 1
+    awk -F'\t' -v r="$1" '$1==r {f=1} END {exit !f}' "$COPYFILE"
+}
+
+# ── link ──────────────────────────────────────────────────────────────────────
+link_one() {
+    local rel="$1" src="$2" dst="$HOME/$1"
+
+    if [[ -L "$dst" ]]; then
+        local cur; cur="$(readlink "$dst")"
+        if [[ "$cur" == "$src" ]]; then return 0; fi
+        # Into THIS repo at another layer: an overlay (host/, os/) landed on a
+        # path home/ already linked. The link is ours, so repoint it.
+        if [[ "$cur" == "$REPO"/* ]] || { [[ -n "$OVERLAY" ]] && [[ "$cur" == "$OVERLAY"/* ]]; }; then
+            if (( DRY )); then act "relink $rel -> ${src#"$REPO"/}"; return 0; fi
+            if ln -sfn "$src" "$dst" 2>/dev/null; then act "relink $rel -> ${src#"$REPO"/}"; return 0; fi
+            bad "relink failed: $rel"; return 1
+        fi
+        # Points somewhere else. Could be a peon-ping brew symlink or a stale
+        # chezmoi link. Never silently repoint — say so and move on.
+        warn "$rel is a symlink to something else: $cur"
+        return 0
+    fi
+
+    if [[ -e "$dst" ]]; then
+        # Rule 2. A real file here means either it belongs in copy/ (an app
+        # replaced the link on save) or it is unmanaged. Do not clobber it.
+        bad "$rel exists as a real file — not overwriting (copy/ candidate, or run: dots adopt $rel)"
+        return 1
+    fi
+
+    # A repo source that is ITSELF a symlink must be REPRODUCED, not pointed at.
+    # Linking to it makes a link-to-a-link, and a relative target then resolves
+    # against the repo directory instead of $HOME. os/linux/.claude-personal is
+    # the case that found this: it is a relative symlink to .claude, and pointing
+    # at it produced ~/.claude-personal -> repo/os/linux/.claude, which does not
+    # exist. Linux-only file, so the macOS side never hit it.
+    if [[ -L "$src" ]]; then
+        local want; want="$(readlink "$src")"
+        if (( DRY )); then act "link $rel (reproduce symlink -> $want)"; return 0; fi
+        mkdir -p "$(dirname "$dst")" 2>/dev/null
+        if ln -s "$want" "$dst" 2>/dev/null; then act "link $rel -> $want"
+        else bad "link failed: $rel"; return 1; fi
+        return 0
+    fi
+
+    if (( DRY )); then act "link $rel"; return 0; fi
+    mkdir -p "$(dirname "$dst")" 2>/dev/null
+    if ln -s "$src" "$dst" 2>/dev/null; then act "link $rel"; else bad "link failed: $rel"; return 1; fi
+}
+
+cmd_link() {
+    head_ "link  (os=$OS host=$HOST)"
+    build_map; build_copy_set
+    local rel src
+    while IFS=$'\t' read -r rel src; do
+        is_copy_target "$rel" && continue
+        link_one "$rel" "$src"
+    done < "$MAPFILE"
+    (( CHANGES == 0 )) && ok "all links present"
+}
+
+# ── copy ──────────────────────────────────────────────────────────────────────
+cmd_copy() {
+    head_ "copy"
+    build_copy_set
+    local rel src dst
+    while IFS=$'\t' read -r rel src; do
+        dst="$HOME/$rel"
+        if [[ -e "$dst" && ! "$src" -nt "$dst" ]]; then continue; fi
+        if (( DRY )); then act "copy $rel"; continue; fi
+        mkdir -p "$(dirname "$dst")" 2>/dev/null
+        if cp -p "$src" "$dst" 2>/dev/null; then act "copy $rel"; else bad "copy failed: $rel"; fi
+    done < "$COPYFILE"
+    (( CHANGES == 0 )) && ok "copy set up to date"
+}
+
+# ── perms ─────────────────────────────────────────────────────────────────────
+# Git records only the executable bit. A file committed 0600 comes back 0644, and
+# OpenSSH refuses a private key at 0644 — so this is a requirement, not hygiene.
+# modes.conf layers exactly the way the file tree does: modes.conf, then
+# os/<os>/modes.conf, then host/<host>/modes.conf. Emits the concatenation of
+# whichever exist, so a missing layer is simply nothing.
+#
+# karabiner is why this is layered. It is a macOS-only app living in os/darwin/,
+# but its four mode entries sat in the one shared modes.conf, so every `perms` and
+# every `status` run on Linux printed four "not present" warnings about a program
+# that box will never have. Declared modes should follow the files they describe.
+modes_lines() {
+    local f
+    for f in "$REPO/modes.conf" "$REPO/os/$OS/modes.conf" "$REPO/host/$HOST/modes.conf"; do
+        [[ -f "$f" ]] && cat "$f"
+    done
+}
+
+cmd_perms() {
+    head_ "perms"
+    local mode path dst cur declared
+    declared="$(modes_lines)"
+    [[ -n "$declared" ]] || { warn "no modes.conf"; return 0; }
+    while read -r mode path; do
+        [[ -z "${mode:-}" || "$mode" == \#* ]] && continue
+        dst="$HOME/$path"
+        [[ -e "$dst" ]] || { warn "not present, skipping: $path"; continue; }
+        cur="$(mode_of "$dst")"
+        [[ "$cur" == "$mode" ]] && continue
+        if (( DRY )); then act "chmod $mode $path (currently $cur)"; continue; fi
+        if chmod "$mode" "$dst" 2>/dev/null; then act "chmod $mode $path"; else bad "chmod failed: $path"; fi
+    done <<< "$declared"
+    (( CHANGES == 0 )) && ok "all declared modes correct"
+}
+
+# ── external ──────────────────────────────────────────────────────────────────
+cmd_external() {
+    head_ "external"
+    local conf="$REPO/external.conf" path url dst
+    [[ -f "$conf" ]] || { warn "no external.conf"; return 0; }
+    while IFS='|' read -r path url; do
+        path="$(trim "$path")"; url="$(trim "$url")"
+        [[ -z "$path" || "$path" == \#* ]] && continue
+        dst="$HOME/$path"
+        if (( DRY )); then act "fetch $path"; continue; fi
+        mkdir -p "$(dirname "$dst")" 2>/dev/null
+        if curl -fsSL "$url" -o "$dst.tmp" 2>/dev/null && mv "$dst.tmp" "$dst"; then
+            act "fetch $path"
+        else
+            rm -f "$dst.tmp"; bad "fetch failed: $path <- $url"
+        fi
+    done < "$conf"
+}
+
+# ── adopt ─────────────────────────────────────────────────────────────────────
+# Pull a live copy-set file back into the repo. Linked files never need this —
+# editing them IS editing the repo.
+cmd_adopt() {
+    local rel="${1:-}"
+    [[ -n "$rel" ]] || { echo "usage: dots adopt <path-relative-to-\$HOME>" >&2; return 2; }
+    rel="${rel#"$HOME"/}"; rel="${rel#./}"
+    local live="$HOME/$rel" dest="$REPO/copy/home/$rel"
+    head_ "adopt $rel"
+    [[ -f "$live" ]] || { bad "not a regular file: $live"; return 1; }
+    if [[ -L "$live" ]]; then
+        warn "$rel is a symlink — it is already the repo file, nothing to adopt"
+        return 0
+    fi
+    mkdir -p "$(dirname "$dest")"
+    if cp -p "$live" "$dest"; then
+        act "captured into copy/home/$rel"
+        ok "now tracked as a copy-set file; commit it"
+    else
+        bad "copy failed"
+    fi
+}
+
+# ── status ────────────────────────────────────────────────────────────────────
+cmd_status() {
+    head_ "status  (os=$OS host=$HOST)"
+    build_map; build_copy_set
+    local rel src dst cur missing=0 severed=0 foreign=0
+
+    while IFS=$'\t' read -r rel src; do
+        is_copy_target "$rel" && continue
+        dst="$HOME/$rel"
+        if [[ -L "$dst" ]]; then
+            cur="$(readlink "$dst")"
+            # Also correct when the repo file is ITSELF a symlink to the same place:
+            # the peon-ping and tell links resolve into the Homebrew libexec from
+            # both sides. Comparing link text against the repo path alone called all
+            # ten of those foreign.
+            if [[ -L "$src" && "$cur" == "$(readlink "$src")" ]]; then
+                :
+            elif [[ "$cur" != "$src" ]]; then
+                warn "points elsewhere: $rel -> $cur"; foreign=$((foreign+1))
+            fi
+        elif [[ -e "$dst" ]]; then
+            # The silent failure mode: an app replaced the link on save.
+            bad "should be a link, is a real file: $rel"; severed=$((severed+1))
+        else
+            warn "missing: $rel"; missing=$((missing+1))
+        fi
+    done < "$MAPFILE"
+
+    printf '\n  managed: %d   missing: %d   severed: %d   foreign: %d\n' \
+        "$MAP_COUNT" "$missing" "$severed" "$foreign"
+
+    head_ "copy set"
+    local n=0 src
+    while IFS=$'\t' read -r rel src; do
+        n=$((n+1))
+        if [[ ! -e "$HOME/$rel" ]]; then warn "missing: $rel"
+        elif ! diff -q "$src" "$HOME/$rel" >/dev/null 2>&1; then
+            warn "differs from repo: $rel  (dots adopt $rel, or dots copy)"
+        fi
+    done < "$COPYFILE"
+    (( n == 0 )) && ok "empty (populated from observed failures, not predicted)"
+
+    head_ "modes"
+    local mode path
+    while read -r mode path; do
+        [[ -z "${mode:-}" || "$mode" == \#* ]] && continue
+        [[ -e "$HOME/$path" ]] || { warn "not present: $path"; continue; }
+        cur="$(mode_of "$HOME/$path")"
+        [[ "$cur" == "$mode" ]] || warn "mode drift: $path is $cur, want $mode"
+    done < <(modes_lines)
+}
+
+# ── doctor ────────────────────────────────────────────────────────────────────
+# Links pointing into this repo at files that no longer exist. Left behind when a
+# repo file is renamed or deleted — status will not see them because they are no
+# longer in the map.
+#
+# dangling_links prints them NUL-separated, and is the ONE definition of "dead
+# link this tool owns" — doctor reports from it and prune deletes from it, so the
+# two can never disagree about what counts.
+dangling_links() {
+    local l t
+    while IFS= read -r -d '' l; do
+        t="$(readlink "$l")"
+        case "$t" in
+            "$REPO"/*) [[ -e "$t" ]] || printf '%s\0' "$l" ;;
+            "${OVERLAY:-/nonexistent}"/*) [[ -e "$t" ]] || printf '%s\0' "$l" ;;
+        esac
+    done < <(find "$HOME" -maxdepth 6 -type l -print0 2>/dev/null)
+}
+
+cmd_doctor() {
+    head_ "doctor — dangling links into the repo"
+    local found=0 l
+    while IFS= read -r -d '' l; do
+        bad "dangling: ${l#"$HOME"/} -> $(readlink "$l")"; found=$((found+1))
+    done < <(dangling_links)
+    (( found == 0 )) && ok "no dangling links"
+}
+
+# ── prune ─────────────────────────────────────────────────────────────────────
+# The one deletion this tool performs — see rule 2 at the top for the exception
+# and why it exists. Re-checks each path immediately before removing it: it must
+# still be a symlink and still lead nowhere. `rm` on a symlink removes the link,
+# never what it points at, and there is nothing at the other end anyway.
+cmd_prune() {
+    head_ "prune — dead links into the repo"
+    local found=0 l
+    while IFS= read -r -d '' l; do
+        found=$((found+1))
+        if (( DRY )); then act "prune ${l#"$HOME"/}"; continue; fi
+        if [[ -L "$l" && ! -e "$l" ]] && rm -f -- "$l" 2>/dev/null; then
+            act "pruned ${l#"$HOME"/}"
+        else
+            bad "could not prune: ${l#"$HOME"/}"
+        fi
+    done < <(dangling_links)
+    (( found == 0 )) && ok "no dead links"
+}
+
+# ── migrate ───────────────────────────────────────────────────────────────────
+# One-time cutover. `link` refuses to touch a target that already exists as a
+# regular file — that is hard rule 2 and it stays. But at cutover EVERY target is
+# a regular file, so link alone would refuse all of them and change nothing.
+#
+# This is the deliberate exception, and it is deliberately narrow: a live file is
+# removed ONLY when it is byte-identical to the repo copy that would replace it.
+# Identical means there is nothing to lose — the symlink points at the same bytes.
+# Anything that differs is reported and left alone for a human to decide.
+#
+# Refuses to run without a backup tarball present. Dry run by default.
+cmd_migrate() {
+    head_ "migrate  (os=$OS host=$HOST)"
+    local backup_dir="$HOME/.cache/dotfiles-migration"
+    if ! ls "$backup_dir"/*.tar >/dev/null 2>&1; then
+        bad "no backup tarball in $backup_dir — refusing to run"
+        warn "take one first:  chezmoi archive --output=$backup_dir/pre-cutover.tar"
+        return 1
+    fi
+
+    build_map; build_copy_set
+    local rel src dst identical=0 differs=0 absent=0 linked=0
+    local -a to_link=() to_review=()
+
+    while IFS=$'\t' read -r rel src; do
+        is_copy_target "$rel" && continue
+        dst="$HOME/$rel"
+        if [[ -L "$dst" ]]; then
+            # Two ways a live symlink is already correct. Either it points at our
+            # repo file, or — for the peon-ping and tell links — the repo file is
+            # ITSELF a symlink to the same Homebrew path, so the live link and the
+            # repo link resolve to the same place. Comparing link text against the
+            # repo path alone reported all ten of those as foreign.
+            if [[ "$(readlink "$dst")" == "$src" ]]; then
+                linked=$((linked+1))
+            elif [[ -L "$src" && "$(readlink "$dst")" == "$(readlink "$src")" ]]; then
+                linked=$((linked+1))
+            else
+                to_review+=("$rel  (symlink pointing elsewhere: $(readlink "$dst"))")
+            fi
+        elif [[ ! -e "$dst" ]]; then
+            absent=$((absent+1)); to_link+=("$rel")
+        elif cmp -s "$dst" "$src"; then
+            identical=$((identical+1)); to_link+=("$rel")
+        else
+            differs=$((differs+1)); to_review+=("$rel  (live file differs from the repo copy)")
+        fi
+    done < "$MAPFILE"
+
+    printf '  %d already linked   %d identical   %d absent   %d differ\n' \
+        "$linked" "$identical" "$absent" "$differs"
+
+    if (( ${#to_review[@]} > 0 )); then
+        printf '\n  \033[33mneeds a decision, will NOT be touched:\033[0m\n'
+        local r; for r in "${to_review[@]}"; do printf '    %s\n' "$r"; done
+        printf '  Resolve each by copying the version you want into the repo, then re-run.\n'
+    fi
+
+    if (( ${#to_link[@]} == 0 )); then
+        printf '\n'; ok "nothing to migrate"
+        return 0
+    fi
+
+    if (( DRY )); then
+        printf '\n  would replace %d identical/absent target(s) with symlinks\n' "${#to_link[@]}"
+        printf '  apply with: just migrate-apply\n'
+        return 0
+    fi
+
+    # NOT deleted — moved aside. The live file is a byte-identical duplicate of the
+    # repo copy (cmp proved it above), so nothing is lost either way, but "delete
+    # 109 files from $HOME" is a bad thing to ask anyone to trust. Every displaced
+    # file lands under ~/.cache/dotfiles-migration/replaced/ with its path intact,
+    # which makes reversal one `mv` per file and leaves a third backup behind.
+    local stash="$backup_dir/replaced"
+    local n moved=0
+    for n in "${to_link[@]}"; do
+        dst="$HOME/$n"
+        [[ -e "$dst" && ! -L "$dst" ]] || continue
+        mkdir -p "$(dirname "$stash/$n")" 2>/dev/null
+        if mv "$dst" "$stash/$n" 2>/dev/null; then
+            moved=$((moved+1))
+        else
+            bad "could not move aside: $n (left untouched)"
+        fi
+    done
+    (( moved > 0 )) && printf '\n  moved %d duplicate(s) aside to %s\n' "$moved" "$stash"
+    printf '\n'
+    cmd_link
+}
+
+# ── sync ──────────────────────────────────────────────────────────────────────
+cmd_sync() {
+    # prune BEFORE link: when a file moves between layers (home/ -> os/linux/),
+    # the old link is dead and link_one refuses to repoint an existing symlink.
+    # Pruned first, link recreates it in the same run instead of the next one.
+    cmd_prune; cmd_link; cmd_copy; cmd_perms
+    if (( DRY )); then
+        printf '\n\033[1mdry run\033[0m — %d action(s) would run. Apply with: just sync-apply\n' "$CHANGES"
+    fi
+}
+
+# ── dispatch ──────────────────────────────────────────────────────────────────
+sub="${1:-status}"; shift || true
+case "$sub" in
+    status)     cmd_status ;;
+    link)       cmd_link ;;
+    copy)       cmd_copy ;;
+    perms)      cmd_perms ;;
+    external)   cmd_external ;;
+    adopt)      cmd_adopt "${1:-}" ;;
+    doctor)     cmd_doctor ;;
+    prune)      cmd_prune ;;
+    sync)       DRY=1; cmd_sync ;;
+    sync-apply) cmd_sync ;;
+    migrate)       DRY=1; cmd_migrate ;;
+    migrate-apply) cmd_migrate ;;
+    *) echo "unknown: $sub" >&2
+       echo "usage: dots <status|link|copy|perms|external|adopt|doctor|prune|sync|sync-apply|migrate|migrate-apply>" >&2
+       exit 2 ;;
+esac
+
+if (( FAILURES > 0 )); then
+    printf '\n\033[31m%d failure(s)\033[0m — each named above. No real file was deleted or overwritten.\n' "$FAILURES"
+    exit 1
+fi
+exit 0

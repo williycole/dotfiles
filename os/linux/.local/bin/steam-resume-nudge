@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# steam-resume-nudge — reconnect Steam after the machine wakes up.
+#
+# THE BUG, from ~/.steam/steam/logs/cloud_log.txt on littleplow, 2026-09-29.
+# Six real cloud-sync failures across Elden Ring, Balatro, Barotrauma, EDF6,
+# Slay the Spire and Armored Core VI, on 2026-09-08, 09-14 and 09-15. Every one
+# is preceded by a `ResumeSuspendedGames...` line, and every one reports
+# `[offlineMode=false]` — Steam believed it was online while it was not:
+#
+#   [2026-09-15 10:46:49] ResumeSuspendedGames...
+#   [2026-09-15 10:53:55] [AppID 2371090] Starting sync (down,)
+#   [2026-09-15 10:53:55] [AppID 2371090] Failed sync for 'down,' [login=false][offlineMode=false]
+#
+# Steam captures its connection state at startup and does not re-establish it
+# properly when the link drops underneath a running client. On a handheld that
+# suspends several times a day, and on a box whose network can be switched off
+# by an expiring window, that happens constantly. The owner's workaround was to
+# quit Steam, go offline, then go online again — this is that, automatically,
+# without quitting.
+#
+# WHAT IT IS NOT: this does not fix a cloud CONFLICT. Armored Core VI currently
+# carries `1 pending remote operations: Operation '3' from machine ''`, which is
+# a genuine two-machine disagreement and needs a human to pick a side. This only
+# fixes the case where Steam is connected to nothing and has not noticed.
+#
+# NO ROOT ANYWHERE. It listens on the system bus for logind's PrepareForSleep
+# signal, which any user may subscribe to, and drives Steam through its own
+# steam:// URL handler as the owner. Nothing here needs a password, a sudoers
+# entry or a system unit — which is the point, since `dev` has neither sudo nor
+# any way to get it.
+set -uo pipefail
+
+log() { printf '%s steam-resume-nudge: %s\n' "$(date '+%F %T')" "$*"; }
+
+# ponytail: toggling friends status is the scriptable form of the owner's manual
+# dance, and it does not disturb a running game. The known ceiling: if a wake
+# ever leaves Steam wedged badly enough that this does not clear it, the upgrade
+# is `steam -shutdown` followed by a relaunch, which DOES interrupt play — so it
+# is not the default.
+nudge() {
+  if ! pgrep -x steam >/dev/null 2>&1; then
+    log "steam not running, nothing to do"
+    return 0
+  fi
+  # Wait for the network to actually come back. A resume often lands before
+  # NetworkManager has finished, and nudging Steam at a dead link just makes it
+  # cache the failure again — which is the bug this exists to avoid.
+  local waited=0
+  until getent hosts api.steampowered.com >/dev/null 2>&1; do
+    if [ "$waited" -ge 60 ]; then
+      log "no network 60s after resume — skipping (steam stays as it was)"
+      return 0
+    fi
+    sleep 3
+    waited=$((waited + 3))
+  done
+  log "network back after ${waited}s, reconnecting steam"
+  steam -no-browser steam://friends/status/offline >/dev/null 2>&1
+  sleep 2
+  steam -no-browser steam://friends/status/online >/dev/null 2>&1
+  log "done"
+}
+
+log "watching for resume"
+
+# --object-path narrows the match so this wakes only for login1's own signals
+# rather than every message on the system bus. PrepareForSleep fires twice per
+# cycle: (true) going down, (false) coming back. Only the second one matters.
+gdbus monitor --system \
+  --dest org.freedesktop.login1 \
+  --object-path /org/freedesktop/login1 2>/dev/null |
+while read -r line; do
+  case "$line" in
+    *PrepareForSleep*false*) log "resumed"; nudge ;;
+    *PrepareForSleep*true*)  log "suspending" ;;
+  esac
+done
+
+# Reached only if gdbus dies. Exiting non-zero lets systemd restart it rather
+# than leaving a unit that looks active while watching nothing.
+log "dbus monitor exited"
+exit 1

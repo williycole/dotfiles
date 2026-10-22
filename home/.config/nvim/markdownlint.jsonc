@@ -1,0 +1,17 @@
+// markdownlint rules for this nvim config. Lives here, not in ~, so it ships with
+// the repo to every box. Wired up in lua/plugins/my-overrides.lua (nvim-lint),
+// which passes it via --config because nvim-lint lints markdown over stdin and
+// markdownlint-cli2 cannot walk up to find a config when there is no file path.
+{
+  "config": {
+    // Prose wraps at 80 on save: ~/.prettierrc sets "proseWrap": "always", so
+    // this rule is enforced by the formatter rather than silenced. Tables and
+    // code blocks are exempt because prettier cannot break either one, so
+    // flagging them would report something no formatter can fix.
+    "MD013": {
+      "line_length": 80,
+      "tables": false,
+      "code_blocks": false
+    }
+  }
+}

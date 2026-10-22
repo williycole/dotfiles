@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# go-toolchain — install the latest STABLE Go for mise, without dl.google.com.
+#
+# mise downloads Go from dl.google.com, which this box refuses on purpose: the
+# same host serves Chrome installers, and a Chrome extracted into $HOME is an
+# unmanaged browser (a tool once pulled one in that way). So `mise install go@latest` failed
+# with a DNS error — silently on littleplow, loudly on bigplow, 2026-10-08.
+#
+# Go's own module proxy (proxy.golang.org, allowed for `go get`) serves the same
+# official toolchains as module zips — the path `go` itself uses for GOTOOLCHAIN
+# auto-upgrades. This fetches that zip, restores the exec bits (module zips do
+# not carry them), and registers it with `mise link`, so mise's go = "latest"
+# resolves to an installed version and never reaches for dl.google.com.
+#
+# Version: go.dev/dl ?mode=json, first entry with stable=true — never an rc or beta.
+set -euo pipefail
+say() { printf '  %s\n' "$*"; }
+
+ver=$(curl -fsSL "https://go.dev/dl/?mode=json" |
+  python3 -c 'import json,sys; print(next(r["version"] for r in json.load(sys.stdin) if r["stable"]))') \
+  || { say "go: could not reach go.dev — skipped"; exit 0; }
+num=${ver#go}
+dest="$HOME/.local/share/go-toolchains/$num"
+
+if [ -x "$dest/bin/go" ] && mise ls go 2>/dev/null | grep -q "^go *$num"; then
+  say "go $num (latest stable)"; exit 0
+fi
+
+if [ ! -x "$dest/bin/go" ]; then
+  say "go: fetching $ver from proxy.golang.org"
+  tmp=$(mktemp -d); trap 'chmod -R u+w "$tmp" 2>/dev/null; rm -rf "$tmp"' EXIT
+  curl -fsSL -o "$tmp/go.zip" \
+    "https://proxy.golang.org/golang.org/toolchain/@v/v0.0.1-$ver.linux-amd64.zip"
+  unzip -q "$tmp/go.zip" -d "$tmp/x"
+  src="$tmp/x/golang.org/toolchain@v0.0.1-$ver.linux-amd64"
+  [ -f "$src/bin/go" ] || { say "go: unexpected zip layout — not installed"; exit 1; }
+  chmod +x "$src"/bin/* "$src"/pkg/tool/*/* 2>/dev/null || true
+  mkdir -p "$(dirname "$dest")"; rm -rf "$dest"; mv "$src" "$dest"
+fi
+"$dest/bin/go" version >/dev/null || { say "go: $dest/bin/go does not run"; exit 1; }
+mise link --force "go@$num" "$dest" >/dev/null
+say "go $num installed via proxy.golang.org (linked into mise)"
