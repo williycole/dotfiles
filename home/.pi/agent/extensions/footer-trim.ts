@@ -6,7 +6,7 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 
-const DROP_KEYS = new Set(["caveman", "ponytail", "cursor", "pi-lens-lsp"]);
+const DROP_KEYS = new Set(["caveman", "ponytail", "pi-lens-lsp"]);
 
 function formatTokens(count: number): string {
 	if (count < 1000) return count.toString();
@@ -21,7 +21,6 @@ function stripAnsi(text: string): string {
 
 function shouldDropStatus(key: string, plain: string): boolean {
 	if (DROP_KEYS.has(key)) return true;
-	if (/^cursor:/.test(plain)) return true;
 	if (/LSP (Active|Inactive|Failed)/i.test(plain) || /^LSP:/.test(plain)) return true;
 	return false;
 }

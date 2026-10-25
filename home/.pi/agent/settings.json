@@ -1,7 +1,5 @@
 {
-  "lastChangelogVersion": "1.0.2",
-  "defaultProvider": "cursor",
-  "defaultModel": "composer-2.5:fast",
+  "lastChangelogVersion": "1.4.0",
   "defaultThinkingLevel": "high",
   "theme": "terminal",
   "quietStartup": true,
@@ -25,7 +23,6 @@
     "npm:@juicesharp/rpiv-todo",
     "npm:@juicesharp/rpiv-advisor",
     "npm:context-mode",
-    "npm:pi-mcp-adapter",
     "git:github.com/DietrichGebert/ponytail",
     "npm:pi-claude-bridge",
     "npm:pi-subagents",
@@ -34,7 +31,6 @@
     "npm:@carlosgtrz/pi-run-timer",
     "git:github.com/jonjonrankin/pi-caveman",
     "npm:pi-peon-adapter",
-    "npm:pi-cursor-sdk",
     "npm:pi-vim",
     "npm:pi-elixir"
   ],

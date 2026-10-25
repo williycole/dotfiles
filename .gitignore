@@ -93,3 +93,28 @@
 # Python bytecode next to scripts in os/linux/.local/bin (yt imports itself as a module)
 __pycache__/
 *.pyc
+
+# Claude Code's bash sandbox drops zero-byte, read-only placeholders at the repo
+# root for every path it masks (.bashrc, .zshrc, .claude/settings.json, ...).
+# Real dotfiles live under home/; nothing at the root with these names is ours.
+/.bash_profile
+/.bashrc
+/.profile
+/.zprofile
+/.zshrc
+/.gitconfig
+/.gitmodules
+/.ripgreprc
+/.mcp.json
+/.idea
+/.vscode
+/.claude/agents
+/.claude/hooks
+/.claude/launch.json
+/.claude/loop.md
+/.claude/output-styles
+/.claude/routines
+/.claude/scheduled_tasks.json
+/.claude/settings.json
+/.claude/settings.local.json
+/.claude/workflows
