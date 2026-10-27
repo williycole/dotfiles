@@ -4,8 +4,61 @@
 # was dropped 2026-10-27, this is the only jj TUI now. lazygit stays for git repos.
 # Keys: `?` help, `p` preview, `d` diff, `S` squash, `s` split, `r` rebase, `b` bookmark,
 # `g` git push/fetch, `u` undo, `o` op log, `shift+l` revset bar, `f` ace jump.
+# Mine: `tab` cycle review buckets, `ctrl+p` open the commit in plannotator.
 # Full reference: https://idursun.github.io/jjui/customization/config-toml/
 
 [ui]
 # Agents commit behind my back; repaint without a manual refresh.
 auto_refresh_interval = 5
+
+# ── Review front door ─────────────────────────────────────────────────────────
+# `tab` cycles the review buckets, `ctrl+p` opens the highlighted commit in
+# plannotator. Same buckets and the same numbers as `just review` — risk 54,
+# rest 67, all 121 on the branch as of 2026-10-27 — because both read the
+# `Review: you — <reason>` trailer that `just review-route` wrote. Nothing here
+# lists a path or a file, so neither goes stale when the branch moves.
+#
+# jjui 0.10.11 dropped [custom_commands] and [leader] for [[actions]] with an
+# inline Lua snippet; the binary says so outright if you use the old form.
+
+[[actions]]
+name = "review-cycle"
+desc = "cycle review buckets"
+key = "tab"
+scope = "revisions"
+lua = '''
+local risk = 'description(regex:"Review: you . (touches a door|adds or changes a migration)")'
+local tabs = {
+  { "risk — doors and migrations, the ones that can leak",
+    'main..@ & ' .. risk },
+  { "rest — deletions and rules prose",
+    'main..@ & description(glob:"★*") ~ ' .. risk },
+  { "all — everything marked for you",
+    'main..@ & description(glob:"★*")' },
+  { "off — the whole branch again",
+    'main..@' },
+}
+-- A global, because the revset table has set/reset/edit but no getter, so the
+-- tab cannot be read back off the UI.
+REVIEW_TAB = ((REVIEW_TAB or 0) % #tabs) + 1
+local t = tabs[REVIEW_TAB]
+revset.set(t[2])
+flash("review: " .. t[1])
+'''
+
+[[actions]]
+name = "review-open"
+desc = "open in plannotator"
+key = "ctrl+p"
+scope = "revisions"
+lua = '''
+local id = context.change_id()
+if not id or id == "" then
+  flash({ text = "No revision selected", error = true })
+  return
+end
+-- `just review <id>` and not a jj pipeline: the recipe already pins
+-- PLANNOTATOR_PORT, so the viewed-tracking is the same browser origin whether
+-- the commit was opened from here or from the picker.
+exec_shell(string.format("just review %q", id))
+'''
