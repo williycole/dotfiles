@@ -4,6 +4,19 @@
 # Run `mise install` (from any dir) to install these. No apply step: this file and
 # ~/.config/mise/config.toml are one inode.
 [tools]
+# WHAT BELONGS HERE: language runtimes, and the handful of tools packages.yaml
+# cannot source on both OSes. Nothing else.
+#
+# The 2026-10-03 note below said CLI tools had moved out of packages.yaml and
+# lived only here. That migration never finished: 21 of them were still declared
+# in BOTH, 20 with a brew: key for mac AND a dnf:/copr: key for linux, so mise
+# was pure duplication — a second place to edit and a second thing to drift.
+# Removed 2026-10-27. packages.yaml owns a tool it can source per OS; mise owns
+# what only mise can do.
+#
+# Runtimes stay because only mise honours a repo's .tool-versions. brew gives
+# one global version per machine, which breaks the moment two projects pin
+# different ones.
 # VERSION POLICY (owner, 2026-10-08): stable and current, never edge.
 #   LTS where the project has one (node).  Otherwise the latest STABLE release
 #   (mise "latest" never picks betas or RCs). No exceptions: erlang and elixir
@@ -15,31 +28,11 @@ node = "lts"
 go = "latest"
 python = "3.14"
 rust = "latest"
-jj = "latest"
-jjui = "latest" # jj TUI, lazygit-shaped; trial started 2026-10-07. Config: home/.config/jjui/config.toml
+jjui = "latest" # the one tool here with no linux source in packages.yaml; mac gets it from brew
 # just drives host-level scripts (install-packages, doctor.sh, bootstrap.sh,
 # bin/dots), so it has to be a real host binary. mise provides it without admin.
-just = "latest"
-tmux = "latest"
-atuin = "latest"
-glow = "latest"
-lazygit = "latest"
 delta = "latest"
-lazydocker = "latest"
-cmake = "latest"
 uv = "latest"
-jq = "latest"
-btop = "latest"
-lua = "latest"
-ripgrep = "latest"
-fd = "latest"
-fzf = "latest"
-bat = "latest"
-eza = "latest"
-zoxide = "latest"
-starship = "latest"
-yazi = "latest"
-gh = "latest"
 
 [settings]
 # Activate runtimes on cd into project dirs without prompting.

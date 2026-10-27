@@ -54,15 +54,33 @@ Darwin)
   ;;
 esac
 
-# ── runtimes (mise) ─────────────────────────────────────────────────────────
-head "Runtimes (mise)"
-if have mise; then
-  for rt in node go python rust erlang elixir; do
-    if mise ls --installed 2>/dev/null | grep -qiw "$rt"; then ok "$rt"; else no "runtime '$rt' not installed — mise install"; fi
-  done
-else
-  no "mise not on PATH — bootstrap.sh installs it"
-fi
+# ── runtimes ────────────────────────────────────────────────────────────────
+# What matters is that the runtime RESOLVES, not that mise is what provided it —
+# the rule the CLI-tools section below already applies. This used to ask mise
+# alone, so a mac running every runtime from brew failed all six checks while
+# all six worked. Six standing false alarms is how a health check stops being read.
+#
+# mise still matters where a repo pins versions in .tool-versions, since brew
+# gives one global version per machine. So a runtime that resolves from
+# somewhere else is fine on mac and a note on linux, where mise is the path.
+head "Runtimes"
+for rt in node go python rust erlang elixir; do
+  # A runtime's binary is rarely named after it: erlang is erl, elixir is iex,
+  # rust is cargo, python is python3. The CLI-tools section hit the same thing
+  # with ripgrep. Checking `have $rt` reports a working runtime as missing.
+  case "$rt" in
+    erlang) bin=erl ;; elixir) bin=iex ;; rust) bin=cargo ;; python) bin=python3 ;; *) bin=$rt ;;
+  esac
+  if have mise && mise ls --installed 2>/dev/null | grep -qiw "$rt"; then
+    ok "$rt (mise)"
+  elif have "$bin"; then
+    if [ "${MAC:-0}" = 1 ]; then ok "$rt ($(command -v "$bin"))"
+    else note "$rt resolves from $(command -v "$bin"), not mise — .tool-versions will not apply"; fi
+  else
+    no "runtime '$rt' not found — mise install"
+  fi
+done
+have mise || note "mise not on PATH — needed for .tool-versions pinning (bootstrap.sh installs it)"
 
 # ── user-level binaries that commonly break (dropped to ~/.local/bin, not dnf) ──
 head "User binaries (~/.local/bin, PATH)"
