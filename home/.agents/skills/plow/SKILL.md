@@ -239,10 +239,18 @@ Per-phase gate, one section at a time:
    one thread through it. Small is not sufficient; a small diff in scrambled order is still
    unreviewable. Saša Jurić's framing, and he is right that the usual cause is an author who did
    not use commits to tell the story.
-6. **Bookmark it, if it routed to a human. Only then.**
+6. **Say so in the commit, if it routed to a human.**
 
-   An agent reads every commit. The bookmark answers a narrower question — *what must the
-   developer read on top of that* — and it answers it by existing. Three buckets:
+   An agent reads every commit. The question left over is narrower — *what must the developer
+   read on top of that* — and the commit answers it itself, with a trailer:
+
+   ```
+   feat(analytics): the row guard checks the declared field, on both read paths
+
+   Review: you — touches a door
+   ```
+
+   Three buckets decide whether it gets one:
 
    | | | |
    |---|---|---|
@@ -250,10 +258,21 @@ Per-phase gate, one section at a time:
    | **could** | agent already read it; open it if curious | ordinary code, docs, specs |
    | **agent** | never needs the developer | templates, CSS, JS, images |
 
-   **Only the must bucket gets a bookmark.** That is the whole mechanism: a picker holding
-   nothing but must-reads is a to-do list, and one holding every section is an index nobody
-   scans. On one real branch this was 87 bookmarks instead of 397 — and the same branch had
-   accumulated 151 under the old habit of bookmarking everything.
+   Only **must** gets the trailer, and the reason is the first line `just review-route` printed.
+
+   **A trailer, not a bookmark. This was learned the hard way.** The obvious move is to bookmark
+   each must-read and let the picker be the to-do list. It does not work: a review tool's commit
+   list shows subjects, not bookmarks, so while you are actually reading, 119 bookmarks tell you
+   nothing. They answer "where does this range start", which is a different question asked once.
+   Worse, a bookmark is a pointer that needs its own cleanup and goes stale the moment a commit
+   is rewritten.
+
+   A trailer travels inside the commit. It survives every rebase, it is greppable
+   (`jj log -r 'main..@' -T description | grep -c 'Review: you'`), it needs no cleanup, and it
+   is visible in the one place the developer is already looking.
+
+   Bookmarks stay for what they are good at: naming a range, so `r/<LL>.<NN>` can still mark a
+   lane boundary when a branch needs one. They are not the review signal.
 
    ```bash
    jj bookmark set r/<LL>.<NN>-<slug> -r <base-from-step-1>
