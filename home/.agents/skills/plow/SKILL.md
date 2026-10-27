@@ -271,6 +271,33 @@ Per-phase gate, one section at a time:
    (`jj log -r 'main..@' -T description | grep -c 'Review: you'`), it needs no cleanup, and it
    is visible in the one place the developer is already looking.
 
+   **Mark the subject too, at the front.** The trailer is the record and carries the reason, but
+   a review tool's commit list renders `<id> — <subject>` and nothing else, and it truncates. So
+   a body trailer is invisible in exactly the list you are scanning, and a marker at the END of
+   the subject is cut off. A leading `★` is the only position that survives both:
+
+   ```
+   ★ feat(analytics): the row guard checks the declared field, on both read paths
+
+   Review: you — touches a door
+   ```
+
+   Nothing parses commit subjects in most repos — check before assuming, a `commit-msg` hook or
+   a changelog generator would care — and the mark strips in one pass when the review is done.
+
+   **Sort the must bucket by what it costs to get wrong.** A door or a migration can leak a
+   customer's rows; a deleted file or a reworded rules doc cannot. On a long read the developer
+   stops early, so the dangerous ones go first: ship a shortlist (`just review risk`) beside the
+   full one. Risk is doors and migrations; everything else is diligence.
+
+   **If the review tool remembers what was read, pin its URL.** Tools that track viewed files
+   usually keep that in browser storage, which is keyed to the origin — and they pick a free
+   port per run, so every session is a new origin with empty memory and the developer starts
+   from zero every time. plannotator takes `PLANNOTATOR_PORT`; fix it to one value and the
+   memory persists. Do not build a second tracker for this: an earlier attempt recorded read
+   state by rewriting each commit's message, which on a 292-commit branch rebased 293
+   descendants per tick and produced a divergent working copy, for a fact the tool already held.
+
    Bookmarks stay for what they are good at: naming a range, so `r/<LL>.<NN>` can still mark a
    lane boundary when a branch needs one. They are not the review signal.
 
