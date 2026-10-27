@@ -233,4 +233,20 @@ return {
       { "<C-l>", function() require("smart-splits").move_cursor_right() end, desc = "Go to Right Window" },
     },
   },
+
+  {
+    -- jj's diff-editor. Replaces the `:builtin` TUI, which cannot be driven by
+    -- an agent in a herdr pane and is awkward to use by hand. `HunkDiffEditor`
+    -- selects by file, hunk or individual line; `HunkDiffView` is a read-only
+    -- two-directory viewer that also renders jj's materialized conflicts.
+    --
+    -- Wired up in home/.config/jj/config.toml as ui.diff-editor and the
+    -- [merge-tools.hunk] difftool. nui.nvim is already in the lock file.
+    "julienvincent/hunk.nvim",
+    cmd = { "HunkDiffView", "HunkDiffEditor" },
+    dependencies = { "MunifTanjim/nui.nvim" },
+    config = function()
+      require("hunk").setup()
+    end,
+  },
 }

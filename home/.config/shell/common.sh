@@ -7,6 +7,7 @@
 # ========================================
 export PATH="$HOME/Scripts:$HOME/.local/bin:$PATH"
 [ -d "$HOME/.bun/bin" ] && export PATH="$HOME/.bun/bin:$PATH"   # bun (both OSes)
+[ -d "$HOME/.cargo/bin" ] && export PATH="$HOME/.cargo/bin:$PATH" # cargo installs (jj-hunk)
 
 # ========================================
 # TOOL INITS
@@ -74,7 +75,6 @@ export ZENNOTES_VAULT="$HOME/Repos/personal/cb-vault"   # zen CLI default vault 
 alias n='nvim'
 alias lg='lazygit'
 alias ld='lazydocker'
-alias lj='lazyjj'
 alias ju='jjui'
 alias bdf='~/Scripts/backup_dotfiles.sh'
 alias rsf='rm -rf ~/.local/share/nvim/swap/*'

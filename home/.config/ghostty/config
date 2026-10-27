@@ -44,6 +44,10 @@ keybind = super+control+shift+alt+arrow_up=resize_split:up,100
 keybind = super+control+shift+alt+arrow_left=resize_split:left,100
 keybind = super+control+shift+alt+arrow_right=resize_split:right,100
 keybind = super+x=close_surface
+# Claude Code needs a literal newline on shift+enter; without it the prompt
+# submits instead of taking a second line. `/terminal-setup` writes this into
+# the live config, which is a symlink into this repo, so it never survived.
+keybind = shift+enter=text:\n
 # NOT REBOUND, recorded so it is not re-invented: ctrl+shift+n (new window) and
 # ctrl+shift+t (new tab) both open in the CURRENT window's working directory,
 # because window-inherit-working-directory and tab-inherit-working-directory are

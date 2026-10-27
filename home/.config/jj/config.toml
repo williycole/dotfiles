@@ -11,6 +11,14 @@ email = "64283810+williycole@users.noreply.github.com"
 default-command = "log"
 paginate = "never"
 
+# Diff editor: hunk.nvim, not jj's `:builtin`.
+#
+# WHY: `:builtin` is a modal TUI nothing can drive but a human at a keyboard,
+# so every `jj split` in an unattended herdr pane dead-ends there. hunk.nvim
+# runs in the editor already open and selects by file, hunk or single line.
+# `jj-hunk` does the same selection from a script, with no editor at all.
+diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
+
 # Move a bookmark forward automatically when a new commit is made on top of it.
 #
 # WHY: `jj new` does NOT advance bookmarks. Work past `main` and the bookmark
@@ -19,3 +27,19 @@ paginate = "never"
 # main 8 commits behind — a push would have shipped 21 of 29 and looked fine.
 [experimental-advance-branches]
 enabled-branches = ["main"]
+
+# Read-only two-directory viewer, for `jj diff --tool hunk`. Unlike the plain
+# diff it renders jj's materialized conflicts, which is what the publish-deploy
+# lane needs when its 14 conflicted commits get resolved.
+[merge-tools.hunk]
+program = "sh"
+diff-invocation-mode = "dir"
+diff-do-chdir = false
+conflict-marker-style = "snapshot"
+diff-args = [
+  "-c",
+  'exec nvim -c "HunkDiffView $1 $2" </dev/tty >/dev/tty',
+  "hunk-difftool",
+  "$left",
+  "$right",
+]

@@ -93,9 +93,6 @@ packages:
   # jj (Jujutsu VCS): NOT in base Fedora → community COPR.
   # VERIFIED: aldantanneo/jj-vcs (active F42-44+rawhide) provides pkg `jj-cli`.
   - { name: jj, bin: jj, brew: jj, dnf: jj-cli, copr: aldantanneo/jj-vcs } # verified 2026-07
-  # lazyjj (jj TUI): only COPR (stephaneklein/lazyjj) is stale — F42/x86_64, ~14mo old →
-  # Nobara builds from crates.io via install-packages (cargo → ~/.local/bin). mac via brew.
-  - { name: lazyjj, brew: lazyjj }
   # jjui: the other jj TUI, log-centric, closest to lazygit. Linux via mise
   # (config.toml [tools]); mac via brew. Trial 2026-10-07.
   - { name: jjui, brew: jjui }

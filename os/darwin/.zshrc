@@ -82,7 +82,7 @@ fi
 # lower-cased foreground process name.
 # NOTE: read by the herdr SERVER, so a running server must be restarted to pick
 # up a change here — reload-config does not re-read the environment.
-export SMART_SPLITS_HERDR_PASSTHROUGH_RE='^(lazygit|lazyjj|lazydocker|harlequin|btop|htop|yazi|k9s)$'
+export SMART_SPLITS_HERDR_PASSTHROUGH_RE='^(lazygit|jjui|lazydocker|harlequin|btop|htop|yazi|k9s)$'
 
 # ========================================
 # CLAUDE & OPENCODE

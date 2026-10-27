@@ -299,16 +299,6 @@ if [ "$OS" != mac ]; then
   }
 fi
 
-# lazyjj (linux only — mac via packages.yaml `brew: lazyjj`). Its Fedora COPR is stale
-# (F42/x86_64, ~14mo old), so build from crates.io. Rust tool → ~/.local/bin via --root.
-if [ "$OS" != mac ]; then
-  command -v lazyjj >/dev/null 2>&1 && ok "lazyjj (already installed)" || {
-    if command -v cargo >/dev/null 2>&1; then
-      cargo install lazyjj --locked --root "$HOME/.local" >/dev/null 2>&1 && ok "lazyjj (cargo)" || fail "lazyjj (cargo)"
-    else fail "lazyjj — cargo not on PATH (mise install rust first)"; fi
-  }
-fi
-
 # tmux TPM + plugins — .tmux.conf declares plugins (@plugin) but TPM itself is a manual
 # clone; without it the `run '.../tpm/tpm'` line no-ops and nothing loads. Clone it, then
 # install_plugins reads the tracked @plugin list. ponytail: git clone, no version pin.
