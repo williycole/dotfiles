@@ -4,7 +4,7 @@
 # was dropped 2026-10-27, this is the only jj TUI now. lazygit stays for git repos.
 # Keys: `?` help, `p` preview, `d` diff, `S` squash, `s` split, `r` rebase, `b` bookmark,
 # `g` git push/fetch, `u` undo, `o` op log, `shift+l` revset bar, `f` ace jump.
-# Mine: `tab` cycle review buckets, `ctrl+o` open the commit in plannotator.
+# Mine: `tab` cycle review buckets, `ctrl+p` open the commit in plannotator.
 # Full reference: https://idursun.github.io/jjui/customization/config-toml/
 
 [ui]
@@ -12,7 +12,7 @@
 auto_refresh_interval = 5
 
 # ── Review front door ─────────────────────────────────────────────────────────
-# `tab` cycles the review buckets, `ctrl+o` opens the highlighted commit in
+# `tab` cycles the review buckets, `ctrl+p` opens the highlighted commit in
 # plannotator. Same buckets and the same numbers as `just review` — risk 54,
 # rest 67, all 121 on the branch as of 2026-10-27 — because both read the
 # `Review: you — <reason>` trailer that `just review-route` wrote. Nothing here
@@ -43,13 +43,17 @@ local tabs = {
 REVIEW_TAB = ((REVIEW_TAB or 0) % #tabs) + 1
 local t = tabs[REVIEW_TAB]
 revset.set(t[2])
-flash("review: " .. t[1] .. "   ·   ctrl+o opens it in plannotator")
+flash("review: " .. t[1] .. "   ·   ctrl+p opens it in plannotator")
 '''
 
+# ctrl+p and not ctrl+o: jjui has no key name for ctrl+o. Its table runs
+# ctrl+l, ctrl+m, ctrl+n, ctrl+p with no o, so that binding matched nothing and
+# the key did nothing at all. The line editor also uses ctrl+p for `up`, but
+# that is a different scope and only while the input is open.
 [[actions]]
 name = "review-open"
 desc = "open in plannotator"
-key = "ctrl+o"
+key = "ctrl+p"
 scope = "revisions"
 lua = '''
 local id = context.change_id()
