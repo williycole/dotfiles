@@ -94,6 +94,27 @@ jj-hunk split --query 'changed(path:glob:"**/analytics/**")' "feat(analytics): �
 Cutting by directory is the failure this rule exists to prevent. Cut by idea: one claim, and the
 test that proves it, in the same commit.
 
+### The subject is a sentence, and the scope is a domain
+
+**Never name a commit after a file path.** Splitting one change into several tempts you into
+`feat(intlx): governance` — a path stem dressed as a subject. It is worse than the slice label it
+replaces, because `governance` is not a claim and `intlx` is the OTP application, not a scope any
+human writes. Scopes are domain words the repo already uses: `analytics`, `access`, `sources`,
+`accounts`, `connect`, `seeds`, `release`.
+
+**When you re-split work that was already committed, inherit the subject — do not invent one.**
+Every file arrived in a commit whose author wrote a real sentence with a real scope. Record which
+original each file came from *before* flattening anything, then give each new commit the subject
+of whichever original covered most of its files. Strip any slice marker, `(1/9: …)`, which
+describes the arrangement you are deleting rather than the change. Watch the nesting: that marker
+usually contains its own parentheses, so a pattern ending at the first `)` silently matches
+nothing.
+
+**When several new commits inherit the same sentence, name the module each one covers.** One
+original often spans several modules, and four commits reading "i360 is keyed on its company
+label" is no improvement on four reading "(2/3: code)". Append the subject area —
+`… — row guard` — only where the sentence repeats, so short unique subjects stay clean.
+
 ## Core Rules
 
 - One subagent iteration = one unit of work:
