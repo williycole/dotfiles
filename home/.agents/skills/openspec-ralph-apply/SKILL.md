@@ -102,13 +102,21 @@ replaces, because `governance` is not a claim and `intlx` is the OTP application
 human writes. Scopes are domain words the repo already uses: `analytics`, `access`, `sources`,
 `accounts`, `connect`, `seeds`, `release`.
 
-**When you re-split work that was already committed, inherit the subject — do not invent one.**
-Every file arrived in a commit whose author wrote a real sentence with a real scope. Record which
-original each file came from *before* flattening anything, then give each new commit the subject
-of whichever original covered most of its files. Strip any slice marker, `(1/9: …)`, which
-describes the arrangement you are deleting rather than the change. Watch the nesting: that marker
-usually contains its own parentheses, so a pattern ending at the first `)` silently matches
-nothing.
+**Write the subject by reading the diff.** You have the change in front of you; say what it does.
+This is the whole rule, and no script can do it — a script can only guess from paths or copy a
+sentence from somewhere else, and both produce subjects that are approximately true.
+
+**Inheriting a subject is a fallback, for re-splitting work that is already committed.** There the
+original author's sentence exists and is better than anything derived from a filename: record
+which original each file came from *before* flattening, and give each new commit the subject of
+whichever original covered most of its files. Know what that buys you — it is a vote on
+provenance, so the sentence describes the parent change a file arrived in, not the commit you are
+writing. One level too coarse, never quite wrong. Reach for it when a diff is genuinely too thin
+to describe, not as the default.
+
+Strip any slice marker, `(1/9: …)`, which describes the arrangement you are deleting rather than
+the change. Watch the nesting: that marker usually contains its own parentheses, so a pattern
+ending at the first `)` silently matches nothing.
 
 **When several new commits inherit the same sentence, name the module each one covers.** One
 original often spans several modules, and four commits reading "i360 is keyed on its company
