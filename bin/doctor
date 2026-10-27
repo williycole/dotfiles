@@ -76,6 +76,36 @@ if have godot; then
   ok "godot (official build, ~/.local/bin)"
 else no "godot not on PATH — just provision (official build, not the flatpak)"; fi
 
+# ── Neovim: the extras list is the tracked one ──────────────────────────────
+# lazyvim.json is app-managed state and .gitignore skips it, so an extra added
+# through the :LazyExtras UI lands ONLY there. It still loads, and it can
+# override tracked config — ui.dashboard-nvim sets snacks dashboard.enabled =
+# false, which killed a skin in my-overrides.lua with no error anywhere. The UI
+# gives no warning and the extra never reaches another machine. Compare the two.
+head "Neovim extras"
+nvim_json="$HOME/.config/nvim/lazyvim.json"
+nvim_lua="$HOME/.config/nvim/lua/config/lazy.lua"
+if [ ! -f "$nvim_json" ]; then
+  note "no lazyvim.json — nothing has been toggled in the :LazyExtras UI"
+elif ! have python3; then
+  note "python3 missing — cannot compare the extras lists"
+else
+  drift=$(python3 - "$nvim_json" "$nvim_lua" <<'PYEOF'
+import json, re, sys
+js = set(json.load(open(sys.argv[1])).get("extras", []))
+lua = set(re.findall(r'import\s*=\s*"(lazyvim\.plugins\.extras\.[^"]+)"', open(sys.argv[2]).read()))
+print(" ".join(sorted(js - lua)))
+PYEOF
+)
+  if [ -z "$drift" ]; then
+    ok "lazyvim.json adds no extra beyond lua/config/lazy.lua"
+  else
+    for e in $drift; do
+      no "extra '$e' is in lazyvim.json but NOT lua/config/lazy.lua — add it there, or turn it off in :LazyExtras"
+    done
+  fi
+fi
+
 [ "${MAC:-0}" = 1 ] && {
   printf '\n'
   exit 0

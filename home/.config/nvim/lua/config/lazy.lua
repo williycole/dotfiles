@@ -18,10 +18,18 @@ require("lazy").setup({
   spec = {
     -- add LazyVim and import its plugins
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
-    -- LazyVim extras, declared here so they're TRACKED IN GIT and sync to every box.
-    -- The :LazyExtras UI only writes to lazyvim.json, which .chezmoiignore skips,
-    -- so a new box comes up missing every extra. Add/remove extras by editing this
-    -- list (keep it before `{ import = "plugins" }` so your overrides win).
+    -- THE extras list. Declared here so it is tracked and reaches every box, and
+    -- placed before `{ import = "plugins" }` so the overrides there win.
+    --
+    -- Do NOT use the :LazyExtras UI to add one. It writes only to lazyvim.json,
+    -- which .gitignore skips as app-managed state, so the extra never reaches
+    -- another machine AND it can quietly override what is tracked here. That is
+    -- not hypothetical: ui.dashboard-nvim got toggled on in the UI, and its first
+    -- line is `snacks.nvim opts = { dashboard = { enabled = false } }`, which
+    -- silently killed the snacks dashboard skin in my-overrides.lua and the
+    -- SnacksDashboard* highlight links in theme.lua. Found 2026-10-27.
+    --
+    -- `bin/doctor` now fails when lazyvim.json lists an extra this file does not.
     { import = "lazyvim.plugins.extras.ai.sidekick" },
     { import = "lazyvim.plugins.extras.ai.supermaven" },
     { import = "lazyvim.plugins.extras.coding.luasnip" },
