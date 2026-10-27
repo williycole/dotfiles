@@ -147,6 +147,5 @@ esc     = 'mode main'
 b       = ['exec-and-forget open -na /Applications/Firefox.app',  'mode main']
 c       = ['exec-and-forget open -na /Applications/cmux.app',     'mode main']
 g       = ['exec-and-forget open -na /Applications/Ghostty.app',  'mode main']
-s       = ['exec-and-forget open -na /Applications/Safari.app',   'mode main']
 
 
