@@ -1,6 +1,6 @@
 ---
 name: plow
-description: "The single front door for coding work, from a bare idea to a sealed change. Picks the lane first — /wayfinder when the route is unclear and spans sessions, /grill-with-docs or /grilling for a one-sitting decision, /opsx:propose once the decisions are made — then drives the change: reads where it sits (openspec status --json), asks how you want to work it (per-phase gate, one section per iteration, autonomous panes), and runs that loop. Implement a `## N.` section, gate it, route the diff to human review, AI review, or back for a redo when it is unreviewable, seal only on a clean review. Autonomous decides and logs, parking only when an action reaches outside the repo or only a non-developer seat can judge it. Ends by printing what needs human eyes and what parked. Use for 'plow this', 'what should I work on', 'plan this', 'work <change>', 'implement <change>', 'apply the next phase', 'herd these', 'no gates on these'. Coding work only — `/brief` writes the outward view, `/linear` syncs the board."
+description: "The single front door for coding work, from a bare idea to a sealed change. Picks the lane first — /wayfinder when the route is unclear and spans sessions, /grill-with-docs or /grilling for a one-sitting decision, /opsx:propose once the decisions are made — then drives the change: reads where it sits (openspec status --json), asks how you want to work it (per-phase gate, one section per iteration, autonomous panes), and runs that loop. Implement a `## N.` section, gate it, route the diff to human review, AI review, or back for a redo when it is unreviewable, seal only on a clean review. Autonomous decides and logs, parking only when an action reaches outside the repo or only a non-developer seat can judge it. Ends by printing what needs human eyes and what parked. Use for 'plow this', 'what should I work on', 'plan this', 'work <change>', 'implement <change>', 'apply the next phase', 'herd these', 'no gates on these'. Coding work only — `/brief` writes the outward view."
 license: MIT
 compatibility: Requires the openspec CLI. Autonomous mode also requires Herdr and a jj-colocated repo.
 metadata:
@@ -15,8 +15,7 @@ lifecycle, `just` owns the gates, `openspec-ralph-apply` owns the loop, plannota
 plow decides **which of them runs, in what order, with what loaded** — and nothing else.
 
 **Coding work only.** Never ask which job the developer meant; the command name already answered
-that. `/brief` produces the outward view, `/linear` syncs the board. If the request is one of
-those, say so and stop.
+that. `/brief` produces the outward view. If the request is that, say so and stop.
 
 **Read facts, ask intent.** Anything a tool can answer, plow reads without asking: where the
 change sits, which tasks are unchecked, which files a diff touches, what the gate said. Only how
@@ -207,31 +206,93 @@ Per-phase gate, one section at a time:
    user is elsewhere. A privileged actor reads everything and hides the bug.
 
    **There is a third verdict: `unreviewable`.** Not every diff is fit to be read, and handing a
-   reviewer one that isn't wastes the only scarce thing in this loop. Call it when the section's
-   diff interleaves unrelated work — a little refactoring, then a new field, then more
-   refactoring — so no reader can follow one thread through it. The fix is not a careful reviewer,
-   it is a redo: `/jj:split` the work into commits that each do one thing, ordered so the diff
-   reads as a story, then route again. Small is not sufficient; a small diff in scrambled order is
-   still unreviewable.
+   reviewer one that isn't wastes the only scarce thing in this loop. The fix is never a more
+   careful reviewer, it is a redo. Never route `unreviewable` to a human and never seal it.
 
-   Saša Jurić's framing, and he is right that the usual cause is an author who did not use commits
-   to tell the story. Never route `unreviewable` to a human and never seal it — send it back.
-6. **Bookmark it, if it routed to a human.** The verdict has to outlive the run, or the developer
-   is back to hunting for the sketchy sections:
+   **One case is checked rather than judged: a `feat` or `fix` commit may not touch only `lib/`
+   or only `test/`.** Code with no test beside it cannot be verified while you read it; a test
+   with no subject cannot be read at all. `scripts/commit-proof.sh` decides it and
+   `just review-route` raises it, so it fires whether or not anyone is watching. The
+   conventional-commit type is the exemption and the only one — a `refactor`, `chore`, `perf` or
+   `style` commit correctly carries no new test and already says so in its own subject. There is
+   deliberately no opt-out flag to reach for. A repo with no `lib/` + `test/` layout is skipped,
+   not failed.
+
+   The rule is checked because as prose it was ignored. The 2026-10 branch came out with 45
+   commits cut along directory lines — "code (analytics)", then "tests (web)" — of which 36
+   `feat`/`fix` commits shipped behaviour with nothing proving it. The cause was mechanical, not
+   careless: jj's `:builtin` diff editor is a modal TUI an unattended lane cannot drive, so the
+   loop chunked by directory because it had no other way to cut.
+
+   **Split with `jj-hunk`, not the builtin editor.** It selects hunks from a query with no editor
+   and no keyboard, which is what makes the rule obeyable in a pane nobody is sitting at:
 
    ```bash
-   jj bookmark set plow-review/<change>-<N> -r <base-from-step-1>
+   jj-hunk list  --rev <change-id> --format text
+   jj-hunk split --query 'changed(path:glob:"**/analytics/**")' "feat(analytics): …"
    ```
+
+   `/jj:split` stays the interactive route when you are at the keyboard.
+
+   **The other case is still a judgment call**, and stays one: a diff that interleaves unrelated
+   work — a little refactoring, then a new field, then more refactoring — so no reader can follow
+   one thread through it. Small is not sufficient; a small diff in scrambled order is still
+   unreviewable. Saša Jurić's framing, and he is right that the usual cause is an author who did
+   not use commits to tell the story.
+6. **Bookmark it, if it routed to a human. Only then.**
+
+   An agent reads every commit. The bookmark answers a narrower question — *what must the
+   developer read on top of that* — and it answers it by existing. Three buckets:
+
+   | | | |
+   |---|---|---|
+   | **must** | the developer, no substitute | a door, a migration, deleted code |
+   | **could** | agent already read it; open it if curious | ordinary code, docs, specs |
+   | **agent** | never needs the developer | templates, CSS, JS, images |
+
+   **Only the must bucket gets a bookmark.** That is the whole mechanism: a picker holding
+   nothing but must-reads is a to-do list, and one holding every section is an index nobody
+   scans. On one real branch this was 87 bookmarks instead of 397 — and the same branch had
+   accumulated 151 under the old habit of bookmarking everything.
+
+   ```bash
+   jj bookmark set r/<LL>.<NN>-<slug> -r <base-from-step-1>
+   ```
+
+   `LL` is the lane's position on the branch, `NN` the section's position inside it, `slug` at
+   most 14 characters of the subject. `r/03.07-every-wall`. The name says *where*, not *why* —
+   the router already printed the reason, and repeating it in the slug spends the column width
+   that makes the thing findable.
+
+   **What counts as a door is the repo's to say, and the repo says it in the code.** A door
+   declares itself with a `plow:door` marker in the module's doc comment, or in a directory's
+   `usage-rules.md` to cover everything beneath it. plow finds them with
+   `grep -rl 'plow:door'` and needs no path list, no config file and no per-repo bolt-on.
+
+   This matters more than it looks. A hardcoded path list is a second source of truth that fails
+   *open*: rename a security-critical file and it silently stops routing to a human, with nothing
+   to notice. A marker travels inside the file. A repo that marks nothing still gets the other
+   two must conditions, since migrations and deleted code mean the same thing everywhere.
+
+   **The number leads, and that is the whole point.** A picker gives you lexicographic sort and
+   nothing else, so putting position first is what makes alphabetical order equal reading order.
+   The earlier `plow-review/<lane>/<long-slug>` form sorted by lane *name*, which put lane 09
+   above lane 01, and ran to 73 characters so the useful half was truncated away. Two-part
+   numbering beats a flat index because inserting a section renumbers one lane, not the branch.
 
    **On the base, never the tip.** plannotator's Line-of-work mode diffs `<FROM>..@` and its
    FROM-picker lists bookmarks only, so a bookmark on the tip yields an empty diff and a blank UI.
    `-r @` *is* the tip: jj moves a bookmark along with every working-copy amend, so one set on `@`
    before the work ends up on top of the work. Use the step-1 id, or set it retroactively on any
-   change id — jj bookmarks never auto-advance.
+   change id — jj bookmarks never auto-advance. A consequence worth stating: the bookmark names
+   the section it *opens* while sitting on the commit before it, which reads as off-by-one in
+   `jj log` and is the price of a range with no "to".
 
    Keep the first reason line the routing step produced; it is what the end-of-run list shows.
    A section the router cleared gets **no** bookmark, which is what keeps the FROM-picker showing
-   only work that actually needs reading.
+   only work that actually needs reading. That sentence has been here from the start and was
+   never implemented — 151 bookmarks accumulated on one branch with nothing pruning them. Create
+   one only when the verdict is `human`.
 7. **Review.** `ai` → `/code-review --fix`, resolve what it surfaces. `human` → leave the section
    **dirty in `@`** and stop. The developer runs `/plannotator-review`, which reads `@`, so the
    diff has to still be there.
@@ -252,8 +313,9 @@ Per-phase gate, one section at a time:
    approval: `jj commit -m "…"` and move to the next section, no extra "go" needed. Any feedback
    means apply it, re-present the dirty `@`, and get reviewed again. Never seal off a review that
    had feedback. Once a section is reviewed and sealed clean, `jj bookmark delete
-   plow-review/<change>-<N>` — the bookmark's only job was "this is waiting to be read", and a
-   read one left behind just pads the picker.
+   r/<LL>.<NN>-<slug>` — the bookmark's only job was "this is waiting to be read", and a read one
+   left behind just pads the picker. **This deletion is part of sealing, not a later sweep.**
+   Skipping it is how a picker reaches 151 entries that all look equally urgent.
 9. Mark the section's tasks `- [x]` in `tasks.md` as you finish them. Those checkboxes are apply's
    only state, so the change resumes correctly across sessions with no bookkeeping.
 
@@ -269,8 +331,8 @@ Every run ends by printing what needs human eyes, and nothing else:
 
 ```
 needs human review:
-  plow-review/brief-2   ## 2. Roadmap file   touches a door
-  plow-review/brief-4   ## 4. Page render    adds or changes a migration
+  r/02.02-roadmap-file   ## 2. Roadmap file   touches a door
+  r/02.04-page-render    ## 4. Page render    adds or changes a migration
 
   /plannotator-review → Line of work → pick the bookmark as FROM.
 
@@ -299,12 +361,13 @@ bookmark.
 - **A review bookmark lives exactly as long as its section is unread.** It is created when the
   router says human, and deleted the moment that section comes back reviewed and approved — which
   in gate mode is the same breath as the seal. Everything else is a backstop sweep for one that
-  escaped: `jj bookmark delete 'glob:plow-review/*'` before any push (`jj git push --all` ships
-  every bookmark to origin, review scaffolding included), again once the work merges or the change
+  escaped: `jj bookmark delete 'glob:r/*'` before any push (`jj git push --all` ships every
+  bookmark to origin, review scaffolding included), again once the work merges or the change
   archives, and once at the top of a plow run to clear leftovers from a change that already
-  shipped. `jj bookmark list 'glob:plow-review/*'` shows what is outstanding. The `plow-review/`
-  prefix exists for exactly this: greppable, it names the tool that made the bookmark, and the `/`
-  keeps it clear of the slug-named bookmark a change ships under.
+  shipped. `jj bookmark list 'glob:r/*'` shows what is outstanding. The `r/` prefix exists for
+  exactly this: one glob deletes the lot, and the `/` keeps it clear of the slug-named bookmark a
+  change ships under. It is two characters because the prefix is column width spent before any
+  information starts, and a picker shows roughly forty.
 - Autonomous **decides and logs**; it does not pause on ambiguity. Two conditions stop a lane and
   nothing else: the action's effect lives **outside the working copy** (a migration that ran, a
   push, a write to a live system, or a file the ignore rules keep the VCS from snapshotting), or

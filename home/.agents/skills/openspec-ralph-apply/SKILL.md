@@ -60,6 +60,40 @@ Rules for identifying sections:
 - Subtask numbers (e.g. 1.1, 2.3) are hints only; section membership is determined by heading boundaries.
 - If fast mode is requested but tasks.md has no `## N.` section headings, fall back to standard one-task-per-iteration behavior and note the fallback in the announcement.
 
+## Commit boundaries: a commit carries its own proof
+
+A section is the unit of *work*. It is not automatically the unit of a *commit* — a section that
+does three things seals as three commits, in the order a reader would follow them.
+
+**The one hard rule: a `feat` or `fix` commit may not touch only `lib/` or only `test/`.**
+
+Code with no test beside it cannot be verified while you read it. A test with no subject cannot be
+read at all. Either shape means the reviewer has to hold two commits in their head to judge one
+idea, and the commit boundary is exactly what stops them seeing both at once.
+
+The conventional-commit type is the exemption and the only one. A `refactor`, `chore`, `perf`,
+`style` or `docs` commit correctly carries no new test and already declares that in its own
+subject, so there is **no opt-out flag** — nothing for a tired agent to reach for at 2am.
+Mislabelling a feature as a chore is a lie in the commit message, not a loophole in the rule.
+
+`just review-route` enforces it where the repo has one (`scripts/commit-proof.sh` is the check) and
+returns `unreviewable`, which must never be sealed and never handed to a human. A repo with no
+`lib/` + `test/` layout is skipped, not failed.
+
+**Split with `jj-hunk`, never the builtin diff editor.** This rule was unenforceable before that
+tool existed: jj's `:builtin` is a modal TUI needing a human at a keyboard, so an unattended
+iteration had no way to cut a commit except by whole files. That is why the 2026-10 branch came out
+with 45 commits sliced along directory lines — "code (analytics)", then "tests (web)" — of which 36
+`feat`/`fix` commits shipped behaviour with nothing proving it.
+
+```bash
+jj-hunk list  --rev <change-id> --format text
+jj-hunk split --query 'changed(path:glob:"**/analytics/**")' "feat(analytics): …"
+```
+
+Cutting by directory is the failure this rule exists to prevent. Cut by idea: one claim, and the
+test that proves it, in the same commit.
+
 ## Core Rules
 
 - One subagent iteration = one unit of work:
