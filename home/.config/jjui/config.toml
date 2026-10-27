@@ -11,15 +11,19 @@
 # Agents commit behind my back; repaint without a manual refresh.
 auto_refresh_interval = 5
 
-# ── Review front door ─────────────────────────────────────────────────────────
-# `tab` cycles the review buckets, `ctrl+p` opens the highlighted commit in
-# plannotator. Same buckets and the same numbers as `just review` — risk 54,
-# rest 67, all 121 on the branch as of 2026-10-27 — because both read the
-# `Review: you — <reason>` trailer that `just review-route` wrote. Nothing here
-# lists a path or a file, so neither goes stale when the branch moves.
+# ── Review front door ──────────────────────────────────────────
+# `tab` cycles the review buckets, `ctrl+p` asks what to do with the highlighted
+# commit. Both live here rather than in a repo, so they work in any jj repo; only
+# the bucket revsets are shaped by one, and they read a commit trailer that simply
+# does not exist elsewhere, so a bucket is empty there instead of wrong.
 #
 # jjui 0.10.11 dropped [custom_commands] and [leader] for [[actions]] with an
 # inline Lua snippet; the binary says so outright if you use the old form.
+#
+# Everything is on `ctrl+p`. Every lowercase letter is already bound in jjui's
+# default keymap, and an action on a key jjui does not know fails silently rather
+# than erroring — which is how `ctrl+o` sat here doing nothing. One proven key and
+# a menu beats three guessed ones.
 
 [[actions]]
 name = "review-cycle"
@@ -27,32 +31,46 @@ desc = "cycle review buckets"
 key = "tab"
 scope = "revisions"
 lua = '''
+-- Reviewed ids live in `.jj/repo/config.toml` — local to this clone, never
+-- tracked, never pushed, gone on a re-clone. `jj config get` errors when the key
+-- has never been set and jj() returns nil for that, so "no list yet" is the
+-- normal first state and not a failure.
+local function skip_done()
+  local raw = jj("config", "get", "review.done")
+  local ids = {}
+  for w in string.gmatch(raw or "", "%S+") do ids[#ids + 1] = w end
+  if #ids == 0 then return "", 0 end
+  return " ~ (" .. table.concat(ids, "|") .. ")", #ids
+end
+
 local risk = 'description(regex:"Review: you . (touches a door|adds or changes a migration)")'
+local skip, ndone = skip_done()
 local tabs = {
   { "risk — doors and migrations, the ones that can leak",
-    'main..@ & ' .. risk },
+    "(main..@ & " .. risk .. ")" .. skip },
   { "rest — deletions and rules prose",
-    'main..@ & description(glob:"★*") ~ ' .. risk },
+    '(main..@ & description(glob:"★*") ~ ' .. risk .. ")" .. skip },
   { "all — everything marked for you",
-    'main..@ & description(glob:"★*")' },
+    '(main..@ & description(glob:"★*"))' .. skip },
   { "branch — the whole thing, filter off",
-    'main..@' },
+    "main..@" },
 }
 -- A global, because the revset table has set/reset/edit but no getter, so the
 -- tab cannot be read back off the UI.
 REVIEW_TAB = ((REVIEW_TAB or 0) % #tabs) + 1
 local t = tabs[REVIEW_TAB]
 revset.set(t[2])
-flash("review: " .. t[1] .. "   ·   ctrl+p opens it in plannotator")
+
+-- Count what is left, so the flash is a progress bar and not just a label.
+local out = jj("log", "-r", t[2], "--no-graph", "-T", '"x\\n"')
+local n = 0
+for _ in string.gmatch(out or "", "\n") do n = n + 1 end
+flash(string.format("%s   ·   %d left, %d read   ·   ctrl+p acts on one", t[1], n, ndone))
 '''
 
-# ctrl+p and not ctrl+o: jjui has no key name for ctrl+o. Its table runs
-# ctrl+l, ctrl+m, ctrl+n, ctrl+p with no o, so that binding matched nothing and
-# the key did nothing at all. The line editor also uses ctrl+p for `up`, but
-# that is a different scope and only while the input is open.
 [[actions]]
 name = "review-open"
-desc = "open in plannotator"
+desc = "review this commit"
 key = "ctrl+p"
 scope = "revisions"
 lua = '''
@@ -61,8 +79,47 @@ if not id or id == "" then
   flash({ text = "No revision selected", error = true })
   return
 end
--- `just review <id>` and not a jj pipeline: the recipe already pins
--- PLANNOTATOR_PORT, so the viewed-tracking is the same browser origin whether
--- the commit was opened from here or from the picker.
-exec_shell(string.format("just review %q", id))
+
+local function done_ids()
+  local raw = jj("config", "get", "review.done")
+  local ids = {}
+  for w in string.gmatch(raw or "", "%S+") do ids[#ids + 1] = w end
+  return ids
+end
+
+local marked = false
+for _, v in ipairs(done_ids()) do if v == id then marked = true end end
+
+local pick = choose({
+  title = "Review " .. id .. (marked and "   (already read)" or ""),
+  options = {
+    "read it in nvim",
+    "open it in plannotator",
+    marked and "unmark — put it back in the bucket" or "mark it read",
+  },
+  ordered = true,
+})
+if not pick then return end
+
+if pick == "read it in nvim" then
+  -- jj_interactive and not exec_shell: hunk.nvim is a full-screen editor and
+  -- needs the terminal handed to it. The diff renders out of temp directories,
+  -- so this is for reading. A fix belongs in the real file.
+  jj_interactive("diff", "-r", id, "--tool", "hunk")
+
+elseif pick == "open it in plannotator" then
+  -- `just review <id>` and not a jj pipeline: the recipe pins PLANNOTATOR_PORT
+  -- in one place, so viewed-tracking stays one browser origin however it opened.
+  exec_shell(string.format("just review %q", id))
+
+else
+  local ids, out = done_ids(), {}
+  for _, v in ipairs(ids) do
+    if v ~= id then out[#out + 1] = v end
+  end
+  if not marked then out[#out + 1] = id end
+  jj("config", "set", "--repo", "review.done", table.concat(out, " "))
+  flash(string.format("%s %s   ·   %d read   ·   tab to refresh the bucket",
+    id, marked and "put back" or "marked read", #out))
+end
 '''
