@@ -4,7 +4,7 @@
 # was dropped 2026-10-27, this is the only jj TUI now. lazygit stays for git repos.
 # Keys: `?` help, `p` preview, `d` diff, `S` squash, `s` split, `r` rebase, `b` bookmark,
 # `g` git push/fetch, `u` undo, `o` op log, `shift+l` revset bar, `f` ace jump.
-# Mine: `tab` cycle review buckets, `ctrl+p` open the commit in plannotator.
+# Mine: `tab` cycle review buckets, `ctrl+o` open the commit in plannotator.
 # Full reference: https://idursun.github.io/jjui/customization/config-toml/
 
 [ui]
@@ -12,7 +12,7 @@
 auto_refresh_interval = 5
 
 # ── Review front door ─────────────────────────────────────────────────────────
-# `tab` cycles the review buckets, `ctrl+p` opens the highlighted commit in
+# `tab` cycles the review buckets, `ctrl+o` opens the highlighted commit in
 # plannotator. Same buckets and the same numbers as `just review` — risk 54,
 # rest 67, all 121 on the branch as of 2026-10-27 — because both read the
 # `Review: you — <reason>` trailer that `just review-route` wrote. Nothing here
@@ -35,7 +35,7 @@ local tabs = {
     'main..@ & description(glob:"★*") ~ ' .. risk },
   { "all — everything marked for you",
     'main..@ & description(glob:"★*")' },
-  { "off — the whole branch again",
+  { "branch — the whole thing, filter off",
     'main..@' },
 }
 -- A global, because the revset table has set/reset/edit but no getter, so the
@@ -43,13 +43,13 @@ local tabs = {
 REVIEW_TAB = ((REVIEW_TAB or 0) % #tabs) + 1
 local t = tabs[REVIEW_TAB]
 revset.set(t[2])
-flash("review: " .. t[1])
+flash("review: " .. t[1] .. "   ·   ctrl+o opens it in plannotator")
 '''
 
 [[actions]]
 name = "review-open"
 desc = "open in plannotator"
-key = "ctrl+p"
+key = "ctrl+o"
 scope = "revisions"
 lua = '''
 local id = context.change_id()
