@@ -38,6 +38,7 @@ LOCK="${TMPDIR:-/tmp}/say-reply.lock"
 QUIET_DIR="$HOME/.claude/say-quiet"
 LOG="$HOME/.claude/say.log"
 RATE=220
+VOICE="Ava (Premium)"   # macOS; Linux picks its voice via PIPER_VOICE
 PAUSE_MS=1200
 
 log() {
@@ -47,9 +48,9 @@ log() {
 }
 
 # Waiter body, detached in its own process group (set -m) so it outlives the hook
-# process the harness reaps. $1 text file, $2 lock dir, $3 log file, $4 rate, $5 pause ms.
+# process the harness reaps. $1 text file, $2 lock dir, $3 log file, $4 rate, $5 pause ms, $6 macOS voice.
 WAITER='
-tag="${HERDR_PANE_ID:-nopane}"; logf="$3"; rate="$4"; pause="$5"
+tag="${HERDR_PANE_ID:-nopane}"; logf="$3"; rate="$4"; pause="$5"; voice="$6"
 lg() { printf "%s %-22s %s\n" "$(date "+%m-%d %H:%M:%S")" "$tag" "$*" >> "$logf"; }
 until mkdir "$2" 2>/dev/null; do
   p=$(cat "$2/pid" 2>/dev/null); if [ -n "$p" ] && ! kill -0 "$p" 2>/dev/null; then rm -rf "$2"; fi
@@ -61,7 +62,7 @@ trap "rm -f \"$txt\" \"$snd\"; rm -rf \"$2\"" EXIT
 trap "exit 143" TERM INT   # a trap that only cleans up would let the waiter run on after --stop
 if [ "$(uname)" = Darwin ]; then
   { printf "[[slnc %s]] " "$5"; cat "$1"; } > "$txt"
-  render() { say -r "$rate" -o "$snd" -f "$txt" 2>/dev/null; rc=$?; dur=$(afinfo "$snd" 2>/dev/null | awk "/estimated duration/{print \$3}"); dur=${dur:-0}; }
+  render() { say -v "$voice" -r "$rate" -o "$snd" -f "$txt" 2>/dev/null; rc=$?; dur=$(afinfo "$snd" 2>/dev/null | awk "/estimated duration/{print \$3}"); dur=${dur:-0}; }
   play() { afplay "$snd"; }
   unwedge() { pkill -x speechsynthesisd 2>/dev/null; sleep 0.6; }
 else
@@ -89,7 +90,7 @@ if [ "$rc" = 0 ] && [ "${dur%.*}" -ge 1 ]; then
 else
   lg "GAVE UP rc=$rc dur=$dur"
 fi'
-enqueue() { bash -c 'set -m; nohup bash -c "$1" say-queue "$2" "$3" "$4" "$5" "$6" >/dev/null 2>&1 &' _ "$WAITER" "$1" "$LOCK" "$LOG" "$RATE" "$PAUSE_MS"; }
+enqueue() { bash -c 'set -m; nohup bash -c "$1" say-queue "$2" "$3" "$4" "$5" "$6" "$7" >/dev/null 2>&1 &' _ "$WAITER" "$1" "$LOCK" "$LOG" "$RATE" "$PAUSE_MS" "$VOICE"; }
 flush()   { pkill -f ' say-queue ' 2>/dev/null; pkill -x afplay 2>/dev/null; pkill -x say 2>/dev/null; pkill -x paplay 2>/dev/null; pkill -x espeak-ng 2>/dev/null; rm -rf "$LOCK" "${TMPDIR:-/tmp}"/say-txt.* "${TMPDIR:-/tmp}"/say-test.*; }
 clean()   { awk '/^```/{f=!f; next} !f' | sed -E "s/$MARK//g; s/\`[^\`]*\`/code/g; s/\[([^]]*)\]\([^)]*\)/\1/g; s/[*_#>|~]//g"; }
 
