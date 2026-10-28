@@ -85,6 +85,14 @@ type = "plugin_action"
 command = "ray.file-explorer.open-tab"
 description = "open file explorer in a new tab"
 
+# DISABLED 2026-10-28 — smart-splits.nvim v3 moved the herdr manifest OUT of the
+# plugin repo, so `herdr plugin list` reports `manifest unavailable` and every one
+# of these resolves to nothing: herdr answers `plugin action not found` and eats the
+# key. ctrl+j is the same byte as shift+enter, so this also ate shift+enter in every
+# app. Re-enable by installing the backend that now owns it:
+#   https://github.com/adriankarlen/smart-splits-backend-herdr
+# then point nvim's smart-splits at `mux.backend = 'smart-splits-backend-herdr'`.
+
 # Plugin: smart-splits.nvim — one set of <C-hjkl> that moves between Neovim
 # splits AND herdr panes. NO prefix: these are global keys, so the chord is the
 # same inside and outside nvim. The plugin's script asks herdr which process the
@@ -93,29 +101,29 @@ description = "open file explorer in a new tab"
 # key goes back to the app, so shell <C-l> (clear) and <C-h> (backspace) survive.
 # Linked from the lazy.nvim clone, not `plugin install`: the herdr manifest ships
 # inside the Neovim plugin repo. Needs jq.
-[[keys.command]]
-key = "ctrl+h"
-type = "plugin_action"
-command = "smart-splits.nvim.left"
-description = "navigate left (vim/herdr)"
+# [[keys.command]]
+# key = "ctrl+h"
+# type = "plugin_action"
+# command = "smart-splits.nvim.left"
+# description = "navigate left (vim/herdr)"
 
-[[keys.command]]
-key = "ctrl+j"
-type = "plugin_action"
-command = "smart-splits.nvim.down"
-description = "navigate down (vim/herdr)"
+# [[keys.command]]
+# key = "ctrl+j"
+# type = "plugin_action"
+# command = "smart-splits.nvim.down"
+# description = "navigate down (vim/herdr)"
 
-[[keys.command]]
-key = "ctrl+k"
-type = "plugin_action"
-command = "smart-splits.nvim.up"
-description = "navigate up (vim/herdr)"
+# [[keys.command]]
+# key = "ctrl+k"
+# type = "plugin_action"
+# command = "smart-splits.nvim.up"
+# description = "navigate up (vim/herdr)"
 
-[[keys.command]]
-key = "ctrl+l"
-type = "plugin_action"
-command = "smart-splits.nvim.right"
-description = "navigate right (vim/herdr)"
+# [[keys.command]]
+# key = "ctrl+l"
+# type = "plugin_action"
+# command = "smart-splits.nvim.right"
+# description = "navigate right (vim/herdr)"
 
 [ui]
 show_agent_labels_on_pane_borders = true
