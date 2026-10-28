@@ -217,15 +217,24 @@ return {
     -- and cross into the neighboring herdr pane at a split edge. These keys
     -- override LazyVim's own <C-hjkl> window maps (lazyvim keymaps.lua).
     --
-    -- The herdr half lives in this same repo (herdr-plugin.toml +
-    -- scripts/herdr-navigate.sh) and is registered separately with
-    -- `herdr plugin link ~/.local/share/nvim/lazy/smart-splits.nvim`.
-    -- It decides where a keypress goes by asking `herdr pane process-info`
-    -- whether the focused pane runs nvim, so detection does not depend on this
-    -- plugin being loaded first. Needs jq on PATH.
-    "mrjones2014/smart-splits.nvim",
+    -- v3 (2026-10-28). smart-splits moved to its own org and pulled every
+    -- multiplexer out of the repo, so the herdr manifest this used to link
+    -- against is gone — `herdr plugin list` said `manifest unavailable` and all
+    -- four keys resolved to nothing. Worse, herdr swallowed them: ctrl+j is the
+    -- same byte as shift+enter, so shift+enter died everywhere too.
+    --
+    -- herdr support now lives in adriankarlen/smart-splits-backend-herdr,
+    -- written against smart-splits' v3 PROTOCOL.md. The herdr half is installed
+    -- separately with `herdr plugin install adriankarlen/smart-splits-backend-herdr`
+    -- and still decides where a keypress goes by asking herdr whether the
+    -- focused pane runs nvim, so it does not depend on load order. Needs jq.
+    "smart-splits-nvim/smart-splits.nvim",
+    version = "^3.0.0",
     lazy = false,
-    opts = {},
+    dependencies = {
+      { "adriankarlen/smart-splits-backend-herdr", main = "smart-splits-backend-herdr", opts = {} },
+    },
+    opts = { mux = { backend = "smart-splits-backend-herdr" } },
     keys = {
       { "<C-h>", function() require("smart-splits").move_cursor_left() end, desc = "Go to Left Window" },
       { "<C-j>", function() require("smart-splits").move_cursor_down() end, desc = "Go to Lower Window" },

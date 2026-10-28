@@ -85,45 +85,44 @@ type = "plugin_action"
 command = "ray.file-explorer.open-tab"
 description = "open file explorer in a new tab"
 
-# DISABLED 2026-10-28 — smart-splits.nvim v3 moved the herdr manifest OUT of the
-# plugin repo, so `herdr plugin list` reports `manifest unavailable` and every one
-# of these resolves to nothing: herdr answers `plugin action not found` and eats the
-# key. ctrl+j is the same byte as shift+enter, so this also ate shift+enter in every
-# app. Re-enable by installing the backend that now owns it:
-#   https://github.com/adriankarlen/smart-splits-backend-herdr
-# then point nvim's smart-splits at `mux.backend = 'smart-splits-backend-herdr'`.
-
-# Plugin: smart-splits.nvim — one set of <C-hjkl> that moves between Neovim
-# splits AND herdr panes. NO prefix: these are global keys, so the chord is the
-# same inside and outside nvim. The plugin's script asks herdr which process the
+# Plugin: smart-splits-backend-herdr — one set of <C-hjkl> that moves between
+# Neovim splits AND herdr panes. NO prefix: these are global keys, so the chord
+# is the same inside and outside nvim. The plugin asks herdr which process the
 # focused pane runs; nvim gets the key forwarded so it can move its own splits,
 # and at a split edge herdr moves pane focus instead. At the outermost edge the
 # key goes back to the app, so shell <C-l> (clear) and <C-h> (backspace) survive.
-# Linked from the lazy.nvim clone, not `plugin install`: the herdr manifest ships
-# inside the Neovim plugin repo. Needs jq.
-# [[keys.command]]
-# key = "ctrl+h"
-# type = "plugin_action"
-# command = "smart-splits.nvim.left"
-# description = "navigate left (vim/herdr)"
+#
+# The action names changed on 2026-10-28. smart-splits v3 moved every
+# multiplexer out of its own repo, taking the herdr manifest with it, and these
+# four silently resolved to nothing — herdr answered `plugin action not found`
+# and ate the key, which also killed shift+enter, since ctrl+j is the same byte.
+# herdr support now lives in its own plugin, installed with:
+#   herdr plugin install adriankarlen/smart-splits-backend-herdr
+# Needs jq.
 
-# [[keys.command]]
-# key = "ctrl+j"
-# type = "plugin_action"
-# command = "smart-splits.nvim.down"
-# description = "navigate down (vim/herdr)"
+[[keys.command]]
+key = "ctrl+h"
+type = "plugin_action"
+command = "smart-splits-backend-herdr.left"
+description = "navigate left (neovim/herdr)"
 
-# [[keys.command]]
-# key = "ctrl+k"
-# type = "plugin_action"
-# command = "smart-splits.nvim.up"
-# description = "navigate up (vim/herdr)"
+[[keys.command]]
+key = "ctrl+j"
+type = "plugin_action"
+command = "smart-splits-backend-herdr.down"
+description = "navigate down (neovim/herdr)"
 
-# [[keys.command]]
-# key = "ctrl+l"
-# type = "plugin_action"
-# command = "smart-splits.nvim.right"
-# description = "navigate right (vim/herdr)"
+[[keys.command]]
+key = "ctrl+k"
+type = "plugin_action"
+command = "smart-splits-backend-herdr.up"
+description = "navigate up (neovim/herdr)"
+
+[[keys.command]]
+key = "ctrl+l"
+type = "plugin_action"
+command = "smart-splits-backend-herdr.right"
+description = "navigate right (neovim/herdr)"
 
 [ui]
 show_agent_labels_on_pane_borders = true
