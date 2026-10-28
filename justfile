@@ -44,6 +44,28 @@ status:
 install:
     @bash {{repo}}/bin/install-packages
 
+# herdr plugins. config.toml binds keys to plugin ACTIONS, and the plugins
+# themselves are installed per machine, so the repo carries the bindings without
+# the things they point at. A machine that has the config and not the plugins
+# gets `plugin action not found` and herdr swallows the key. That is not a dead
+# key, it is a stolen one: ctrl+j is the same byte as shift+enter, so losing the
+# smart-splits binding cost shift+enter in every app on 2026-10-28, and it took
+# an hour to trace because nothing logs it.
+#
+# Re-running an installed one is harmless, so this is safe in `update`.
+herdr-plugins:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    command -v herdr >/dev/null || { echo "herdr not installed, skipping"; exit 0; }
+    for p in plannotator/herdr-annotate \
+             mroth/herdr-jj-status \
+             speardragon/herdr-yazi \
+             adriankarlen/smart-splits-backend-herdr; do
+      echo "==> $p"
+      herdr plugin install "$p" 2>&1 | tail -1 || echo "    (already installed, or failed — check \`herdr plugin list\`)"
+    done
+    herdr config check
+
 # full new-machine bootstrap: mise + clone + link + runtimes + tools + provision
 bootstrap:
     @bash {{repo}}/nobara/bootstrap.sh
@@ -156,6 +178,9 @@ update:
     #
     # Captured rather than final, so the address-lock instructions below still
     # print on a red run. They are needed MOST on a red run: while the lock is
+    # Before doctor, because a missing herdr plugin is exactly the kind of silent
+    # drift doctor should not be the first to tell you about.
+    just herdr-plugins || echo "==> herdr plugins failed — rerun: just herdr-plugins" >&2
     _doctor_rc=0
     bash bin/doctor || _doctor_rc=1
     if [ -f {{extra}}/justfile ]; then just --justfile {{extra}}/justfile doctor || _doctor_rc=1; fi
