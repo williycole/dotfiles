@@ -252,7 +252,7 @@ packages:
   - { name: SDL3_image-devel, pc: sdl3-image, dnf: SDL3_image-devel }
   - { name: SDL3_ttf-devel, pc: sdl3-ttf, dnf: SDL3_ttf-devel }
   - { name: glfw-devel, pc: glfw3, dnf: glfw-devel }
-  - { name: enet-devel, pc: enet, dnf: enet-devel }
+  - { name: enet-devel, pc: libenet, dnf: enet-devel }
   - { name: lua-devel, pc: lua, dnf: lua-devel }
   - { name: lz4-devel, pc: liblz4, dnf: lz4-devel }
   # Aseprite from source (bin/aseprite-build): the Fedora list in its
