@@ -1,0 +1,19 @@
+{
+  "$schema": "https://pi.dev/schemas/keybindings.schema.json",
+  "tui.editor.cursorUp": [
+    "up",
+    "alt+k"
+  ],
+  "tui.editor.cursorDown": [
+    "down",
+    "alt+j"
+  ],
+  "tui.select.up": [
+    "up",
+    "alt+k"
+  ],
+  "tui.select.down": [
+    "down",
+    "alt+j"
+  ]
+}
