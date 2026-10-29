@@ -204,18 +204,6 @@
           }
         ]
       }
-    ],
-    "ConfigChange": [
-      {
-        "matcher": "user_settings",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cp $HOME/.claude/settings.json $HOME/Repos/dotfiles/os/darwin/.claude/settings.json",
-            "timeout": 5
-          }
-        ]
-      }
     ]
   },
   "statusLine": {
@@ -227,7 +215,9 @@
     "context-mode@context-mode": true,
     "ponytail@ponytail": true,
     "playwright@claude-plugins-official": true,
-    "lua-lsp@claude-plugins-official": true
+    "lua-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -273,5 +263,8 @@
   "verbose": true,
   "skipAutoPermissionPrompt": true,
   "useAutoModeDuringPlan": true,
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "switchModelsOnFlag": false,
+  "remoteControlAtStartup": false,
+  "agentPushNotifEnabled": true
 }
