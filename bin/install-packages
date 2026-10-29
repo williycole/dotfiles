@@ -83,11 +83,22 @@ fi
 
 # already on this host? `bin:` names a binary, `pc:` a pkg-config module.
 # Falls back to the package name when neither is given.
+# A command counts as present only if it would actually run. A mise shim is a
+# symlink to mise that answers `command -v` for as long as the tool was EVER
+# installed; once the tool leaves mise's config (063ac1f moved twenty of them to
+# packages.yaml) the shim stays and fails with "No version is set". On
+# 2026-10-29 that hid five missing tools (atuin, cmake, glow, lazydocker, tmux)
+# behind "already on host" for two days, so never batched them for dnf.
+resolves() {
+  local p; p=$(command -v "$1" 2>/dev/null) || return 1
+  case "$p" in */mise/shims/*) mise which "$1" >/dev/null 2>&1 ;; *) return 0 ;; esac
+}
+
 have_it() {
   local name="$1" bin="$2" pc="$3"
   [ "$pc"  != "null" ] && { pkg-config --exists "$pc" 2>/dev/null && return 0 || return 1; }
-  [ "$bin" != "null" ] && { command -v "$bin" >/dev/null 2>&1 && return 0 || return 1; }
-  command -v "$name" >/dev/null 2>&1 && return 0
+  [ "$bin" != "null" ] && { resolves "$bin" && return 0 || return 1; }
+  resolves "$name" && return 0
   # Header/library-only packages (libcxx-devel) have no binary and no .pc file;
   # without this they were never "present" and re-prompted for admin every run.
   command -v rpm >/dev/null 2>&1 && rpm -q "$name" >/dev/null 2>&1
