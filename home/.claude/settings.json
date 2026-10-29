@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -67,7 +67,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -80,7 +80,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -88,16 +88,6 @@
       }
     ],
     "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10
-          }
-        ]
-      },
       {
         "matcher": "*",
         "hooks": [
@@ -115,6 +105,16 @@
             "command": "\"$HOME/.claude/hooks/context-mode-cache-heal.mjs\""
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [
@@ -123,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/say-reply.sh",
             "timeout": 10,
             "async": true
           }
@@ -134,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/say-reply.sh",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -147,7 +147,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -160,7 +160,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -173,12 +173,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/scripts/hook-handle-use.sh",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/scripts/hook-handle-rename.sh",
+            "command": "$HOME/.claude/hooks/say-reply.sh --prompt",
             "timeout": 5
           }
         ]
@@ -188,7 +183,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -199,7 +194,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/say-reply.sh --prompt",
+            "command": "/home/dev/.claude/hooks/peon-ping/scripts/hook-handle-use.sh",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "/home/dev/.claude/hooks/peon-ping/scripts/hook-handle-rename.sh",
             "timeout": 5
           }
         ]
