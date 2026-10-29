@@ -90,8 +90,14 @@ fi
 # 2026-10-29 that hid five missing tools (atuin, cmake, glow, lazydocker, tmux)
 # behind "already on host" for two days, so never batched them for dnf.
 resolves() {
-  local p; p=$(command -v "$1" 2>/dev/null) || return 1
-  case "$p" in */mise/shims/*) mise which "$1" >/dev/null 2>&1 ;; *) return 0 ;; esac
+  local p
+  while IFS= read -r p; do
+    case "$p" in
+      */mise/shims/*) mise which "$1" >/dev/null 2>&1 && return 0 ;;   # live shim
+      *) return 0 ;;                                                   # a real binary, past any dead shim
+    esac
+  done < <(type -aP "$1" 2>/dev/null)
+  return 1
 }
 
 have_it() {
