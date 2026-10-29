@@ -118,3 +118,9 @@ __pycache__/
 /.claude/settings.json
 /.claude/settings.local.json
 /.claude/workflows
+
+# The work Mac's ConfigChange hook mirrors its live ~/.claude/settings.json to
+# this path. That file is per-machine (absolute /Users paths, the work org's
+# auto-mode environment) and must never be tracked or linked: the curated Mac
+# settings live in os/darwin/.claude/settings.json, which wins on the Mac anyway.
+/home/.claude/settings.json
