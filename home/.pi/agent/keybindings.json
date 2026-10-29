@@ -1,12 +1,16 @@
 {
   "$schema": "https://pi.dev/schemas/keybindings.schema.json",
-  "tui.editor.cursorUp": [
-    "up",
+  "tui.altScreen.lineUp": [
     "alt+k"
   ],
-  "tui.editor.cursorDown": [
-    "down",
+  "tui.altScreen.lineDown": [
     "alt+j"
+  ],
+  "tui.altScreen.halfPageUp": [
+    "alt+u"
+  ],
+  "tui.altScreen.halfPageDown": [
+    "alt+d"
   ],
   "tui.select.up": [
     "up",
