@@ -169,7 +169,6 @@ packages:
   - { name: godot, cask: godot } # OFFLINE-GAMEDEV.md
   - { name: foliate, cask: foliate, flatpak: com.github.johnfactotum.Foliate } # epub + PDF reader (default handler for both, see mimeapps.list)
   - { name: ares, cask: ares, flatpak: dev.ares.ares } # N64 (multi-system) emulator — OFFLINE-GAMEDEV.md
-  - { name: pcsx2, flatpak: net.pcsx2.PCSX2 } # PS2 emulator; ares covers N64 and PS1
   # Spotify's flathub entry is NOT a Spotify build: it is a wrapper that downloads
   # Canonical's SNAP from api.snapcraft.io at install time. cliamp replaces it —
   # a plain binary that embeds go-librespot and is its own Spotify Connect device,
@@ -177,45 +176,11 @@ packages:
   # step 13, not from here, because it is a GitHub release drop like godot/nvim.
   # Keeping the flatpak line would reinstall the snap-downloader on every machine.
   - { name: spotify, cask: spotify } # macOS only; Linux uses cliamp
-  # Chromium-based browser. Only reason it's here: 8BitDo's "Ultimate Software
-  # Online" web tool (web.8bitdo.com) is WebUSB-only, and Firefox does not
-  # implement WebUSB at all — a security-scope decision on Mozilla's side, not
-  # a bug. Flatpak Chromium is confirmed to work with WebUSB's device-permission
-  # prompt. NOTE: as of this beta the web tool is firmware-update only, no
-  # button remapping UI — see antimicrox below for that.
-  # RPM, NOT the flatpak. A flatpak browser runs in its own namespace and cannot
-  # read /etc/chromium/policies/managed/, so it would ignore the image block
-  # entirely — an unlocked second browser is the whole bypass. The rpm reads
-  # the policy and is locked the same way Firefox is. doctor fails on the flatpak.
-  - { name: chromium, dnf: chromium, bin: chromium-browser }
   # Terminal for prompts; was on littleplow only.
   - { name: alacritty, dnf: alacritty }
   # Flashes USB images. Replaces balena-etcher, an Electron app that bundles its
   # own Chromium (2026-10-16).
   - { name: gnome-disks, dnf: gnome-disk-utility, bin: gnome-disks }
-  # Controller-to-keyboard/mouse remapping (8BitDo Ultimate 2). 8BitDo's own
-  # software (Ultimate Software V2) is Windows/macOS/mobile only, and the
-  # Linux web version (web.8bitdo.com, see chromium above) is firmware-update
-  # only as of this beta — no remap UI. AntiMicroX maps controller input to
-  # keyboard/mouse system-wide, not just inside Steam.
-  - { name: antimicrox, flatpak: io.github.antimicrox.antimicrox }
-
-  # Steam Deck Mode — adds a "Steam Big Picture" entry to the SDDM session list, so
-  # you can log straight into controller-only Game Mode instead of Plasma. Nobara
-  # ships gamescope and kde-steamdeck-additions but NOT this session package, so it
-  # has to be asked for. dnf-only: no user-level source exists, so it surfaces in
-  # install-packages' single `pkexec dnf install` line rather than being installed.
-  # Purely additive — Plasma stays the default session; log out to switch back.
-  #
-  # AMD boxes only, and install-packages enforces that rather than trusting a note.
-  # gamescope takes the display through DRM KMS, which needs nvidia-drm.modeset=1.
-  # The system setup pins nvidia-drm.modeset=0 on every NVIDIA box because nvidia-open
-  # with modeset=1 black-screens bigplow (RTX 4080 SUPER) on boot. Selecting the session
-  # under that pin just bounces back to SDDM; the REAL hazard is "fixing" the bounce by
-  # flipping the arg to 1, which black-screens the next boot behind the GRUB password.
-  # doctor.sh (~196) fails the box if modeset=0 ever goes missing. Hence skip_if_nvidia:
-  # bigplow never even sees this in the admin batch, so the bad idea never starts.
-  - { name: gamescope-session-steam, dnf: gamescope-session-steam, skip_if_nvidia: true }
   - { name: aerospace, cask: nikitabobko/tap/aerospace } # mac WM only
   - { name: zennotes, cask: zennotes/tap/zennotes } # mac cask; Nobara = host rpm (GitHub release) admin-installed — see nobara/README.md step 8
   - { name: karabiner-elements, cask: karabiner-elements } # mac only — its config is tracked
