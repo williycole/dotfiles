@@ -7,103 +7,14 @@
   "permissions": {
     "defaultMode": "auto"
   },
-  "model": "fable[1m]",
   "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
     "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10
-          }
-        ]
-      },
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "bash '$HOME/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "bash '/Users/cole.boren/.claude/hooks/herdr-agent-state.sh' session",
             "timeout": 10
           }
         ]
@@ -112,7 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/context-mode-cache-heal.mjs\""
+            "command": "\"/Users/cole.boren/.claude/hooks/context-mode-cache-heal.mjs\""
           }
         ]
       }
@@ -123,44 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/say-reply.sh",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
+            "command": "/Users/cole.boren/.claude/hooks/say-reply.sh",
             "timeout": 10,
             "async": true
           }
@@ -173,33 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/scripts/hook-handle-use.sh",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/scripts/hook-handle-rename.sh",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude-personal/hooks/peon-ping/peon.sh",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/say-reply.sh --prompt",
+            "command": "/Users/cole.boren/.claude/hooks/say-reply.sh --prompt",
             "timeout": 5
           }
         ]
@@ -211,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cp $HOME/.claude/settings.json $HOME/Repos/dotfiles/os/darwin/.claude/settings.json",
+            "command": "cp /Users/cole.boren/.claude/settings.json /Users/cole.boren/personal/dotfiles/os/darwin/.claude/settings.json",
             "timeout": 5
           }
         ]
@@ -220,14 +68,17 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash $HOME/.claude/statusline-command.sh"
+    "command": "bash /Users/cole.boren/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "caveman@caveman": true,
     "context-mode@context-mode": true,
     "ponytail@ponytail": true,
     "playwright@claude-plugins-official": true,
-    "lua-lsp@claude-plugins-official": true
+    "lua-lsp@claude-plugins-official": true,
+    "mattpocock-skills@mattpocock": true,
+    "plannotator@plannotator": true,
+    "atlassian-mcp@anthropic-plugin-directory": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -253,8 +104,15 @@
         "source": "github",
         "repo": "backnotprop/plannotator"
       }
+    },
+    "mattpocock": {
+      "source": {
+        "source": "github",
+        "repo": "mattpocock/skills"
+      }
     }
   },
+  "feedbackDrafts": "off",
   "effortLevel": "xhigh",
   "modelSettings": {
     "claude-fable-5-1": {
@@ -271,7 +129,42 @@
   "theme": "custom:kanagawa",
   "editorMode": "vim",
   "verbose": true,
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "useAutoModeDuringPlan": true,
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "Bash(psql:* -h *prod*)",
+      "Bash(kubectl:* -n *prod*)"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: intlxsolutions (GitLab self-hosted — gitlab.dev.intlxsolutions.com/devops/intlxintelligence)",
+      "**Cloud provider(s)**: GCP (gcloud secrets manager referenced in config scan)",
+      "**Repository visibility**: assume private — self-hosted GitLab instance under devops/ group, no public-visibility signal found (repo visibility check was not queryable via gh for this GitLab remote)",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: gcloud secrets (GCP Secret Manager) for prod; local dev uses .env / config/*.secret.exs (gitignored)",
+      "**Default / protected branches**: main (default branch) — protection status not queryable via gh for this GitLab remote; treat main as protected by convention",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine with open internet",
+      "**Source control**: gitlab.dev.intlxsolutions.com:devops/intlxintelligence.git (this repo's origin only)",
+      "**Trusted internal domains**: keycloak.dev.intlxsolutions.com (contacted repeatedly in-session; dev OIDC realm referenced in .env.example)",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: Keycloak (keycloak.dev.intlxsolutions.com) — dev OIDC identity provider for this app",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: .env, .env.example, config/prod.exs, config/*.secret.exs, openspec/backlog/credential-management-module.md, test/intlx_web/prod_log_formatter_test.exs — credentials and prod config; share only with audiences cleared at the named+specifics bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: intlx-staging namespace (seen repeatedly in k8s -n flags) is not a prod match by the whole-word rule — treat per the default: any namespace/host/container with 'prod' or 'production' as a whole word or segment (e.g. config/prod.exs's runtime target)",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries prod or production as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development (Elixir/Phoenix multi-tenant SaaS platform, OpenSpec-driven workflow)",
+      "**Trusted repo**: /Users/cole.boren/Repos/intlxintelligence (this repo) and its origin remote gitlab.dev.intlxsolutions.com:devops/intlxintelligence.git",
+      "**Org-specific CLIs**: openspec, jj, herdr, plannotator, mix/ash (Elixir/Ash toolchain), ex_ast/ex_dna/reach/credence (elixir-vibe analysis tools)",
+      "Routine under this repo's openspec/, docs/brief/, and docs/prototype/ prefixes is part of normal dev workflow per project skills"
+    ]
+  },
   "voiceEnabled": true
 }
