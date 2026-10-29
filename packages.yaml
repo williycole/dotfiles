@@ -169,6 +169,7 @@ packages:
   - { name: godot, cask: godot } # OFFLINE-GAMEDEV.md
   - { name: foliate, cask: foliate, flatpak: com.github.johnfactotum.Foliate } # epub + PDF reader (default handler for both, see mimeapps.list)
   - { name: ares, cask: ares, flatpak: dev.ares.ares } # N64 (multi-system) emulator — OFFLINE-GAMEDEV.md
+  - { name: pcsx2, flatpak: net.pcsx2.PCSX2 } # PS2 emulator; ares covers N64 and PS1
   # Spotify's flathub entry is NOT a Spotify build: it is a wrapper that downloads
   # Canonical's SNAP from api.snapcraft.io at install time. cliamp replaces it —
   # a plain binary that embeds go-librespot and is its own Spotify Connect device,
