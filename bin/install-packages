@@ -253,7 +253,7 @@ if [ "$OS" = linux ]; then
 fi
 
 # peon-ping
-if ! command -v peon-ping >/dev/null 2>&1; then
+if ! command -v peon-ping >/dev/null 2>&1 && ! command -v peon >/dev/null 2>&1; then
   if [ "$OS" = mac ]; then
     brew install peonping/tap/peon-ping >/dev/null 2>&1 && ok "peon-ping (tap)" || fail "peon-ping (tap)"
   else
