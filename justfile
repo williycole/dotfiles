@@ -62,7 +62,7 @@ herdr-plugins:
              speardragon/herdr-yazi \
              adriankarlen/smart-splits-backend-herdr; do
       echo "==> $p"
-      herdr plugin install "$p" 2>&1 | tail -1 || echo "    (already installed, or failed — check \`herdr plugin list\`)"
+      herdr plugin install "$p" --yes 2>&1 | tail -1 || echo "    (already installed, or failed — check \`herdr plugin list\`)"
     done
     herdr config check
 

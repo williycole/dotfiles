@@ -371,15 +371,11 @@ fi
 if command -v herdr >/dev/null 2>&1; then
   herdr plugin install speardragon/herdr-yazi --yes  >/dev/null 2>&1 && ok "herdr: yazi"      || fail "herdr: yazi"
   herdr plugin install mroth/herdr-jj-status --yes    >/dev/null 2>&1 && ok "herdr: jj-status" || fail "herdr: jj-status"
-  # smart-splits ships its herdr manifest INSIDE the Neovim plugin repo, so it is linked
-  # from the lazy.nvim clone rather than installed from GitHub. Needs lazy to have cloned
-  # it first — open nvim once, or run: nvim --headless "+Lazy! install" +qa
-  SS_DIR="$HOME/.local/share/nvim/lazy/smart-splits.nvim"
-  if [ -d "$SS_DIR" ]; then
-    herdr plugin link "$SS_DIR" >/dev/null 2>&1 && ok "herdr: smart-splits" || fail "herdr: smart-splits"
-  else
-    fail "herdr: smart-splits — $SS_DIR missing (let lazy.nvim clone it, then re-run)"
-  fi
+  # smart-splits v3 moved its herdr backend out of the Neovim plugin repo. The
+  # config binds ctrl+hjkl to smart-splits-backend-herdr.* actions; without this
+  # plugin herdr resolves them to nothing and swallows the keys (ctrl+j is the
+  # same byte as a Shift+Enter newline, so that dies too).
+  herdr plugin install adriankarlen/smart-splits-backend-herdr --yes >/dev/null 2>&1 && ok "herdr: smart-splits backend" || fail "herdr: smart-splits backend"
 else
   fail "herdr not on PATH — herdr plugins skipped"
 fi
