@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -67,7 +67,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -80,7 +80,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -93,7 +93,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '$HOME/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "bash $HOME/.claude/hooks/herdr-agent-state.sh session",
             "timeout": 10
           }
         ]
@@ -111,7 +111,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10
           }
         ]
@@ -134,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -147,7 +147,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -160,7 +160,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -183,7 +183,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/peon.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
             "async": true
           }
@@ -194,12 +194,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/scripts/hook-handle-use.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/scripts/hook-handle-use.sh",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "/home/dev/.claude/hooks/peon-ping/scripts/hook-handle-rename.sh",
+            "command": "$HOME/.claude/hooks/peon-ping/scripts/hook-handle-rename.sh",
             "timeout": 5
           }
         ]
@@ -216,6 +216,8 @@
     "ponytail@ponytail": true,
     "playwright@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": true,
+    "mattpocock-skills@mattpocock": true,
+    "plannotator@plannotator": true,
     "gopls-lsp@claude-plugins-official": true,
     "clangd-lsp@claude-plugins-official": true
   },
@@ -242,6 +244,12 @@
       "source": {
         "source": "github",
         "repo": "backnotprop/plannotator"
+      }
+    },
+    "mattpocock": {
+      "source": {
+        "source": "github",
+        "repo": "mattpocock/skills"
       }
     }
   },
