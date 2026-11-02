@@ -63,6 +63,7 @@
   "render-markdown.nvim": { "branch": "main", "commit": "8e8795368391036643b622875a6da6a51bcd33f4" },
   "rustaceanvim": { "branch": "main", "commit": "39d19e3cbd0f98083eae2e70e43c90ec56d85376" },
   "sidekick.nvim": { "branch": "main", "commit": "3d80a47e6375f6d647c9695d3afea6fa1b3275df" },
+  "smart-splits-backend-herdr": { "branch": "main", "commit": "da1e50ae7bec7a7c2781aaf5a531eff350bdab20" },
   "smart-splits.nvim": { "branch": "master", "commit": "dd40c3a03ef71bcdf77fb4b14668cc1320293f48" },
   "smear-cursor.nvim": { "branch": "main", "commit": "f6cb57c342268177f719acc3968b9d8de3ecc969" },
   "snacks.nvim": { "branch": "main", "commit": "882c996cf28183f4d63640de0b4c02ec886d01f2" },
