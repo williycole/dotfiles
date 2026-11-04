@@ -62,3 +62,18 @@ rules:
   tasks:
     - Every task that touches real files must be runnable against HOME=/tmp/fakehome first.
     - Destructive steps get a stated rollback.
+    - >-
+      Human review comes first. Every tasks.md opens with "## 0. Human review" holding one
+      task: "- [ ] 0.1 Human review of this change: read proposal.md, design.md, specs/ and
+      this file, and approve them in plannotator with zero annotations. Only the human
+      checks this box. An agent running apply stops at this unchecked task and never
+      checks it." Build sections start at "## 1.".
+
+# Per-operation advisory guidance
+operations:
+  apply:
+    guidance:
+      - >-
+        Stop at an unreviewed change. If task 0.1 Human review is unchecked, do not start
+        any other task and never check 0.1 yourself, in any run mode. Say the change is
+        waiting for the human's review and stop.
