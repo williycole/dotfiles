@@ -63,6 +63,7 @@ No data to migrate. Changes in flight keep their existing commits. The next plow
 5. **Where the mechanical category is recorded.** At the mode question only, or also in the change's artifacts so a later run can check it.
 6. **Fast and one-shot modes.** Fast reviews a sealed stack afterward, and one shot runs the whole change with one late review. Both conflict with per-step review and with "never waterfall". Drop them, keep them only for mechanical work, or keep them as they are.
 7. **Lane modes in autonomous.md.** With autonomy limited to mechanical work, `gated` and `paired` lanes are close to the normal gated mode in a pane. Whether to keep three lane modes or one.
+8. **Who runs the commit.** Saša Jurić: "I don't allow it to commit. I commit myself" (S15). Today plow runs `jj commit` and seals only after a zero-annotation human review. Recommendation: keep plow running the command with the per-step human approval as the gate, since that already means nothing lands unread; have plow hand the commit to the user instead if a commit ever lands without that read.
 
 ## Cut candidates
 
