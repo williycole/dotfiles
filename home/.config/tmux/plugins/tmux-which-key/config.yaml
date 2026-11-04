@@ -256,9 +256,6 @@ items:
   - name: Ghostty reload config
     key: G
     command: run-shell "~/.config/tmux/ghostty-reload.sh"
-  - name: casty (web) keys
-    key: W
-    command: display-popup -w 62 -h 24 -E "casty --help | less"
   - name: Clock
     key: t
     command: clock-mode

@@ -4,21 +4,6 @@ edit = [
   { run = 'nvim "$@"', block = true, desc = "Neovim" },
 ]
 
-# casty is a real Chrome driven from the terminal, so an .html opens as the
-# rendered page rather than as markup. Preview stays raw HTML — this is only
-# what Enter does. UNVERIFIED: casty takes `casty [url]` and this passes a
-# file:// URL built from yazi's absolute path; test on a local .html before
-# trusting it.
-browse = [
-  { run = 'casty "file://%s1"', block = true, desc = "casty (real Chrome)" },
-]
-
-[open]
-prepend_rules = [
-  { url = "*.html", use = "browse" },
-  { url = "*.htm", use = "browse" },
-]
-
 [mgr]
 show_hidden = true
 
