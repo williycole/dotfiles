@@ -32,11 +32,11 @@
 4. **Commit**: `jj commit` with a message from a temp file.
 5. **Report**: what changed, how to verify, what was decided alone.
 
-<!-- plannotator-inbox:start v7 · added by Plannotator. Remove it in the Inbox's Settings or with `plannotator uninstall` -->
+<!-- plannotator-inbox:start v8 · added by Plannotator. Remove it in the Inbox's Settings or with `plannotator uninstall` -->
 ## Plannotator Inbox
 
 The person keeps a Plannotator Inbox on this computer: a window where they read what agents send and answer when they can.
-If you have a `plannotator_inbox` tool or a `plannotator-inbox` MCP server, use its `send_message` to ask a decision only they can make (as a `:::question` block) or to hand over finished long work (put the files to read in `attachments`). Then keep working.
+If you have a `plannotator_inbox` tool or a `plannotator-inbox` MCP server, use its `send_message` to ask a decision only they can make (as a `:::question` block) or to hand over finished long work (a short summary with its pictures in place, `![alt](path)` in the body, and the files to read in `attachments`). Then keep working.
 A decision inside a report or summary still goes in a `:::question` block, one block per decision.
 Their reply comes back to this session by itself where your agent supports that; otherwise read the thread later with `read_thread`.
 Be proactive about Inbox updates and about replying to the person through the Inbox when you think they would want you to. Don't withhold important updates or decisions, and don't batch updates to send later: proactivity is better than procrastination.

@@ -349,6 +349,12 @@ Per-phase gate, one section at a time:
 
    1. **See it run.** A UI change gets screenshots or the running app. Nothing to look at is itself
       an answer, so say so rather than skipping the rung.
+
+      When the diff touches layout, this rung is the `ui-evidence` skill, not the agent's
+      discretion: before/after pairs at a fixed viewport, rendered as one page. Its one
+      precondition is that the "before" shots were captured **before the first edit**, so decide
+      at the top of the section whether this rung applies — by step 7 it is too late, and
+      recapturing a base needs a second workspace.
    2. **What changed**, in plain language. What behaves differently now.
    3. **What the agent decided alone** — the decisions list, and `checked.md` if the change has one.
       Short by construction; if it is long, that is the finding.

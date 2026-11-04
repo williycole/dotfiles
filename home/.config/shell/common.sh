@@ -148,21 +148,27 @@ alias dpa='docker system prune -a'
 # the check runs, so a failure costs one skipped day rather than a hang on every new
 # shell.
 #
-# Manual equivalent, no waiting: `just status` in ~/Repos/dotfiles.
+# Manual equivalent, no waiting: `just status` in the repo.
 case $- in
   *i*)
-    if [ -x "$HOME/Repos/dotfiles/bin/dots" ]; then
+    # The repo lives at ~/Repos/dotfiles on Linux and ~/Repos/personal/dotfiles on the Mac.
+    _dots_repo=""
+    for _d in "$HOME/Repos/personal/dotfiles" "$HOME/Repos/dotfiles"; do
+      [ -x "$_d/bin/dots" ] && { _dots_repo="$_d"; break; }
+    done
+    if [ -n "$_dots_repo" ]; then
       _dots_stamp="${XDG_CACHE_HOME:-$HOME/.cache}/dots-link-check"
       if [ ! -f "$_dots_stamp" ] || [ -n "$(find "$_dots_stamp" -mtime +0 2>/dev/null)" ]; then
         mkdir -p "$(dirname "$_dots_stamp")" 2>/dev/null
         : > "$_dots_stamp"
-        _dots_sev="$("$HOME/Repos/dotfiles/bin/dots" status 2>/dev/null | grep -c 'should be a link, is a real file')"
+        _dots_sev="$("$_dots_repo/bin/dots" status 2>/dev/null | grep -c 'should be a link, is a real file')"
         if [ "${_dots_sev:-0}" -gt 0 ]; then
-          printf '\033[33m⚠ %s severed link(s)\033[0m — an app replaced a managed file. `just status` in ~/Repos/dotfiles\n' "$_dots_sev"
+          printf '\033[33m⚠ %s severed link(s)\033[0m — an app replaced a managed file. `just status` in %s\n' "$_dots_sev" "$_dots_repo"
         fi
         unset _dots_sev
       fi
       unset _dots_stamp
     fi
+    unset _dots_repo _d
     ;;
 esac
