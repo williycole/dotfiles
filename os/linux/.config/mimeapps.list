@@ -1,8 +1,7 @@
-
 [Default Applications]
-x-scheme-handler/http=chromium-browser.desktop
-x-scheme-handler/https=chromium-browser.desktop
-text/html=chromium-browser.desktop
+x-scheme-handler/http=ktf-browser.desktop
+x-scheme-handler/https=ktf-browser.desktop
+text/html=ktf-browser.desktop
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop
 image/png=imv.desktop
 image/jpeg=imv.desktop
@@ -47,3 +46,22 @@ text/xml=nvim.desktop
 x-scheme-handler/etcher=balenaEtcher.desktop
 application/x-rpm=/usr/share/applications/org.dnf.AppCenter.desktop
 x-scheme-handler/mailto=helium.desktop
+x-scheme-handler/chrome=ktf-browser.desktop
+application/x-extension-htm=ktf-browser.desktop
+application/x-extension-html=ktf-browser.desktop
+application/x-extension-shtml=ktf-browser.desktop
+application/xhtml+xml=ktf-browser.desktop
+application/x-extension-xhtml=ktf-browser.desktop
+application/x-extension-xht=ktf-browser.desktop
+
+[Added Associations]
+x-scheme-handler/http=ktf-browser.desktop;
+x-scheme-handler/https=ktf-browser.desktop;
+x-scheme-handler/chrome=ktf-browser.desktop;
+text/html=ktf-browser.desktop;
+application/x-extension-htm=ktf-browser.desktop;
+application/x-extension-html=ktf-browser.desktop;
+application/x-extension-shtml=ktf-browser.desktop;
+application/xhtml+xml=ktf-browser.desktop;
+application/x-extension-xhtml=ktf-browser.desktop;
+application/x-extension-xht=ktf-browser.desktop;
