@@ -28,7 +28,7 @@ purpose). So apply compares the repo snapshot against the one it last applied
 here: unchanged repo = hands off, local tweaks survive. To share a tweak, `save`
 it and commit. A forced apply backs up the local files first.
 """
-import hashlib, os, re, shutil, subprocess, sys, time
+import hashlib, os, re, subprocess, sys, time
 
 REPO = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 SNAP = os.path.join(REPO, "look", "plasma")  # NOT under os/linux/: dots would link it into ~/plasma
@@ -183,66 +183,9 @@ def cmd_apply():
     print("  log out and back in once so colors and shortcuts reload in every app")
 
 
-# ---- Chromium bookmarks: same apply-only-when-the-repo-changed rule ----------
-BM_LOCAL = os.path.expanduser("~/.config/chromium/Default/Bookmarks")
-# The extension's overlay owns the bookmarks when it exists; this repo carries
-# none. DOTS_BOOKMARKS_REPO overrides.
-_BM_OVERLAY = os.path.join(os.environ.get("DOTS_EXTRA") or os.path.expanduser("~/.local/share/dots/extra"),
-                           "overlay", "os", "linux", "chromium", "Bookmarks")
-BM_REPO = (os.environ.get("DOTS_BOOKMARKS_REPO")
-           or (_BM_OVERLAY if os.path.isdir(os.path.dirname(_BM_OVERLAY)) else None)
-           or os.path.join(REPO, "os", "linux", "chromium", "Bookmarks"))
-BM_STATE = os.path.expanduser("~/.local/state/plasma-sync/bookmarks-applied")
-
-
-def chromium_running():
-    # Anchored: an unanchored pattern matches any shell whose command line merely
-    # mentions the path, which killed an ssh session on 2026-10-08.
-    return subprocess.run(["pgrep", "-f", "^/usr/lib64/chromium-browser/"],
-                          capture_output=True).returncode == 0
-
-
-def _bm_norm(text):
-    import json
-    d = json.loads(text); d.pop("checksum", None); d.pop("sync_metadata", None)
-    return json.dumps(d, indent=3, ensure_ascii=False) + "\n"
-
-
-def cmd_bookmarks_save():
-    # Reading is safe while Chromium runs: it writes Bookmarks to disk shortly
-    # after every change. Only APPLY needs it closed (it would overwrite us).
-    os.makedirs(os.path.dirname(BM_REPO), exist_ok=True)
-    t = _bm_norm(read(BM_LOCAL))
-    open(BM_REPO, "w").write(t)
-    os.makedirs(os.path.dirname(BM_STATE), exist_ok=True)
-    open(BM_STATE, "w").write(hashlib.sha256(t.encode()).hexdigest())
-    print(f"  saved bookmarks to {BM_REPO} — commit to share")
-
-
-def cmd_bookmarks_apply():
-    if not os.path.exists(BM_REPO):
-        print("  no bookmarks in repo — skipping"); return
-    want_t = read(BM_REPO); want = hashlib.sha256(want_t.encode()).hexdigest()
-    if read(BM_STATE).strip() == want:
-        print("  bookmarks unchanged in repo since last apply — leaving local ones alone"); return
-    if os.path.exists(BM_LOCAL) and _bm_norm(read(BM_LOCAL)) == want_t:
-        os.makedirs(os.path.dirname(BM_STATE), exist_ok=True); open(BM_STATE, "w").write(want)
-        print("  bookmarks already match the repo"); return
-    if chromium_running():
-        print("  bookmarks: repo changed but Chromium is running — quit it and rerun just update"); return
-    if os.path.exists(BM_LOCAL):
-        shutil.copy2(BM_LOCAL, BM_LOCAL + f".before-sync-{time.strftime('%Y%m%d-%H%M%S')}")
-    os.makedirs(os.path.dirname(BM_LOCAL), exist_ok=True)
-    open(BM_LOCAL, "w").write(want_t)
-    os.makedirs(os.path.dirname(BM_STATE), exist_ok=True); open(BM_STATE, "w").write(want)
-    print("  bookmarks applied from repo (previous file backed up)")
-
-
 if __name__ == "__main__":
     c = sys.argv[1] if len(sys.argv) > 1 else ""
     if c == "save": cmd_save()
     elif c == "apply": cmd_apply()
     elif c == "check": sys.exit(cmd_check())
-    elif c == "bookmarks-save": cmd_bookmarks_save()
-    elif c == "bookmarks-apply": cmd_bookmarks_apply()
     else: print(__doc__.split("\n\n")[0]); sys.exit(2)

@@ -136,8 +136,6 @@ update:
     # per device. Applies only when the repo snapshot changed since the last apply
     # here, so an unsaved local tweak is never reverted. Share one: just look-save.
     python3 bin/plasma-sync apply || echo "==> plasma-sync apply failed — look not synced" >&2
-    # Chromium bookmarks, same model: applied only when the repo copy changed.
-    python3 bin/plasma-sync bookmarks-apply || echo "==> bookmarks not synced" >&2
     # PASSWORD PROMPTS FRONT-LOADED. They (packages, then the extension's update)
     # come back to back in the first minutes; the long no-password
     # work (full mise install incl. any Erlang compile, the Aseprite build) runs
@@ -363,8 +361,3 @@ ares rom='':
 # save THIS machine's desktop look (colors, panels, pins, shortcuts, wallpaper) to the repo, then commit
 look-save:
     @python3 {{repo}}/bin/plasma-sync save
-
-# save THIS machine's Chromium bookmarks, then commit. 
-# they go to the extension's overlay when one is here (plasma-sync picks that path itself).
-bookmarks-save:
-    @python3 {{repo}}/bin/plasma-sync bookmarks-save
