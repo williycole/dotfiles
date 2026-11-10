@@ -20,5 +20,6 @@
     "verify",
     "onboard"
   ],
-  "completionTipSeen": true
+  "completionTipSeen": true,
+  "standaloneTipSeen": true
 }
